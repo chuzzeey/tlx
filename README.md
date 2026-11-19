@@ -20,14 +20,14 @@ Live : [https://kimi-k3-ecommerce-storefront.vercel.app/](https://kimi-k3-ecomme
 ![live](screenshots/5.png)
             
          
-A small, considered ecommerce storefront for handcrafted home goods — ceramics, lighting, textiles, and other quiet objects. Built as a fully server-rendered **Next.js 16** app with a complete SEO layer, a local-first shopping bag, and editorial content woven into the catalog.
+A small ecommerce storefront for considered apparel and handcrafted home goods. Built as a fully server-rendered **Next.js 16** app with a complete SEO layer and a local-first shopping bag.
 
 ## Tech stack
 
 - **Next.js 16.3** (App Router, Turbopack) + **React 19** + **TypeScript**
 - **Tailwind CSS 3.4** with a custom design-token theme (light + dark)
 - **Framer Motion 13** for page transitions and scroll reveals
-- **next/image** for AVIF/WebP responsive images, **next/font** for self-hosted fonts (Inter, Fraunces, IBM Plex Mono)
+- **next/image** for AVIF/WebP responsive images, **next/font** for Fraunces brand lettering, with system fonts throughout the interface
 - **Radix UI / shadcn-style** primitives, **sonner** toasts, **cmdk** command palette, **lucide-react** icons
 - All catalog/content/account data is mock data in `src/data/` — no backend. Bag, wishlist, and recently-viewed trail persist in the visitor's browser via `localStorage`.
 
@@ -51,14 +51,14 @@ The Dockerfile is a three-stage build producing a minimal standalone server (`se
 
 ## Pages
 
-All 15 routes are statically generated at build time (66 pages total) and serve real HTTP status codes — unknown URLs return a true 404.
+All 15 routes are statically generated at build time (69 pages total) and serve real HTTP status codes — unknown URLs return a true 404.
 
 | Route | Page | What's on it |
 |---|---|---|
-| `/` | Home | Full-bleed hero, category index, featured-products grid, philosophy/story section, journal teasers, newsletter block |
-| `/products` | Shop index | All 25 products with category filtering, sorting, and grid/list presentation |
+| `/` | Home | Four popular-product tiles above the jacket collection, with style filters, ratings, and wishlist actions |
+| `/products` | Shop index | All 27 products with category filtering, sorting, and grid/list presentation |
 | `/products/[productId]` | Product detail | Image gallery with thumbnails, price, rating, stock state, quantity picker, add-to-bag / wishlist, accordion details (materials, dimensions, care, shipping), verified customer reviews, related products, breadcrumb |
-| `/categories` | Category index | All 12 departments with imagery, taglines, and piece counts |
+| `/categories` | Category index | All 13 departments with imagery, taglines, and piece counts |
 | `/categories/[categoryId]` | Category detail | Category hero with description, filtered product grid, breadcrumb |
 | `/content` | Journal | Editorial index — 12 essays with tags, read times, and imagery |
 | `/content/[postId]` | Essay | Long-form article with drop cap, pull quotes, author line, and a **Shop the story** rail of the products featured in the piece |
@@ -66,7 +66,7 @@ All 15 routes are statically generated at build time (66 pages total) and serve 
 | `/support/contact` | Contact | Contact form with topic picker and expected response times |
 | `/support/returns` | Returns | Return policy, step-by-step process, and exchange notes |
 | `/support/faq` | FAQ | Grouped accordion of common questions (orders, shipping, returns, care) |
-| `/cart` | Bag | Line items with quantity steppers and remove, order summary (subtotal, shipping, tax), free-shipping progress hint (complimentary over $150), empty state |
+| `/cart` | Bag | Line items with quantity steppers and remove, order summary (subtotal, shipping, tax), free-shipping progress hint (complimentary over ₦203,106), empty state |
 | `/checkout` | Checkout | Four-step flow — Information → Delivery → Payment → Review — with progress indicator, validation, and an order-confirmation screen with barcode |
 | `/account` | Account | Tabbed profile: orders with expandable line detail, saved addresses, profile details |
 | `/wishlist` | Wishlist | Saved pieces with move-to-bag actions and empty state |
@@ -75,7 +75,7 @@ All 15 routes are statically generated at build time (66 pages total) and serve 
 
 ### Commerce
 
-- **Shopping bag** — add from any product card or detail page, adjust quantities, remove lines; totals computed live with free-shipping threshold ($150) and tax
+- **Shopping bag** — add from any product card or detail page, adjust quantities, remove lines; totals computed live with a ₦203,106 free-shipping threshold and tax
 - **Wishlist** — one-tap save/unsave everywhere a product appears
 - **Recently viewed trail** — product visits are recorded and resurfaced
 - **Mock checkout** — full multi-step flow ending in a confirmed order id; orders and account data are fixtures in `src/data/account.ts`
@@ -85,7 +85,7 @@ All 15 routes are statically generated at build time (66 pages total) and serve 
 - **Command palette search** — `⌘K` / `Ctrl+K` (or the search icon) opens instant search across products, categories, and essays
 - **Light/dark theme** — light is the default regardless of system preference; a pre-paint script applies a saved dark choice before first paint, so there's no flash
 - **Motion** — enter transitions per route (`app/template.tsx`), scroll-triggered reveals, item-level (never grid-level) stagger animations, image fade-ins with pulse placeholders and a hydration-safe load hook
-- **Details** — barcodes, ornaments, drop caps, label-mono microcopy, editorial serif display type, generous hairline rules
+- **Details** — barcodes, ornaments, drop caps, system-font interface typography, branded serif lettering, generous hairline rules
 - **Hydration-safe persistence** — bag/wishlist/trail load after mount and pages render skeletons until ready, so server and client HTML always match
 - Toasts for bag/wishlist actions; keyboard- and screen-reader-friendly primitives throughout
 
@@ -111,7 +111,7 @@ src/
   components/               # Header, Footer, SearchPalette, ProductCard, FadeImage, JsonLd, ornaments
   components/motion/        # reveal/motion primitives
   store/                    # ShopContext (bag, wishlist, trail), ThemeContext
-  data/                     # catalog.ts (25 products, 12 categories, reviews),
+  data/                     # catalog.ts (27 products, 13 categories, reviews),
                             # content.ts (12 posts, FAQs, shop-the-story map),
                             # account.ts (orders, addresses, profile)
   lib/seo.ts                # site config + all JSON-LD builders
@@ -122,4 +122,5 @@ public/images/              # generated imagery: products, categories, posts, he
 ## Notes
 
 - **No real backend** — nothing is saved server-side; the bag, wishlist, and browsing trail live only in the visitor's browser. Checkout does not process payments.
+- **NGN price display** — mock catalog values are displayed in naira using a fixed rate of 1 USD = ₦1,354.04 (snapshot from 2026-11-19); refresh the rate and real catalog prices before production.
 - All product, review, journal, and account data is illustrative mock content meant to be replaced with a real catalog.

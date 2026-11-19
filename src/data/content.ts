@@ -1,3 +1,5 @@
+import { formatPrice } from "@/data/catalog";
+
 export interface Post {
   slug: string;
   title: string;
@@ -198,14 +200,14 @@ export const faqGroups = ["Shipping & Delivery", "Orders & Payment", "Returns & 
 
 export const faqs: Faq[] = [
   { group: "Shipping & Delivery", q: "How long does delivery take?", a: "Orders are dispatched within 1–2 business days from our Rotterdam studio. Standard delivery takes 3–5 business days within the EU, 5–8 days to the UK and North America, and 7–12 days elsewhere. You'll receive tracking the moment your parcel leaves us." },
-  { group: "Shipping & Delivery", q: "How much does shipping cost?", a: "Shipping is a flat $9 for orders under $150 and complimentary above that. Furniture pieces (like the Boucle Lounge Chair) ship via white-glove courier at a flat $49, which includes room-of-choice placement and packaging removal." },
+  { group: "Shipping & Delivery", q: "How much does shipping cost?", a: `Shipping is a flat ${formatPrice(9)} for orders under ${formatPrice(150)} and complimentary above that. Furniture pieces (like the Boucle Lounge Chair) ship via white-glove courier at a flat ${formatPrice(49)}, which includes room-of-choice placement and packaging removal.` },
   { group: "Shipping & Delivery", q: "Do you ship internationally?", a: "Yes — we ship to 42 countries. Duties and taxes are calculated and prepaid at checkout for most destinations, so the price you see is the price you pay, with no surprise fees at the door." },
   { group: "Shipping & Delivery", q: "How are fragile items packed?", a: "Ceramics and glass travel in moulded recycled-pulp cradles inside double-walled boxes — no plastic foam. Our breakage rate is under 0.4%, and if anything arrives damaged, a photo is all we need to send a replacement immediately." },
   { group: "Orders & Payment", q: "Which payment methods do you accept?", a: "Visa, Mastercard, American Express, PayPal, Apple Pay and Google Pay. All transactions are processed over encrypted connections; we never store full card numbers on our servers." },
   { group: "Orders & Payment", q: "Can I change or cancel my order?", a: "You have 90 minutes after ordering to cancel or modify from your account page — after that, orders enter the packing queue. If it's too late to change, you can always use the 30-day return once it arrives." },
   { group: "Orders & Payment", q: "Do you offer gift wrapping?", a: "Yes, and it's complimentary. Select the gift option at checkout and we'll wrap in kraft paper with linen ribbon, include a handwritten note, and omit prices from the packing slip." },
   { group: "Orders & Payment", q: "Will I receive an invoice?", a: "A PDF invoice is emailed automatically with your shipping confirmation, and all past invoices live in your account under Orders. Business customers can add a VAT number at checkout for a full VAT invoice." },
-  { group: "Returns & Exchanges", q: "What is your return policy?", a: "You have 30 days from delivery to return any unused item in its original condition for a full refund. Returns are free within the EU; elsewhere we deduct a $9 return label fee. Refunds land within 5 business days of the parcel reaching us." },
+  { group: "Returns & Exchanges", q: "What is your return policy?", a: `You have 30 days from delivery to return any unused item in its original condition for a full refund. Returns are free within the EU; elsewhere we deduct a ${formatPrice(9)} return label fee. Refunds land within 5 business days of the parcel reaching us.` },
   { group: "Returns & Exchanges", q: "How do I start a return?", a: "From your account's Orders page, select the order and choose 'Start a return' — or use the returns page with your order number and email. We'll email a prepaid label; drop the parcel at any carrier point. Furniture returns are collected from your home, free." },
   { group: "Returns & Exchanges", q: "Can I exchange instead of refund?", a: "Absolutely. Choose 'exchange' when starting your return and tell us the item and colour you'd like. We ship the replacement as soon as the carrier scans your return — you don't wait for it to reach us first." },
   { group: "Product Care", q: "How do I care for handmade ceramics?", a: "Hand-wash where possible (the sink, not the machine, is where most breakages happen), avoid sudden temperature shocks, and lift cutlery marks from matte glazes with a baking-soda paste. Full guide in our Journal under 'Caring for Ceramics'." },

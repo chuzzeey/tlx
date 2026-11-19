@@ -40,6 +40,7 @@ export const categories: Category[] = [
   { slug: "garden", name: "Garden", tagline: "Small-scale green", description: "Terracotta, steel and tools for balconies, sills and tiny plots. Proof that a garden is a practice, not a postcode.", image: "/images/products/planters.webp" },
   { slug: "storage", name: "Storage", tagline: "Order, beautifully", description: "Woven baskets and modular shelving that make putting things away feel like arranging a still life.", image: "/images/products/baskets.webp" },
   { slug: "tableware", name: "Tableware", tagline: "Set the table properly", description: "Cutlery and glassware with genuine heft. Mouth-blown stems, hand-finished tines — details your guests will notice without knowing why.", image: "/images/products/wine-glasses.webp" },
+  { slug: "jackets", name: "Jackets", tagline: "Layers for every day", description: "Everyday outerwear, from sherpa-lined denim to relaxed bomber jackets.", image: "/images/products/sherpa-denim-jacket.jpg" },
 ];
 
 export const products: Product[] = [
@@ -248,6 +249,24 @@ export const products: Product[] = [
     materials: "Mouth-blown lead-free crystal", dimensions: "H 22cm, 420ml", care: "Hand wash, polish with linen.",
     stock: 15, badge: "Bestseller",
   },
+  {
+    id: "sherpa-denim-jacket", sku: "APP-001", name: "Sherpa-Lined Denim Jacket", category: "jackets",
+    price: 234, rating: 4.9, reviewCount: 5231, image: "/images/products/sherpa-denim-jacket.jpg",
+    description: "A relaxed denim jacket with a soft sherpa collar and warm lining for cooler days.",
+    story: "An easy everyday layer with a classic denim finish and a cozy collar.",
+    materials: "Cotton denim shell, sherpa lining", dimensions: "Relaxed fit; hip length", care: "Machine wash cold with like colors. Hang to dry.",
+    stock: 18, badge: "Bestseller", featured: true,
+    colors: [{ name: "Washed blue", hex: "#71879a" }],
+  },
+  {
+    id: "rust-bomber-jacket", sku: "APP-002", name: "Rust Bomber Jacket", category: "jackets",
+    price: 228, rating: 4.8, reviewCount: 4928, image: "/images/products/brown-jacket.jpg",
+    description: "A lightweight bomber jacket in a warm rust shade, finished with a zip front and ribbed trims.",
+    story: "A versatile layer designed to work over a tee or knit through changing seasons.",
+    materials: "Woven shell with cotton-blend ribbed trims", dimensions: "Regular fit; hip length", care: "Machine wash cold on a gentle cycle. Hang to dry.",
+    stock: 16, badge: "New", featured: true,
+    colors: [{ name: "Rust", hex: "#ad694f" }],
+  },
 ];
 
 export interface Review {
@@ -307,6 +326,19 @@ export function categoryName(slug: string): string {
   return categoryBySlug(slug)?.name ?? slug;
 }
 
-export function formatPrice(n: number): string {
-  return `$${n.toFixed(2)}`;
+export const USD_TO_NGN_RATE = 1354.04;
+
+const ngnFormatter = new Intl.NumberFormat("en-NG", {
+  style: "currency",
+  currency: "NGN",
+  currencyDisplay: "narrowSymbol",
+  maximumFractionDigits: 0,
+});
+
+export function priceInNgn(amountInUsd: number): number {
+  return Math.round(amountInUsd * USD_TO_NGN_RATE);
+}
+
+export function formatPrice(amountInUsd: number): string {
+  return ngnFormatter.format(priceInNgn(amountInUsd));
 }

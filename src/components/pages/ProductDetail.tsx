@@ -230,7 +230,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
           <StaggerItem>
           <div className="mt-8 grid grid-cols-3 divide-x divide-border border border-border">
             {[
-              { icon: Truck, t: "Free over $150" },
+              { icon: Truck, t: `Free over ${formatPrice(150)}` },
               { icon: RotateCcw, t: "30-day returns" },
               { icon: ShieldCheck, t: "5-year guarantee" },
             ].map((s) => (

@@ -1,6 +1,5 @@
-import type { Category, Product } from "@/data/catalog";
+import { categoryName, priceInNgn, type Product } from "@/data/catalog";
 import type { Post } from "@/data/content";
-import { categoryName } from "@/data/catalog";
 
 /** Public origin used for canonical URLs, Open Graph and JSON-LD.
  *  Swap for the real domain when the shop goes live. */
@@ -51,8 +50,8 @@ export function productJsonLd(p: Product) {
     offers: {
       "@type": "Offer",
       url: abs(`/products/${p.id}`),
-      priceCurrency: "USD",
-      price: p.price,
+      priceCurrency: "NGN",
+      price: priceInNgn(p.price),
       availability:
         p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",

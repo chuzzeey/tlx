@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
+import { Fraunces } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Providers from "./providers";
@@ -8,18 +8,11 @@ import Footer from "@/components/layout/Footer";
 import JsonLd from "@/components/JsonLd";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, organizationJsonLd } from "@/lib/seo";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-fraunces",
   display: "swap",
   axes: ["opsz"],
-});
-const plexMono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex",
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -58,7 +51,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f4f1ea",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
 };
@@ -68,7 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${fraunces.variable} ${plexMono.variable}`}
+      className={fraunces.variable}
     >
       <body>
         {/* Applies a saved dark preference before first paint; light is the

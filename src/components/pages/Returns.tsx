@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, RotateCcw, Truck, Package, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Footnote, Stamp } from "@/components/Ornaments";
+import { formatPrice } from "@/data/catalog";
 
 const steps = [
   { icon: FileText, title: "1 · Request", body: "Start your return below or from your account. We'll email a prepaid label within the hour." },
@@ -15,7 +16,7 @@ const steps = [
 
 const policies = [
   { t: "30 days to decide", d: "Live with the piece. If it isn't right, send it back within 30 days of delivery — unused, in original condition." },
-  { t: "Free returns in the EU", d: "Prepaid labels for all EU returns. Outside the EU, a $9 label fee is deducted from your refund." },
+  { t: "Free returns in the EU", d: `Prepaid labels for all EU returns. Outside the EU, a ${formatPrice(9)} label fee is deducted from your refund.` },
   { t: "Exchanges ship first", d: "Ask for an exchange and the replacement leaves us as soon as the carrier scans your return — no waiting for it to arrive." },
   { t: "Damaged on arrival?", d: "One photo to hello@aurelle.example and a replacement ships within 48 hours. Keep or recycle the packaging; we'll handle the rest." },
   { t: "Furniture & large items", d: "White-glove items are collected free from your home. Our courier will call to arrange a two-hour window." },

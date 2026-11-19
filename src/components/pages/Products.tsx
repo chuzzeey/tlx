@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { categories, products, type Product } from "@/data/catalog";
+import { categories, formatPrice, products, type Product } from "@/data/catalog";
 import ProductCard, { PageHeader } from "@/components/ProductCard";
 import { EASE } from "@/components/motion/motion";
 import { Aster, Footnote } from "@/components/Ornaments";
@@ -64,7 +64,7 @@ function Filters({
         </ul>
       </div>
       <div>
-        <p className="label-mono mb-4">Max price — ${priceCap}</p>
+        <p className="label-mono mb-4">Max price — {formatPrice(priceCap)}</p>
         <Slider
           value={[priceCap]}
           onValueChange={([v]) => setPriceCap(v)}
@@ -73,8 +73,8 @@ function Filters({
           step={10}
         />
         <div className="mt-2 flex justify-between font-mono2 text-[10px] text-muted-foreground">
-          <span>$30</span>
-          <span>$1000</span>
+          <span>{formatPrice(30)}</span>
+          <span>{formatPrice(MAX_PRICE)}</span>
         </div>
       </div>
       <div>
@@ -123,7 +123,7 @@ export default function Products() {
       <PageHeader
         kicker="The full collection"
         title="Everything, considered."
-        lede="Twenty-five objects from twelve categories. Each one handmade, each one chosen to be kept. Filter by what your home actually needs."
+        lede="Twenty-seven pieces from thirteen categories. Each one chosen to be kept. Filter by what you need."
       />
 
       <div className="container-x flex flex-col gap-10 py-10 lg:flex-row">

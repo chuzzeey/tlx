@@ -202,7 +202,7 @@ export default function Checkout() {
                       <span className="block font-mono2 text-[11px] text-muted-foreground">{d.eta}</span>
                     </span>
                   </span>
-                  <span className="font-mono2 text-sm">{d.price === 0 ? (subtotal >= 150 ? "Free" : "$9.00") : formatPrice(d.price)}</span>
+                  <span className="font-mono2 text-sm">{d.price === 0 ? (subtotal >= 150 ? "Free" : formatPrice(9)) : formatPrice(d.price)}</span>
                 </label>
               ))}
               <textarea

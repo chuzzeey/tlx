@@ -36,7 +36,7 @@ export default function Footer() {
     <footer className="mt-auto border-t border-border">
       <div className="container-x grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <p className="font-display text-2xl font-medium">Aurelle.</p>
+          <p className="brand-type font-display text-2xl font-medium">Aurelle.</p>
           <p className="mt-3 max-w-xs font-mono2 text-[11px] leading-relaxed text-muted-foreground">
             Considered goods for modern living. Made slowly in small batches by independent
             studios, kept by you for decades.
@@ -66,7 +66,7 @@ export default function Footer() {
             © 2026 Aurelle Studio ApS
           </p>
           <p className="order-first font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 sm:order-none">
-            Set in Fraunces & IBM Plex Mono — printed in the browser
+            Set in the system font — printed in the browser
           </p>
           <p className="font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             Terms · Privacy · Cookies
@@ -74,7 +74,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="overflow-hidden border-t border-border py-4" aria-hidden>
-        <p className="whitespace-nowrap text-center font-display text-[13vw] font-light leading-none tracking-tight text-foreground/[0.05] select-none">
+        <p         className="brand-type whitespace-nowrap text-center font-display text-[13vw] font-light leading-none tracking-tight text-foreground/[0.05] select-none">
           AURELLE
         </p>
       </div>
