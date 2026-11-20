@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import Providers from "./providers";
 import Header from "@/components/layout/Header";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 import Footer from "@/components/layout/Footer";
 import JsonLd from "@/components/JsonLd";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, organizationJsonLd } from "@/lib/seo";
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {`try{if(localStorage.getItem("aurelle-theme")==="dark"){document.documentElement.classList.add("dark")}}catch(e){}`}
         </Script>
         <Providers>
+          <ScrollToTop />
           <div className="flex min-h-screen flex-col">
             <Header />
             {children}

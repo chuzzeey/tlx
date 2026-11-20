@@ -35,7 +35,7 @@ export default function Returns() {
       return;
     }
     setDone(true);
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   return (

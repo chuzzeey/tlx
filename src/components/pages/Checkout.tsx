@@ -19,7 +19,7 @@ interface Form {
 }
 
 const initial: Form = {
-  email: "", name: "", phone: "", street: "", city: "", country: "Denmark", region: "",
+  email: "", name: "", phone: "", street: "", city: "", country: "Nigeria", region: "",
   delivery: "standard", card: "", expiry: "", cvc: "", nameOnCard: "", notes: "",
 };
 
@@ -146,7 +146,7 @@ export default function Checkout() {
     clearCart();
     setPlaced(id);
     toast.success("Order placed", { description: `Order ${id} confirmed.` });
-    window.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   return (

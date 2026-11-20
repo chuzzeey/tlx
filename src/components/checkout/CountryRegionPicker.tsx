@@ -174,7 +174,7 @@ export default function CountryRegionPicker({
                 aria-labelledby="checkout-country-label"
                 aria-expanded={countryOpen}
                 disabled={countryStatus === "loading"}
-                className="input-plain flex h-12 items-center justify-between rounded-2xl text-left disabled:opacity-60"
+                className="input-plain flex h-12 items-center justify-between rounded-2xl border-neutral-200 bg-background/80 text-left transition-colors hover:border-foreground/25 focus:border-border focus-visible:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/10 data-[state=open]:border-border disabled:opacity-60 dark:border-border dark:bg-muted/30"
               >
                 <span className="truncate">{countryStatus === "loading" ? "Loading countries…" : country || "Choose a country"}</span>
                 {countryStatus === "loading"
@@ -182,9 +182,19 @@ export default function CountryRegionPicker({
                   : <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />}
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] rounded-2xl p-0">
-              <Command>
-                <CommandInput placeholder="Search countries..." aria-label="Search countries" />
+            <PopoverContent
+              side="bottom"
+              avoidCollisions={false}
+              align="start"
+              sideOffset={8}
+              className="w-[var(--radix-popover-trigger-width)] rounded-2xl border-neutral-200 bg-background/95 p-1 shadow-xl backdrop-blur-md dark:border-border"
+            >
+              <Command className="rounded-xl bg-transparent [&_[data-slot=command-input-wrapper]]:border-border/70">
+                <CommandInput
+                  placeholder="Search countries..."
+                  aria-label="Search countries"
+                  className="outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
                 <CommandList>
                   <CommandEmpty>No country found.</CommandEmpty>
                   <CommandGroup>
@@ -197,6 +207,7 @@ export default function CountryRegionPicker({
                           onRegionChange("");
                           setCountryOpen(false);
                         }}
+                        className="rounded-xl px-3 py-2.5 text-foreground hover:bg-neutral-100 hover:text-foreground data-[selected=true]:bg-neutral-100 data-[selected=true]:text-foreground dark:hover:bg-muted dark:data-[selected=true]:bg-muted"
                       >
                         <Check className={`h-4 w-4 ${country === option.name ? "opacity-100" : "opacity-0"}`} aria-hidden="true" />
                         {option.name}
@@ -220,15 +231,25 @@ export default function CountryRegionPicker({
                 role="combobox"
                 aria-labelledby="checkout-region-label"
                 aria-expanded={regionOpen}
-                className="input-plain flex h-12 items-center justify-between rounded-2xl text-left"
+                className="input-plain flex h-12 items-center justify-between rounded-2xl border-neutral-200 bg-background/80 text-left transition-colors hover:border-foreground/25 focus:border-border focus-visible:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/10 data-[state=open]:border-border dark:border-border dark:bg-muted/30"
               >
                 <span className="truncate">{region || "Choose a state or region"}</span>
                 <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" aria-hidden="true" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] rounded-2xl p-0">
-              <Command>
-                <CommandInput placeholder="Search states or regions..." aria-label="Search states or regions" />
+            <PopoverContent
+              side="bottom"
+              avoidCollisions={false}
+              align="start"
+              sideOffset={8}
+              className="w-[var(--radix-popover-trigger-width)] rounded-2xl border-neutral-200 bg-background/95 p-1 shadow-xl backdrop-blur-md dark:border-border"
+            >
+              <Command className="rounded-xl bg-transparent [&_[data-slot=command-input-wrapper]]:border-border/70">
+                <CommandInput
+                  placeholder="Search states or regions..."
+                  aria-label="Search states or regions"
+                  className="outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
                 <CommandList>
                   <CommandEmpty>No state or region found.</CommandEmpty>
                   <CommandGroup>
@@ -240,6 +261,7 @@ export default function CountryRegionPicker({
                           onRegionChange(name);
                           setRegionOpen(false);
                         }}
+                        className="rounded-xl px-3 py-2.5 text-foreground hover:bg-neutral-100 hover:text-foreground data-[selected=true]:bg-neutral-100 data-[selected=true]:text-foreground dark:hover:bg-muted dark:data-[selected=true]:bg-muted"
                       >
                         <Check className={`h-4 w-4 ${region === name ? "opacity-100" : "opacity-0"}`} aria-hidden="true" />
                         {name}
