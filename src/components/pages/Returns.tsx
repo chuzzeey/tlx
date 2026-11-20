@@ -29,8 +29,9 @@ export default function Returns() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.order.trim().toUpperCase().startsWith("AUR-") || !form.email.includes("@")) {
-      toast.error("Check your details", { description: "Order numbers start with AUR- and email must be valid." });
+    const orderId = form.order.trim().toUpperCase();
+    if ((!orderId.startsWith("AUR-") && !/^TLX-T1O\d+$/.test(orderId)) || !form.email.includes("@")) {
+      toast.error("Check your details", { description: "Enter a valid order number and email address." });
       return;
     }
     setDone(true);
@@ -40,7 +41,7 @@ export default function Returns() {
   return (
     <div>
       <div className="border-b border-border">
-        <div className="container-x py-12 sm:py-16">
+        <div className="container-x mx-auto max-w-6xl py-8 sm:py-12">
           <Link href="/support" className="inline-flex items-center gap-1.5 font-mono2 text-[11px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-3 w-3" /> Help centre
           </Link>
@@ -66,7 +67,7 @@ export default function Returns() {
         </div>
       </div>
 
-      <div className="container-x grid gap-14 py-14 lg:grid-cols-2">
+      <div className="container-x mx-auto grid gap-14 py-8 lg:grid-cols-2 lg:py-14">
         {/* Policy */}
         <div>
           <p className="label-mono mb-6">The policy, in plain language</p>
@@ -84,8 +85,8 @@ export default function Returns() {
         </div>
 
         {/* Start a return */}
-        <div className="lg:pl-8">
-          <div className="sticky top-32 border border-border bg-card p-8">
+        <div>
+          <div className="border border-border bg-card p-6 lg:sticky lg:top-32 lg:p-8">
             {done ? (
               <div className="relative">
                 <Stamp

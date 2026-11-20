@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, MessageCircle, Search } from "lucide-react";
+import { ArrowUpRight, MessageCircle, Search } from "lucide-react";
 import SupportTopBar from "@/components/pages/SupportTopBar";
 import { faqs, faqGroups } from "@/data/content";
 import {
@@ -36,18 +36,17 @@ export default function Faq() {
       <SupportTopBar title="Frequently asked" backHref="/support" backLabel="Back to help centre" />
 
       <section className="border-b border-border">
-        <div className="container-x pb-8 pt-8 md:pb-10 md:pt-12">
+        <div className="container-x mx-auto max-w-6xl pb-8 pt-8 md:pb-10 md:pt-10">
           <Link
             href="/support"
-            className="hidden items-center gap-2 font-mono2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+            className="mb-5 hidden items-center gap-2 font-mono2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
             Help centre
           </Link>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-5">
             <div>
               <p className="label-mono">FAQ / TLX Originals</p>
-              <h1 className="mt-4 max-w-3xl font-display text-4xl font-light tracking-tight sm:text-5xl md:text-6xl">
+              <h1 className="mt-4 max-w-3xl font-display text-4xl font-light tracking-tight sm:text-5xl">
                 Answers, without the runaround.
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
@@ -72,7 +71,7 @@ export default function Faq() {
         </div>
       </section>
 
-      <div className="container-x py-7 sm:py-10">
+      <div className="container-x mx-auto max-w-6xl py-7 sm:py-10">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:px-0">
           {[allQuestions, ...faqGroups].map((group) => {
             const count = group === allQuestions

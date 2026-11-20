@@ -27,39 +27,38 @@ export const orders: Order[] = [
     items: [{ productId: "mens-golf-cap", qty: 1, price: 48 }],
   },
   {
-    id: "TLX-T1O42", date: "2026-08-06", status: "In transit", shipping: 0,
+    id: "TLX-T1O42", date: "2026-08-06", status: "In transit", shipping: 34,
     address: "Lagos Mainland, Lagos, Nigeria",
     items: [
-      { productId: "embers-cedar-candle", qty: 2, price: 52 },
-      { productId: "oat-merino-throw", qty: 1, price: 145 },
+      { productId: "seashell-bag", qty: 1, price: 95 },
+      { productId: "sneakers", qty: 1, price: 120 },
     ],
   },
   {
     id: "AUR-1037", date: "2026-07-22", status: "Delivered", shipping: 9,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
     items: [
-      { productId: "walnut-serving-board", qty: 1, price: 72 },
-      { productId: "matte-black-cutlery", qty: 1, price: 140 },
+      { productId: "chaotic-club", qty: 1, price: 88 },
+      { productId: "mens-golf-cap", qty: 1, price: 48 },
     ],
   },
   {
     id: "AUR-1028", date: "2026-06-14", status: "Delivered", shipping: 49,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
-    items: [{ productId: "boucle-lounge-chair", qty: 1, price: 890 }],
+    items: [{ productId: "stussy-jacket", qty: 1, price: 234 }],
   },
   {
     id: "AUR-1011", date: "2026-05-02", status: "Delivered", shipping: 0,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
     items: [
-      { productId: "terra-vessel-vase", qty: 1, price: 86 },
-      { productId: "mouthblown-wine-glasses", qty: 1, price: 76 },
-      { productId: "kiln-speckle-mugs", qty: 2, price: 48 },
+      { productId: "mwdbl-jacket", qty: 1, price: 228, size: "M" },
+      { productId: "seashell-bag", qty: 1, price: 95 },
     ],
   },
   {
     id: "AUR-0993", date: "2026-03-18", status: "Returned", shipping: 9,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
-    items: [{ productId: "sage-linen-cushion", qty: 2, price: 58 }],
+    items: [{ productId: "chaotic-club", qty: 2, price: 88 }],
   },
 ];
 

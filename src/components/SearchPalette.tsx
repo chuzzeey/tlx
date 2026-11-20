@@ -5,30 +5,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Clock3, Heart, Search, SlidersHorizontal, Star, X } from "lucide-react";
+import { ArrowLeft, Clock3, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import Image from "next/image";
 import { cardReviewCount, formatPrice, products } from "@/data/catalog";
-import { type SearchItem } from "@/data/searchRecommendations";
 import { EASE } from "@/components/motion/motion";
-import { useShop } from "@/store/ShopContext";
 import { toast } from "sonner";
+
+type SearchItem = {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  image: string;
+  href: string;
+  rating: number;
+  reviewCount: number;
+  price: number;
+};
 
 const itemCls =
   "mx-2 flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm transition-colors aria-selected:bg-neutral-100 dark:aria-selected:bg-muted";
-const SEARCH_HISTORY_KEY = "aurelle-search-history";
+const SEARCH_HISTORY_KEY = "tlx-search-history";
 const MAX_SEARCH_HISTORY = 5;
 
 export default function SearchPalette({
   open,
   onOpenChange,
-  recommendations,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  recommendations: SearchItem[];
 }) {
   const router = useRouter();
-  const { wishlist, toggleWishlist } = useShop();
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [searchHistoryLoaded, setSearchHistoryLoaded] = useState(false);
@@ -103,20 +110,17 @@ export default function SearchPalette({
           .includes(query.trim().toLowerCase())
       )
     : [];
-  const showingRecommendations = query.trim().length > 0 && matchedProducts.length === 0;
-  const isRecommendedDisplay = !query.trim() || showingRecommendations;
-  const displayedProducts: SearchItem[] = isRecommendedDisplay
-    ? recommendations
-    : matchedProducts.map((product) => ({
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        href: `/products/${product.id}`,
-        rating: product.rating,
-        reviewCount: cardReviewCount(product),
-        price: product.price,
-        product,
-      }));
+  const displayedProducts: SearchItem[] = matchedProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    sku: product.sku,
+    category: product.category,
+    image: product.image,
+    href: `/products/${product.id}`,
+    rating: product.rating,
+    reviewCount: cardReviewCount(product),
+    price: product.price,
+  }));
 
   const go = (to: string) => {
     recordSearch(query);
@@ -240,47 +244,21 @@ export default function SearchPalette({
                 <div className="flex items-center justify-between gap-3 py-4">
                   <div className="min-w-0">
                     <h2 className="truncate text-base font-semibold">
-                      {query.trim() ? `Results for ${query.trim()}` : "Popular Search"}
+                      {query.trim() ? `Results for ${query.trim()}` : "Search six TLX pieces"}
                     </h2>
-                    {showingRecommendations && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">No exact matches · Popular recommendations</p>
-                    )}
                   </div>
                   {query.trim() ? (
                     <span className="shrink-0 text-sm text-muted-foreground">{displayedProducts.length} Products</span>
                   ) : (
-                    <Link
-                      href="/products"
-                      onClick={() => onOpenChange(false)}
-                      className="shrink-0 text-sm text-muted-foreground"
-                    >
-                      See More
-                    </Link>
+                    <span className="shrink-0 text-sm text-muted-foreground">Search to browse</span>
                   )}
                 </div>
                 {displayedProducts.length ? (
                   <div className="grid grid-cols-2 gap-x-3 gap-y-5 pb-6">
                     {displayedProducts.map((item) => {
-                      const product = item.product;
-                      const wished = product ? wishlist.includes(product.id) : false;
                       return (
                         <article key={item.id} className="min-w-0">
                           <div className="group relative">
-                            {!isRecommendedDisplay && product && (
-                              <button
-                                type="button"
-                                onClick={() => toggleWishlist(product.id)}
-                                aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-                                aria-pressed={wished}
-                                className={`absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full shadow-sm ${
-                                  wished
-                                    ? "bg-neutral-200 text-red-500"
-                                    : "bg-neutral-300/70 text-white"
-                                }`}
-                              >
-                                <Heart className={`h-4 w-4 ${wished ? "fill-current" : ""}`} />
-                              </button>
-                            )}
                             <Link
                               href={item.href}
                               onClick={() => {
@@ -330,7 +308,7 @@ export default function SearchPalette({
                   </div>
                 ) : (
                   <p className="py-16 text-center text-sm text-muted-foreground">
-                    No products found. Try another search.
+                    {query.trim() ? "No products found. Try another search." : "Search by product name, category, or SKU."}
                   </p>
                 )}
               </section>
@@ -370,20 +348,22 @@ export default function SearchPalette({
                   </kbd>
                 </div>
 
-                {(!query.trim() || showingRecommendations) && (
-                  <p className="px-5 pb-2 pt-1 text-xs font-medium text-muted-foreground">
-                    {showingRecommendations ? "Popular recommendations" : "Recommended"}
-                  </p>
+                {!query.trim() && (
+                <p className="px-5 pb-2 pt-1 text-xs font-medium text-muted-foreground">
+                  Search the six current pieces
+                </p>
                 )}
                 <Command.List className="max-h-[52vh] overflow-y-auto border-t border-border/70 px-1 pb-2">
                   <Command.Empty className="px-4 py-12 text-center">
-                    <p className="text-sm text-muted-foreground">No products found. Try another search.</p>
+                    <p className="text-sm text-muted-foreground">
+                      {query.trim() ? "No products found. Try another search." : "Search by product name, category, or SKU."}
+                    </p>
                   </Command.Empty>
 
                     {displayedProducts.map((item) => (
                       <Command.Item
                         key={item.id}
-                        value={`${item.name} ${item.product?.sku ?? ""} ${item.product?.category ?? ""}`}
+                        value={`${item.name} ${item.sku} ${item.category}`}
                         onSelect={() => go(item.href)}
                         className={itemCls}
                       >

@@ -6,13 +6,13 @@ import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 const title = "Shop All Products";
 const description =
-  "Shop the full TLX Originals collection of jackets, T-shirts, shoes, bags, and accessories.";
+  "Shop six TLX Originals pieces: jackets, T-shirts, shoes, bags, and accessories.";
 
 export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/products" },
-  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/vase-01.webp"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/stussy-jacket.png"] },
 };
 
 export default function Page() {

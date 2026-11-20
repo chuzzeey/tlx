@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/categories" },
-  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/lantern-lamp.webp"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/stussy-jacket.png"] },
 };
 
 export default function Page() {

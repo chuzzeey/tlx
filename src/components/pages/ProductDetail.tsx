@@ -99,7 +99,10 @@ export default function ProductDetail({ productId }: { productId: string }) {
   const recentOthers = recent
     .filter((id) => id !== product.id)
     .map((id) => productById(id))
-    .filter((p): p is Product => Boolean(p))
+    .filter(
+      (p): p is Product =>
+        p !== undefined && !related.some((relatedProduct) => relatedProduct.id === p.id)
+    )
     .slice(0, 4);
   const low = product.stock <= 8;
   const hasSizes = product.category === "jackets" || product.category === "apparel";
@@ -110,8 +113,8 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
   return (
     <div>
-      <div className="mobile-product-page md:hidden">
-        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4">
+      <div className="mobile-product-page">
+        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:hidden">
           <Link
             href={`/categories/${product.category}`}
             aria-label={`Back to ${cat?.name ?? "category"}`}
@@ -138,15 +141,25 @@ export default function ProductDetail({ productId }: { productId: string }) {
           </Link>
         </div>
 
-        <div className="container-x pb-10 pt-5">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100">
+        <div className="container-x mx-auto max-w-[1400px] pb-10 pt-5 md:pt-8">
+          <div className="mb-5 hidden md:block">
+            <Link
+              href={`/categories/${product.category}`}
+              className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground dark:bg-muted"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to {cat?.name}
+            </Link>
+          </div>
+          <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[imgIdx]}
                 src={gallery[imgIdx]}
                 alt={product.name}
                 fill
-                sizes="(max-width: 767px) 100vw"
+                sizes="(max-width: 767px) 100vw, (max-width: 1400px) 50vw, 700px"
                 loading="eager"
                 className="object-contain p-3"
                 initial={{ opacity: 0, scale: 1.04 }}
@@ -181,10 +194,10 @@ export default function ProductDetail({ productId }: { productId: string }) {
             )}
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 md:pt-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h1 className="text-2xl font-semibold leading-tight">{product.name}</h1>
+                <h1 className="text-2xl font-semibold leading-tight md:text-4xl">{product.name}</h1>
                 <p className="mt-1 text-sm text-muted-foreground">{cat?.name}</p>
               </div>
               <button
@@ -268,7 +281,41 @@ export default function ProductDetail({ productId }: { productId: string }) {
               </p>
             </section>
 
-            <section id="mobile-reviews" className="mt-8 border-t border-border pt-5">
+            <div className="mt-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl bg-neutral-100 dark:bg-muted">
+              {[
+                { icon: Truck, label: `Free over ${formatPrice(150)}` },
+                { icon: RotateCcw, label: "30-day returns" },
+                { icon: ShieldCheck, label: "5-year guarantee" },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="flex flex-col items-center gap-2 px-2 py-4 text-center">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <span className="text-[10px] leading-tight text-muted-foreground">{label}</span>
+                </div>
+              ))}
+            </div>
+            <Footnote className="mt-3">
+              Repaired free for five years — after that, spare parts forever.
+            </Footnote>
+
+            <Accordion type="single" collapsible className="mt-6 border-t border-border">
+              <AccordionItem value="story" className="border-border">
+                <AccordionTrigger className="text-sm font-medium hover:no-underline">The story</AccordionTrigger>
+                <AccordionContent className="text-sm leading-6 text-muted-foreground">{product.story}</AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="materials" className="border-border">
+                <AccordionTrigger className="text-sm font-medium hover:no-underline">Materials & dimensions</AccordionTrigger>
+                <AccordionContent className="space-y-2 text-sm leading-6 text-muted-foreground">
+                  <p><span className="text-foreground">Materials — </span>{product.materials}</p>
+                  <p><span className="text-foreground">Dimensions — </span>{product.dimensions}</p>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="care" className="border-border">
+                <AccordionTrigger className="text-sm font-medium hover:no-underline">Care</AccordionTrigger>
+                <AccordionContent className="text-sm leading-6 text-muted-foreground">{product.care}</AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <section id="mobile-reviews" className="mt-8 border-t border-border pt-5 md:hidden">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Review ({reviewCount.toLocaleString()})</h2>
                 <button
@@ -330,10 +377,73 @@ export default function ProductDetail({ productId }: { productId: string }) {
               </button>
             </div>
           </div>
+          </div>
         </div>
       </div>
 
-      <div className="hidden md:block">
+      <section className="container-x mx-auto hidden max-w-6xl space-y-12 pb-14 md:block">
+        <div className="grid gap-8 border-t border-border pt-10 lg:grid-cols-[260px_1fr]">
+          <div>
+            <p className="label-mono">Reviews</p>
+            <p className="mt-3 text-5xl font-semibold">{averageRating.toFixed(1)}</p>
+            <Stars rating={averageRating} className="mt-2" />
+            <p className="mt-2 text-sm text-muted-foreground">
+              {reviewCount.toLocaleString()} verified reviews
+            </p>
+          </div>
+          <div className="divide-y divide-border border-y border-border">
+            {reviews.slice(0, 3).map((review) => (
+              <article key={review.id} className="py-5 first:pt-0 last:pb-0">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Stars rating={review.rating} />
+                  <h2 className="text-sm font-semibold">{review.title}</h2>
+                </div>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{review.body}</p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {review.author} · {review.location} ·{" "}
+                  {new Date(review.date).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {related.length > 0 && (
+          <div>
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">More in {cat?.name}</h2>
+              <Link
+                href={`/categories/${product.category}`}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                View category
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+              {related.slice(0, 4).map((item, index) => (
+                <ProductCard key={item.id} product={item} index={index} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {recentOthers.length > 0 && (
+          <div>
+            <h2 className="mb-5 text-xl font-semibold">Recently viewed</h2>
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+              {recentOthers.map((item, index) => (
+                <ProductCard key={item.id} product={item} index={index} />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <div className="hidden">
       {/* Breadcrumb */}
       <div className="border-b border-border">
         <div className="container-x flex items-center gap-2 py-4 font-mono2 text-[11px] uppercase tracking-[0.15em] text-muted-foreground">

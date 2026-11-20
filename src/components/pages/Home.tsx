@@ -8,7 +8,13 @@ import { cardReviewCount, formatPrice, popularItems, products, type Product } fr
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
-const filters = ["Jacket", "Shoes", "Denim", "Bomber", "Outerwear"];
+const filters = [
+  { label: "Jacket", category: "jackets" },
+  { label: "T-Shirts", category: "apparel" },
+  { label: "Shoes", category: "shoes" },
+  { label: "Bags", category: "bags" },
+  { label: "Accessories", category: "accessories" },
+];
 
 function JacketCard({ product, priority = false }: { product: Product; priority?: boolean }) {
   return (
@@ -41,36 +47,32 @@ function JacketCard({ product, priority = false }: { product: Product; priority?
 }
 
 export default function Home() {
-  const [activeFilter, setActiveFilter] = useState("Jacket");
-  const jackets = products.filter((product) => product.category === "jackets");
-  const visibleJackets =
-    activeFilter === "Jacket" || activeFilter === "Outerwear"
-      ? jackets
-      : jackets.filter((product) => product.name.toLowerCase().includes(activeFilter.toLowerCase()));
+  const [activeFilter, setActiveFilter] = useState("jackets");
+  const visibleProducts = products.filter((product) => product.category === activeFilter);
 
   return (
     <main className="home-page min-h-screen bg-background">
-      <section className="container-x py-5 sm:py-10" aria-labelledby="popular-products-title">
+      <section className="container-x py-5 sm:py-10 md:py-12 lg:py-14" aria-labelledby="popular-products-title">
         <div className="mb-3 flex items-center justify-between gap-4">
-          <h1 id="popular-products-title" className="text-base font-medium">Popular Product</h1>
+          <h1 id="popular-products-title" className="text-base font-medium md:text-xl lg:text-2xl">Popular Product</h1>
           <Link
             href="/categories/jackets"
-            className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-foreground/35"
+            className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-foreground/35 md:text-base"
           >
             See more
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="mb-5 grid grid-cols-2 gap-2 sm:gap-3 md:mb-8 md:grid-cols-4 md:gap-4">
           {popularItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-neutral-100 pl-3 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 sm:h-[112px]"
+              className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-neutral-100 pl-3 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
             >
-              <span className="max-w-[78px] text-[15px] font-semibold leading-tight">{item.name}</span>
-              <div className="relative h-full w-[46%] shrink-0">
+              <span className="max-w-[78px] text-[15px] font-semibold leading-tight md:max-w-[110px] md:text-base">{item.name}</span>
+              <div className="relative h-full w-[46%] shrink-0 md:w-[42%]">
                 <Image
                   src={item.image}
                   alt={item.name}
@@ -83,27 +85,27 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="mb-5 flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Shop categories">
+        <div className="mb-5 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0" role="group" aria-label="Shop categories">
           {filters.map((filter) => (
             <button
-              key={filter}
+              key={filter.category}
               type="button"
-              onClick={() => setActiveFilter(filter)}
-              aria-pressed={activeFilter === filter}
+              onClick={() => setActiveFilter(filter.category)}
+              aria-pressed={activeFilter === filter.category}
               className={`shrink-0 rounded-full px-4 py-2 text-xs transition-colors ${
-                activeFilter === filter
+                activeFilter === filter.category
                   ? "bg-foreground text-background"
                   : "bg-neutral-50 text-neutral-600 hover:bg-neutral-100 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted/80"
               }`}
             >
-              {filter}
+              {filter.label}
             </button>
           ))}
         </div>
 
-        {visibleJackets.length > 0 ? (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4">
-            {visibleJackets.map((product, index) => (
+        {visibleProducts.length > 0 ? (
+          <div className="mx-auto grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4 md:gap-y-6 lg:max-w-5xl lg:gap-x-8">
+            {visibleProducts.map((product, index) => (
               <JacketCard key={product.id} product={product} priority={index < 2} />
             ))}
           </div>

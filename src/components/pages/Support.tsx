@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowUpRight,
   MessageCircle,
   Phone,
@@ -57,24 +56,18 @@ export default function Support() {
       <SupportTopBar title="Help centre" backHref="/" backLabel="Back to store" />
 
       <section className="border-b border-border">
-        <div className="container-x pb-9 pt-8 md:pb-14 md:pt-12">
-          <Link
-            href="/"
-            className="hidden items-center gap-2 font-mono2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to store
-          </Link>
-          <h1 className="mt-5 hidden font-display text-4xl font-light tracking-tight md:block md:text-5xl">
-            Help centre
-          </h1>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base md:mt-3">
+        <div className="container-x mx-auto max-w-6xl pb-9 pt-8 md:pb-12 md:pt-10">
+          <div className="mb-4 hidden md:block">
+            <p className="label-mono">Orders, fit, returns</p>
+            <h1 className="mt-2 text-3xl font-semibold">Help centre</h1>
+          </div>
+          <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
             Order updates, product fit, delivery, and returns, with direct contact if you need more help.
           </p>
         </div>
       </section>
 
-      <div className="container-x py-7 sm:py-10">
+      <div className="container-x mx-auto max-w-6xl py-7 sm:py-10">
         <nav aria-label="Help topics">
           <div className="divide-y divide-border border-y border-border">
             {helpLinks.map((item) => (
@@ -98,7 +91,7 @@ export default function Support() {
           </div>
         </nav>
 
-        <section className="grid gap-6 border-b border-border py-8 md:grid-cols-[0.85fr_1.15fr] md:gap-10 md:py-10">
+        <section className="grid gap-6 border-b border-border py-8 md:grid-cols-[0.85fr_1.15fr] md:gap-10">
           <div>
             <p className="label-mono">Order lookup</p>
             <h2 className="mt-2 font-display text-2xl font-light tracking-tight sm:text-3xl">
@@ -140,7 +133,7 @@ export default function Support() {
           </div>
         </section>
 
-        <section className="grid gap-4 py-8 sm:grid-cols-[1fr_auto] sm:items-center md:py-10">
+        <section className="grid gap-4 py-8 sm:grid-cols-[1fr_auto] sm:items-center">
           <div>
             <p className="label-mono">Direct contact</p>
             <h2 className="mt-2 font-display text-2xl font-light tracking-tight">

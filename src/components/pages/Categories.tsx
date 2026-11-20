@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { categoryIndexCategories, productsByCategory } from "@/data/catalog";
-import { PageHeader } from "@/components/ProductCard";
 import { CellIn } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import { Footnote } from "@/components/Ornaments";
@@ -22,15 +21,17 @@ export default function Categories() {
         <h1 className="text-sm font-semibold">Category</h1>
       </div>
 
-      <div className="hidden md:block">
-        <PageHeader
-          kicker={`${categoryIndexCategories.length} categories`}
-          title="Browse categories."
-          lede="Explore the collections, from considered homeware to everyday apparel."
-        />
+      <div className="container-x mx-auto hidden max-w-6xl items-end justify-between gap-8 py-10 md:flex">
+        <div>
+          <p className="label-mono">{categoryIndexCategories.length} departments</p>
+          <h1 className="mt-2 text-3xl font-semibold">Category</h1>
+        </div>
+        <p className="max-w-md text-sm leading-6 text-muted-foreground">
+          Find your next everyday layer, pair, bag, or finishing detail.
+        </p>
       </div>
 
-      <div className="container-x pb-24 pt-6 md:py-14">
+      <div className="container-x mx-auto max-w-6xl pb-12 pt-6 md:pt-0">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {categoryIndexCategories.map((category, index) => {
             const count = productsByCategory(category.slug).length;
@@ -38,34 +39,31 @@ export default function Categories() {
               <CellIn key={category.slug} index={index} className="h-full">
                 <Link
                   href={`/categories/${category.slug}`}
-                  className="group relative flex h-40 items-stretch overflow-hidden rounded-3xl bg-neutral-100 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 md:h-auto md:flex-col md:rounded-2xl md:border md:border-border"
+                  className="group relative flex h-40 items-stretch overflow-hidden rounded-3xl bg-neutral-100 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80"
                 >
-                  <div className="relative z-10 flex w-[54%] flex-col justify-center px-5 py-4 md:order-2 md:w-full md:justify-start md:bg-background md:px-6 md:py-5">
-                    <h2 className="text-xl font-semibold leading-tight md:text-2xl">{category.name}</h2>
-                    <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground md:max-w-none">
+                  <div className="relative z-10 flex w-[54%] flex-col justify-center px-5 py-4">
+                    <h2 className="text-xl font-semibold leading-tight">{category.name}</h2>
+                    <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
                       {category.tagline}
                     </p>
-                    <span className="mt-3 inline-flex w-fit rounded-full bg-white px-2.5 py-1 text-[11px] font-medium dark:bg-neutral-900 md:bg-neutral-100 md:dark:bg-muted">
+                    <span className="mt-3 inline-flex w-fit rounded-full bg-white px-2.5 py-1 text-[11px] font-medium dark:bg-neutral-900">
                       {count} {count === 1 ? "Product" : "Products"}
                     </span>
                   </div>
                   <FadeImage
                     src={category.image}
                     alt={category.name}
-                    className="absolute inset-y-0 right-0 w-[54%] bg-transparent md:relative md:order-1 md:inset-auto md:w-full md:aspect-[3/2]"
-                    imgClassName="object-contain object-right p-2 transition-transform duration-500 group-hover:scale-105 md:object-cover md:p-0"
+                    className="absolute inset-y-0 right-0 w-[54%] bg-transparent"
+                    imgClassName="object-contain object-right p-2 transition-transform duration-500 group-hover:scale-105"
                   />
-                  <ArrowUpRight className="absolute right-5 top-5 z-10 hidden h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground md:block" />
                 </Link>
               </CellIn>
             );
           })}
         </div>
-        <div className="hidden md:block">
-          <Footnote className="mt-8">
-            New departments open when the right maker appears — never before.
-          </Footnote>
-        </div>
+        <Footnote className="mt-8">
+          New departments open when the right maker appears — never before.
+        </Footnote>
       </div>
     </main>
   );

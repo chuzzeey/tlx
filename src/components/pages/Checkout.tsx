@@ -31,7 +31,7 @@ const deliveryOptions = [
 
 function CheckoutHeader({ count }: { count: number }) {
   return (
-    <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:static md:mx-auto md:max-w-4xl md:px-6">
+    <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:hidden">
       <Link href="/cart" aria-label="Back to cart" className="flex h-11 w-11 items-center justify-center">
         <ArrowLeft className="h-5 w-5" />
       </Link>
@@ -152,7 +152,7 @@ export default function Checkout() {
   return (
     <div>
       <CheckoutHeader count={cartCount} />
-      <div className="container-x mx-auto max-w-4xl py-10 md:py-12">
+      <div className="container-x mx-auto max-w-4xl py-8 md:py-12">
         <div>
           {/* Step 0: order review */}
           <AnimatePresence mode="wait">
@@ -211,21 +211,21 @@ export default function Checkout() {
             <div className="space-y-8">
               <div>
                 <p className="label-mono mb-4">Shipping address</p>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   <CountryRegionPicker
                     country={form.country}
                     region={form.region}
                     onCountryChange={(country) => setForm((current) => ({ ...current, country, region: "" }))}
                     onRegionChange={(region) => setForm((current) => ({ ...current, region }))}
                   />
-                  <input value={form.street} onChange={set("street")} placeholder="Street & number" autoComplete="street-address" className="input-plain rounded-2xl sm:col-span-2" />
-                  <input value={form.city} onChange={set("city")} placeholder="City" autoComplete="address-level2" className="input-plain rounded-2xl sm:col-span-2" />
+                  <input value={form.street} onChange={set("street")} placeholder="Street & number" autoComplete="street-address" className="input-plain rounded-2xl md:col-span-2" />
+                  <input value={form.city} onChange={set("city")} placeholder="City" autoComplete="address-level2" className="input-plain rounded-2xl md:col-span-2" />
                 </div>
               </div>
               <div>
                 <p className="label-mono mb-4">Contact</p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <input value={form.name} onChange={set("name")} placeholder="Name" autoComplete="name" className="input-plain rounded-2xl sm:col-span-2" />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <input value={form.name} onChange={set("name")} placeholder="Name" autoComplete="name" className="input-plain rounded-2xl md:col-span-2" />
                   <input type="email" value={form.email} onChange={set("email")} placeholder="Email address" autoComplete="email" className="input-plain rounded-2xl" />
                   <input type="tel" value={form.phone} onChange={set("phone")} placeholder="Phone number" autoComplete="tel" className="input-plain rounded-2xl" />
                 </div>
@@ -235,7 +235,7 @@ export default function Checkout() {
 
           {/* Step 2: delivery */}
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <p className="label-mono mb-2">Delivery method</p>
               {deliveryOptions.map((d) => (
                 <label
@@ -281,7 +281,7 @@ export default function Checkout() {
               </div>
               <div>
                 <p className="label-mono mb-4 flex items-center gap-2"><CreditCard className="h-3.5 w-3.5" /> Card details</p>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-4">
                   <input
                     value={form.card}
                     onChange={(e) => {
@@ -290,7 +290,7 @@ export default function Checkout() {
                     }}
                     placeholder="4242 4242 4242 4242"
                     inputMode="numeric"
-                    className="input-plain font-mono2 sm:col-span-2"
+                    className="input-plain font-mono2 md:col-span-2"
                   />
                   <input
                     value={form.expiry}
@@ -309,7 +309,7 @@ export default function Checkout() {
                     inputMode="numeric"
                     className="input-plain font-mono2"
                   />
-                  <input value={form.nameOnCard} onChange={set("nameOnCard")} placeholder="Name on card" className="input-plain sm:col-span-2" />
+                  <input value={form.nameOnCard} onChange={set("nameOnCard")} placeholder="Name on card" className="input-plain md:col-span-2" />
                 </div>
               </div>
             </div>

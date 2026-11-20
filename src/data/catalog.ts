@@ -29,18 +29,6 @@ export interface Product {
 }
 
 export const categories: Category[] = [
-  { slug: "ceramics", name: "Ceramics", tagline: "Hand-thrown & glazed", description: "Small-batch stoneware and porcelain from independent studios. Each piece carries the maker's fingerprints — slight variations in glaze and form are the signature of the hand.", image: "/images/products/vase-01.webp" },
-  { slug: "lighting", name: "Lighting", tagline: "Warmth, layered", description: "Sculptural lamps and lanterns that treat light as a material. Paper, brass and opal glass — built to cast the kind of glow you want to come home to.", image: "/images/products/lantern-lamp.webp" },
-  { slug: "textiles", name: "Textiles", tagline: "Natural fibres only", description: "Merino, linen and organic cotton, woven by mills that have done nothing else for generations. Soft goods that soften further with every wash.", image: "/images/products/wool-throw.webp" },
-  { slug: "kitchen", name: "Kitchen", tagline: "Tools for daily ritual", description: "Boards, plates and vessels designed for the everyday ceremony of cooking and eating. Weighted, balanced, and meant to age alongside you.", image: "/images/products/walnut-board.webp" },
-  { slug: "furniture", name: "Furniture", tagline: "Built for decades", description: "Solid oak, honest joinery, no veneer. Furniture made to be repaired rather than replaced — the slow answer to fast rooms.", image: "/images/products/oak-side-table.webp" },
-  { slug: "decor", name: "Decor", tagline: "Quiet objects", description: "Stone, glass and wood objects that earn their place on the shelf. Nothing shouts; everything holds.", image: "/images/products/bookends.webp" },
-  { slug: "bath", name: "Bath & Body", tagline: "The daily spa", description: "Hinoki wood, waffle cotton and cold-pressed soaps. Turn the smallest room into the most restorative one.", image: "/images/products/bath-stool.webp" },
-  { slug: "fragrance", name: "Fragrance", tagline: "Scent as memory", description: "Candles and diffusers blended in small runs — cedar, amber, fig and rain. Fragrance that marks a room the way a song marks a summer.", image: "/images/products/candle.webp" },
-  { slug: "stationery", name: "Stationery", tagline: "Paper that matters", description: "Linen-bound notebooks, brass instruments and desk objects for people who still think with their hands.", image: "/images/products/notebooks.webp" },
-  { slug: "garden", name: "Garden", tagline: "Small-scale green", description: "Terracotta, steel and tools for balconies, sills and tiny plots. Proof that a garden is a practice, not a postcode.", image: "/images/products/planters.webp" },
-  { slug: "storage", name: "Storage", tagline: "Order, beautifully", description: "Woven baskets and modular shelving that make putting things away feel like arranging a still life.", image: "/images/products/baskets.webp" },
-  { slug: "tableware", name: "Tableware", tagline: "Set the table properly", description: "Cutlery and glassware with genuine heft. Mouth-blown stems, hand-finished tines — details your guests will notice without knowing why.", image: "/images/products/wine-glasses.webp" },
   { slug: "jackets", name: "Jackets", tagline: "Layers for every day", description: "Everyday outerwear, from statement jackets to relaxed bombers.", image: "/images/products/stussy-jacket.png" },
   { slug: "apparel", name: "T-Shirts", tagline: "Casual essentials", description: "Distinctive everyday clothing from independent labels, made for easy layering and self-expression.", image: "/images/products/chaotic-club-spooky.png" },
   { slug: "shoes", name: "Shoes", tagline: "Made to move", description: "Comfortable everyday footwear with considered materials and distinctive details.", image: "/images/products/sneakers.png" },
@@ -59,7 +47,7 @@ export const popularItems = [
   { name: "Men's Golf Cap", image: "/images/products/mens-golf-cap.png", href: "/products/mens-golf-cap" },
 ];
 
-export const products: Product[] = [
+const productCatalog: Product[] = [
   {
     id: "terra-vessel-vase", sku: "CER-001", name: "Terra Vessel Vase", category: "ceramics",
     price: 86, rating: 4.8, reviewCount: 34, image: "/images/products/vase-01.webp",
@@ -320,6 +308,17 @@ export const products: Product[] = [
     stock: 40,
   },
 ];
+
+const availableProductIds = new Set([
+  "stussy-jacket",
+  "mwdbl-jacket",
+  "chaotic-club",
+  "sneakers",
+  "seashell-bag",
+  "mens-golf-cap",
+]);
+
+export const products = productCatalog.filter((product) => availableProductIds.has(product.id));
 
 export interface Review {
   id: string;

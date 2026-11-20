@@ -1,15 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Handbag, Heart, Home, LayoutGrid, MessageCircleMore, Moon, Search, Sun, User, X } from "lucide-react";
+import { ArrowUpRight, Handbag, Home, LayoutGrid, MessageCircleMore, Search, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useTheme } from "@/store/ThemeContext";
 import { useShop } from "@/store/ShopContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SearchPalette from "@/components/SearchPalette";
-import { recommendedItems, shuffleRecommendations } from "@/data/searchRecommendations";
 
 /** Number that rolls/pops whenever its value changes. */
 function RollingCount({ value }: { value: number }) {
@@ -29,30 +27,15 @@ function RollingCount({ value }: { value: number }) {
   );
 }
 
-const nav = [
-  { to: "/products", label: "Shop" },
-  { to: "/categories", label: "Categories" },
-  { to: "/content", label: "Journal" },
-  { to: "/support", label: "Support" },
-];
-
 const profileMenuItems = [
   { to: "/categories", label: "Categories" },
   { to: "/support", label: "Help centre" },
 ];
 
 export default function Header() {
-  const { theme, toggle } = useTheme();
-  const { cartCount, wishlist } = useShop();
+  const { cartCount } = useShop();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [recommendations, setRecommendations] = useState(recommendedItems);
-  const handleSearchOpenChange = useCallback((nextOpen: boolean) => {
-    if (nextOpen && !searchOpen) {
-      setRecommendations((previousOrder) => shuffleRecommendations(recommendedItems, previousOrder));
-    }
-    setSearchOpen(nextOpen);
-  }, [searchOpen]);
   const pathname = usePathname().replace(/\/+$/, "") || "/";
   const isHome = pathname === "/";
   const isProductDetail = pathname.startsWith("/products/");
@@ -74,7 +57,7 @@ export default function Header() {
           isHome ? "bg-background" : "bg-background/90"
         }`}
       >
-        <div className="container-x flex items-center justify-between gap-6 py-4">
+        <div className="container-x flex items-center justify-between gap-3 py-4 md:gap-4">
           <Link
             href="/"
             aria-label="TLX Originals, No Hype. Just Motion!"
@@ -88,33 +71,48 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-7 md:flex">
-            {nav.map((n) => {
-              const isActive = pathname === n.to || pathname.startsWith(n.to + "/");
+          <nav aria-label="Main navigation" className="hidden items-center gap-4 md:flex lg:gap-6">
+            {[
+              { href: "/", label: "Home" },
+              { href: "/categories", label: "Category" },
+            ].map(({ href, label }) => {
+              const active =
+                href === "/" ? pathname === "/" :
+                isCategoryPage;
               return (
                 <Link
-                  key={n.to}
-                  href={n.to}
-                  className={`link-underline font-mono2 text-xs uppercase tracking-[0.18em] transition-colors ${
-                    isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                  key={href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={`font-mono2 text-xs transition-colors ${
+                    active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {n.label}
+                  {label}
                 </Link>
               );
             })}
+            <Link
+              href="/account"
+              aria-current={isAccountPage || isLoginPage ? "page" : undefined}
+              className={`font-mono2 text-xs transition-colors ${
+                isAccountPage || isLoginPage ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Profile
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => handleSearchOpenChange(true)}
-              aria-label="Search"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search products"
               title="Search — press / or ⌘K"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-neutral-100 text-muted-foreground transition-colors hover:text-foreground dark:bg-muted sm:h-10 sm:w-auto sm:rounded-none sm:border sm:bg-transparent dark:sm:bg-transparent sm:px-3"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-neutral-100 text-muted-foreground transition-colors hover:text-foreground dark:bg-muted md:h-11 md:w-40 md:justify-start md:gap-3 md:px-4 lg:w-56 xl:w-72"
             >
               <Search className="h-[18px] w-[18px]" />
-              <span className="hidden font-mono2 text-[11px] uppercase tracking-[0.15em] lg:inline">Search</span>
-              <kbd className="hidden border border-border px-1 py-0.5 font-mono2 text-[9px] text-muted-foreground lg:inline">⌘K</kbd>
+              <span className="hidden flex-1 text-left text-sm normal-case tracking-normal md:inline">Search products</span>
+              <kbd className="hidden rounded-md bg-background px-2 py-1 font-mono2 text-[9px] text-muted-foreground lg:inline">⌘K</kbd>
             </button>
             <Link
               href="/support/contact"
@@ -127,58 +125,27 @@ export default function Header() {
                 2
               </span>
             </Link>
-            <button
-              onClick={toggle}
-              aria-label="Toggle theme"
-              className="hidden h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground md:flex"
-            >
-              {theme === "light" ? <Moon className="h-[18px] w-[18px]" /> : <Sun className="h-[18px] w-[18px]" />}
-            </button>
-            <Link
-              href="/wishlist"
-              aria-label="Wishlist"
-              className="relative hidden h-10 w-10 items-center justify-center text-muted-foreground transition-colors hover:text-foreground md:flex"
-            >
-              <Heart className="h-[18px] w-[18px]" />
-              {wishlist.length > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center overflow-hidden bg-primary font-mono2 text-[9px] text-primary-foreground">
-                  <RollingCount value={wishlist.length} />
-                </span>
-              )}
-            </Link>
-            <Link
-              href="/account"
-              aria-label="Account"
-              className={`hidden h-10 w-10 items-center justify-center transition-colors md:flex ${
-                pathname === "/account" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <User className="h-[18px] w-[18px]" />
-            </Link>
             <Link
               href="/cart"
-              aria-label={`Shopping bag, ${cartCount} items`}
+              aria-label={`Shopping bag, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
+              title={`Cart${cartCount > 0 ? ` (${cartCount})` : ""}`}
               data-cart-target
               data-cart-target-priority="1"
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-neutral-100 text-foreground transition-colors hover:bg-foreground hover:text-background dark:bg-muted md:h-10 md:w-auto md:gap-2 md:rounded-none md:px-3"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-neutral-100 text-foreground transition-colors hover:bg-foreground hover:text-background dark:bg-muted md:h-11 md:w-11"
             >
               <Handbag className="h-[16px] w-[16px]" />
               {cartCount > 0 && (
-                <span aria-hidden="true" className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 font-mono2 text-[9px] text-white md:hidden">
+                <span aria-hidden="true" className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 font-mono2 text-[9px] text-white">
                   <RollingCount value={cartCount} />
                 </span>
               )}
-              <span className="hidden overflow-hidden font-mono2 text-xs md:inline">
-                <RollingCount value={cartCount} />
-              </span>
             </Link>
           </div>
         </div>
       </header>
       <SearchPalette
         open={searchOpen}
-        onOpenChange={handleSearchOpenChange}
-        recommendations={recommendations}
+        onOpenChange={setSearchOpen}
       />
 
       <nav

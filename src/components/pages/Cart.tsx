@@ -6,7 +6,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Handbag, Minus, Plus } from "lucide-react";
 import { formatPrice, productById } from "@/data/catalog";
-import { PageHeader, PageSkeleton } from "@/components/ProductCard";
+import { PageSkeleton } from "@/components/ProductCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,14 +87,7 @@ function EmptyCart({ count }: { count: number }) {
   return (
     <>
       <MobileCartHeader count={count} />
-      <div className="hidden md:block">
-        <PageHeader
-          kicker="Your selection"
-          title="Shopping bag."
-          lede="Your TLX Originals selection, ready for the next move."
-        />
-      </div>
-      <section className="container-x flex min-h-[56vh] items-center justify-center py-16 md:min-h-[48vh]">
+      <section className="container-x mx-auto flex min-h-[56vh] max-w-2xl items-center justify-center py-16">
         <div className="mx-auto flex max-w-xl flex-col items-center text-center">
           <div
             aria-hidden="true"
@@ -173,16 +166,13 @@ export default function Cart() {
   return (
     <div>
       <MobileCartHeader count={cartCount} />
-      <div className="hidden md:block">
-        <PageHeader
-          kicker="Your selection"
-          title="Shopping bag."
-          lede="Your TLX Originals selection, ready for the next move."
-        />
+      <div className="container-x hidden max-w-6xl py-10 md:block">
+        <p className="label-mono">Your selection</p>
+        <h1 className="mt-2 text-3xl font-semibold">Shopping bag</h1>
       </div>
-      <div className="container-x grid gap-8 py-5 md:gap-12 md:py-12 lg:grid-cols-[1fr_380px]">
+      <div className="container-x mx-auto grid max-w-6xl gap-8 py-5 md:gap-12 md:py-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-3">
-          <div className="space-y-3 md:hidden">
+          <div className="space-y-3">
             <AnimatePresence initial={false}>
               {cart.map((line) => {
             const p = productById(line.productId);
@@ -198,7 +188,7 @@ export default function Cart() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.88 }}
                 transition={{ duration: 0.24, ease: "easeOut" }}
-                className="relative overflow-hidden rounded-[22px] bg-transparent"
+                className="relative overflow-hidden rounded-[22px] bg-transparent md:rounded-2xl md:border md:border-neutral-200 md:p-4 dark:md:border-border"
                 onTouchStart={(event) => {
                   touchStartX.current = event.touches[0]?.clientX ?? null;
                 }}
@@ -229,7 +219,7 @@ export default function Cart() {
                 >
                   <Link
                     href={`/products/${p.id}`}
-                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-neutral-100 dark:bg-neutral-800"
+                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-neutral-100 dark:bg-neutral-800 md:h-32 md:w-32"
                   >
                     <Image
                       src={p.image}
@@ -280,67 +270,6 @@ export default function Cart() {
             </AnimatePresence>
           </div>
 
-          <div className="hidden space-y-3 md:block">
-            <AnimatePresence initial={false}>
-              {cart.map((line) => {
-                const p = productById(line.productId);
-                if (!p) return null;
-                const lineId = `${line.productId}:${line.color ?? ""}:${line.size ?? ""}`;
-                return (
-                  <motion.article
-                    key={lineId}
-                    layout
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.88 }}
-                    transition={{ duration: 0.24, ease: "easeOut" }}
-                    className="flex gap-5 overflow-hidden rounded-2xl border border-neutral-200 bg-transparent p-4 dark:border-border"
-                  >
-                    <Link href={`/products/${p.id}`} className="shrink-0 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800">
-                      <Image src={p.image} alt={p.name} width={128} height={128} className="h-28 w-28 object-contain p-2 sm:h-32 sm:w-32" />
-                    </Link>
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <Link href={`/products/${p.id}`} className="link-underline font-medium">{p.name}</Link>
-                          {line.size && (
-                            <p className="mt-1 font-mono2 text-[11px] text-muted-foreground">Size: {line.size}</p>
-                          )}
-                          {line.color && (
-                            <p className={`${line.size ? "mt-0.5" : "mt-1"} font-mono2 text-[11px] text-muted-foreground`}>
-                              Color: {line.color}
-                            </p>
-                          )}
-                          {p.stock <= 8 && (
-                            <p className="mt-1.5 font-mono2 text-[10px] uppercase tracking-[0.15em] text-destructive">
-                              Only {p.stock} left in the studio
-                            </p>
-                          )}
-                        </div>
-                        <QuantitySelector
-                          name={p.name}
-                          qty={line.qty}
-                          onDecrease={() => decreaseLine(line)}
-                          onIncrease={() => increaseLine(line, p.stock)}
-                        />
-                      </div>
-                      <div className="mt-auto flex items-center justify-between pt-4">
-                        <p className="font-mono2 text-sm">{formatPrice(p.price * line.qty)}</p>
-                        <button
-                          type="button"
-                          onClick={() => removeLine(line)}
-                          aria-label={`Remove ${p.name} from cart`}
-                          className="font-mono2 text-xs tracking-wide text-red-600/85 transition-colors hover:text-red-700 dark:text-red-400/85 dark:hover:text-red-300"
-                        >
-                          remove
-                        </button>
-                      </div>
-                    </div>
-                  </motion.article>
-                );
-              })}
-            </AnimatePresence>
-          </div>
           <div className="flex w-full justify-center pt-1">
             <AlertDialog>
               <AlertDialogTrigger asChild>

@@ -10,7 +10,6 @@ import { formatPrice, productById, type Product } from "@/data/catalog";
 import { orders, orderTotal, type Order, type OrderItem } from "@/data/account";
 import { readCustomerReviews, saveCustomerReview, type CustomerReview } from "@/data/customerReviews";
 import { useShop } from "@/store/ShopContext";
-import { PageHeader } from "@/components/ProductCard";
 import {
   Sheet,
   SheetContent,
@@ -130,12 +129,14 @@ export default function OrdersPage() {
   return (
     <div>
       <OrderHeader />
-      <div className="hidden md:block">
-        <PageHeader kicker="Your account" title="Order History" lede="Track orders, complete payments, and review pieces you’ve received." />
+
+      <div className="container-x hidden max-w-6xl py-10 md:block">
+        <p className="label-mono">Your account</p>
+        <h1 className="mt-2 text-3xl font-semibold">Order History</h1>
       </div>
 
-      <main className="container-x min-h-[100dvh] max-w-3xl py-5 md:min-h-0 md:py-12">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:border-b md:border-border md:px-0">
+      <main className="container-x mx-auto min-h-[100dvh] max-w-5xl py-5 md:py-0">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:px-0">
           {orderGroups.map(({ label, icon: Icon }) => {
             const active = activeGroup === label;
             const count = orders.filter((order) => orderGroup(order) === label).length;
@@ -145,10 +146,10 @@ export default function OrdersPage() {
                 type="button"
                 onClick={() => setActiveGroup(label)}
                 aria-pressed={active}
-                className={`flex h-12 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm transition-colors md:rounded-none md:border-b-2 ${
+                className={`flex h-12 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm transition-colors ${
                   active
-                    ? "bg-neutral-900 text-white md:border-neutral-900"
-                    : "border-transparent bg-neutral-100 text-muted-foreground md:bg-transparent"
+                    ? "bg-neutral-900 text-white"
+                    : "border-transparent bg-neutral-100 text-muted-foreground"
                 }`}
               >
                 <Icon className="h-4 w-4" />

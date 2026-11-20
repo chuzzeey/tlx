@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Search, SlidersHorizontal } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories, formatPrice, products, type Product } from "@/data/catalog";
-import ProductCard, { PageHeader } from "@/components/ProductCard";
+import ProductCard from "@/components/ProductCard";
 import { EASE } from "@/components/motion/motion";
 import { Aster, Footnote } from "@/components/Ornaments";
 import {
@@ -132,20 +132,17 @@ export default function Products() {
         <h1 className="text-sm font-semibold">Products</h1>
       </div>
 
-      <div className="hidden md:block">
-        <PageHeader
-          kicker="The full collection"
-          title="Everything, considered."
-          lede="Twenty-seven pieces from thirteen categories. Each one chosen to be kept. Filter by what you need."
-        />
+      <div className="container-x mx-auto hidden max-w-6xl items-end justify-between gap-8 py-10 md:flex">
+        <div>
+          <p className="label-mono">The collection</p>
+          <h1 className="mt-2 text-3xl font-semibold">All six pieces</h1>
+        </div>
+        <p className="max-w-md text-sm leading-6 text-muted-foreground">
+          Jackets, apparel, shoes, bags, and accessories made for everyday movement.
+        </p>
       </div>
 
-      <div className="container-x flex flex-col gap-10 py-10 lg:flex-row">
-        {/* Sidebar — desktop */}
-        <aside className="hidden w-60 shrink-0 lg:block">
-          <Filters selected={selected} toggleCategory={toggleCategory} priceCap={priceCap} setPriceCap={setPriceCap} />
-        </aside>
-
+      <div className="container-x mx-auto flex max-w-6xl flex-col gap-6 py-6">
         <div className="min-w-0 flex-1">
           {/* Toolbar */}
           <div className="mb-8 flex flex-wrap items-center gap-3">
@@ -160,7 +157,7 @@ export default function Products() {
             </div>
             <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
               <SheetTrigger asChild>
-                <button className="btn-outline-invert lg:hidden">
+                <button className="btn-outline-invert">
                   <SlidersHorizontal className="h-4 w-4" /> Filters
                 </button>
               </SheetTrigger>

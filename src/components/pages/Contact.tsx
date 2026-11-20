@@ -40,17 +40,17 @@ export default function Contact() {
         backLabel="Back to help centre"
       />
       <div className="border-b border-border">
-        <div className="container-x py-7 md:py-12">
-          <h1 className="hidden font-display text-4xl font-light tracking-tight sm:text-5xl md:block">
+        <div className="container-x mx-auto max-w-6xl py-7 md:py-10">
+          <h1 className="mb-4 hidden text-3xl font-semibold md:block">
             Talk to TLX Originals.
           </h1>
-          <p className="max-w-xl text-[15px] leading-6 text-muted-foreground md:mt-4">
+          <p className="max-w-xl text-[15px] leading-6 text-muted-foreground">
             Order questions, product advice, wholesale, press — one inbox, real humans, one business day.
           </p>
         </div>
       </div>
 
-      <div className="container-x grid gap-8 py-8 md:gap-12 md:py-12 lg:grid-cols-[1fr_320px]">
+      <div className="container-x mx-auto grid max-w-6xl gap-8 py-8 md:gap-12 md:py-12 lg:grid-cols-[1fr_320px]">
         {sent ? (
           <div className="flex flex-col items-start rounded-2xl border border-border bg-card p-10">
             <span className="flex h-12 w-12 items-center justify-center border border-foreground">
@@ -90,7 +90,7 @@ export default function Contact() {
               </div>
               <div>
                 <label className="label-mono mb-2 block">Order number (optional)</label>
-                <input className="input-plain rounded-2xl font-mono2" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} placeholder="AUR-0000" />
+                <input className="input-plain rounded-2xl font-mono2" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} placeholder="TLX-T1O42" />
               </div>
             </div>
             <div>
