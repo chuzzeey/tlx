@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Handbag, Home, LayoutGrid, Search, Store as StoreIcon, User, X } from "lucide-react";
+import { Handbag, Home, LayoutGrid, Moon, Search, Store as StoreIcon, Sun, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useShop } from "@/store/ShopContext";
+import { useTheme } from "@/store/ThemeContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SearchPalette from "@/components/SearchPalette";
 
@@ -28,11 +29,14 @@ function RollingCount({ value }: { value: number }) {
 }
 
 const profileMenuItems = [
-  { to: "/categories", label: "Categories" },
+  { to: "/products", label: "Store", icon: StoreIcon },
+  { to: "/categories", label: "Category", icon: LayoutGrid },
+  { to: "/cart", label: "Cart", icon: Handbag },
 ];
 
 export default function Header() {
   const { cartCount } = useShop();
+  const { theme, toggle } = useTheme();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname().replace(/\/+$/, "") || "/";
@@ -236,18 +240,76 @@ export default function Header() {
           </button>
         </div>
         <nav aria-label="Profile menu" className="px-5 pt-6">
-          <div className="divide-y divide-border border-y border-border">
-            {profileMenuItems.map((item) => (
-              <Link
-                key={item.to}
-                href={item.to}
-                onClick={() => setOpen(false)}
-                className="group flex items-center justify-between py-5 transition-colors hover:text-muted-foreground"
+          <div className="mb-7">
+            <p className="label-mono mb-3">Theme</p>
+            <div
+              role="group"
+              aria-label="Color theme"
+              className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-muted/40 p-1"
+            >
+              <button
+                type="button"
+                aria-pressed={theme === "light"}
+                onClick={() => {
+                  if (theme !== "light") toggle();
+                }}
+                className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm transition-colors ${
+                  theme === "light"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <span className="font-display text-xl font-light tracking-tight">{item.label}</span>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </Link>
-            ))}
+                <Sun className="h-4 w-4" />
+                Light
+              </button>
+              <button
+                type="button"
+                aria-pressed={theme === "dark"}
+                onClick={() => {
+                  if (theme !== "dark") toggle();
+                }}
+                className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm transition-colors ${
+                  theme === "dark"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Moon className="h-4 w-4" />
+                Dark
+              </button>
+            </div>
+          </div>
+          <div className="divide-y divide-border border-y border-border">
+            {profileMenuItems.map(({ to, label, icon: Icon }) => {
+              const isActive =
+                to === "/products" ? isProductsIndex :
+                to === "/categories" ? isCategoryPage :
+                isCartPage;
+
+              return (
+                <Link
+                  key={to}
+                  href={to}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive ? "page" : undefined}
+                  aria-label={to === "/cart" ? `Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}` : undefined}
+                  className="flex items-center justify-between py-4 transition-colors hover:text-muted-foreground"
+                >
+                  <span className="flex items-center gap-3">
+                    <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    <span className="font-display text-xl font-light tracking-tight">{label}</span>
+                  </span>
+                  {to === "/cart" && cartCount > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 font-mono2 text-[10px] text-white"
+                    >
+                      <RollingCount value={cartCount} />
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </nav>
         <div className="mt-auto border-t border-border px-5 py-4">
@@ -262,10 +324,9 @@ export default function Header() {
           <Link
             href="/login"
             onClick={() => setOpen(false)}
-            className="mt-2 flex items-center justify-between border-t border-border pt-4 font-mono2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
+            className="mt-2 flex items-center border-t border-border pt-4 font-mono2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign in
-            <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
       </SheetContent>
