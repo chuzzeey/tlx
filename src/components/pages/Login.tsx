@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, Facebook, KeyRound, Mail } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -139,6 +139,19 @@ export default function Login() {
             >
               {isCreatingAccount ? "Create account" : "Sign In"}
             </button>
+
+            <p className="mt-4 text-center text-sm">
+              <span className="text-muted-foreground">
+                {isCreatingAccount ? "Already have an account? " : "Don't have an account? "}
+              </span>
+              <button
+                type="button"
+                onClick={() => setMode(isCreatingAccount ? "sign-in" : "create-account")}
+                className="font-semibold underline underline-offset-4"
+              >
+                {isCreatingAccount ? "Sign in" : "Create account"}
+              </button>
+            </p>
           </form>
 
           <div className="mt-6 text-center">
@@ -149,7 +162,24 @@ export default function Login() {
                 onClick={() => toast.info("Google sign-in isn't configured in this demo.")}
                 className="flex h-12 items-center justify-center gap-2 rounded-full border border-border text-sm font-medium transition-colors hover:bg-neutral-100 dark:hover:bg-muted"
               >
-                <span aria-hidden="true" className="text-lg font-bold text-blue-600">G</span>
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 48 48" className="h-5 w-5">
+                  <path
+                    fill="#4285F4"
+                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.72 7.18l7.63 5.91c4.45-4.11 7.13-10.17 7.13-17.56Z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M24 48c6.48 0 11.93-2.15 15.9-5.89l-7.63-5.91c-2.15 1.45-4.89 2.3-8.27 2.3-6.35 0-11.73-4.28-13.65-10.03l-7.9 6.1C6.42 42.12 14.56 48 24 48Z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M10.35 28.47a14.4 14.4 0 0 1 0-8.94l-7.9-6.1a24 24 0 0 0 0 21.14l7.9-6.1Z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.56 0 6.42 5.88 2.45 13.43l7.9 6.1C12.27 13.78 17.65 9.5 24 9.5Z"
+                  />
+                </svg>
                 Google
               </button>
               <button
@@ -157,24 +187,17 @@ export default function Login() {
                 onClick={() => toast.info("Facebook sign-in isn't configured in this demo.")}
                 className="flex h-12 items-center justify-center gap-2 rounded-full border border-border text-sm font-medium transition-colors hover:bg-neutral-100 dark:hover:bg-muted"
               >
-                <Facebook className="h-4 w-4 fill-blue-500 text-blue-500" />
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" className="h-5 w-5">
+                  <circle cx="12" cy="12" r="12" fill="#1877F2" />
+                  <path
+                    fill="#FFFFFF"
+                    d="M13.55 20v-7.3H16l.37-2.85h-2.82V8.03c0-.82.23-1.38 1.41-1.38h1.51V4.1c-.26-.03-1.15-.11-2.2-.11-2.18 0-3.68 1.33-3.68 3.78v2.08H8.12v2.85h2.47V20h2.96Z"
+                  />
+                </svg>
                 Facebook
               </button>
             </div>
           </div>
-
-          <p className="mt-7 border-t border-border pt-5 text-center text-sm">
-            <span className="text-muted-foreground">
-              {isCreatingAccount ? "Already have an account? " : "Don't have an account? "}
-            </span>
-            <button
-              type="button"
-              onClick={() => setMode(isCreatingAccount ? "sign-in" : "create-account")}
-              className="font-semibold underline underline-offset-4"
-            >
-              {isCreatingAccount ? "Sign in" : "Create account"}
-            </button>
-          </p>
 
           <p className="mt-4 text-center text-xs leading-relaxed text-muted-foreground">
             {isCreatingAccount ? "Account creation isn't connected yet." : "Sign-in isn't connected yet."}
