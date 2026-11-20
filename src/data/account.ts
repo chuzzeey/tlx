@@ -27,8 +27,8 @@ export const orders: Order[] = [
     items: [{ productId: "mens-golf-cap", qty: 1, price: 48 }],
   },
   {
-    id: "AUR-1042", date: "2026-08-06", status: "In transit", shipping: 0,
-    address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
+    id: "TLX-T1O42", date: "2026-08-06", status: "In transit", shipping: 0,
+    address: "Lagos Mainland, Lagos, Nigeria",
     items: [
       { productId: "embers-cedar-candle", qty: 2, price: 52 },
       { productId: "oat-merino-throw", qty: 1, price: 145 },

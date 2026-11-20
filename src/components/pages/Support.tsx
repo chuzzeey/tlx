@@ -131,9 +131,9 @@ export default function Support() {
                 <button
                   type="button"
                   className="text-foreground underline underline-offset-4"
-                  onClick={() => setOrderNo("AUR-1042")}
+                  onClick={() => setOrderNo("TLX-T1O42")}
                 >
-                  AUR-1042
+                  TLX-T1O42
                 </button>
               </p>
             )}

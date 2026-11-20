@@ -111,7 +111,7 @@ export default function Returns() {
                     <label className="label-mono mb-2 block">Order number</label>
                     <input
                       className="input-plain font-mono2"
-                      placeholder="AUR-1042"
+                      placeholder="TLX-T1O42"
                       value={form.order}
                       onChange={(e) => setForm({ ...form, order: e.target.value })}
                     />
