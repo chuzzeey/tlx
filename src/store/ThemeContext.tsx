@@ -11,23 +11,34 @@ interface ThemeCtx {
 
 const Ctx = createContext<ThemeCtx>({ theme: "light", toggle: () => {} });
 
+function applyDocumentTheme(theme: Theme) {
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document.documentElement.style.colorScheme = theme;
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", isDark ? "#10100f" : "#ffffff");
+}
+
 /**
  * Light is the default, regardless of system preference. The pre-paint inline
- * script in app/layout.tsx applies a saved dark choice to <html> before
- * hydration; here we only sync React state to it after mount, and write
- * through on toggle — so nothing flashes or clobbers the saved choice.
+ * script in app/layout.tsx applies the saved choice before hydration; here we
+ * sync React state and browser theme metadata after mount and on each toggle.
  */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    if (window.localStorage.getItem("aurelle-theme") === "dark") setTheme("dark");
+    const savedTheme = window.localStorage.getItem("aurelle-theme");
+    const initialTheme = savedTheme === "dark" ? "dark" : "light";
+    applyDocumentTheme(initialTheme);
+    if (initialTheme === "dark") setTheme("dark");
   }, []);
 
   const toggle = () => {
     const next: Theme = theme === "light" ? "dark" : "light";
     setTheme(next);
-    document.documentElement.classList.toggle("dark", next === "dark");
+    applyDocumentTheme(next);
     window.localStorage.setItem("aurelle-theme", next);
   };
 

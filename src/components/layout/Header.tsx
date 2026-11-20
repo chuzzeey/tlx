@@ -245,7 +245,7 @@ export default function Header() {
             <div
               role="group"
               aria-label="Color theme"
-              className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-muted/40 p-1"
+              className="grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/50 p-1"
             >
               <button
                 type="button"
@@ -253,13 +253,13 @@ export default function Header() {
                 onClick={() => {
                   if (theme !== "light") toggle();
                 }}
-                className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm transition-colors ${
+                className={`flex h-10 items-center justify-center gap-2 rounded-full border px-3 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   theme === "light"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border-border bg-background text-foreground shadow-sm"
+                    : "border-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground"
                 }`}
               >
-                <Sun className="h-4 w-4" />
+                <Sun className="h-4 w-4" aria-hidden="true" />
                 Light
               </button>
               <button
@@ -268,13 +268,13 @@ export default function Header() {
                 onClick={() => {
                   if (theme !== "dark") toggle();
                 }}
-                className={`flex h-10 items-center justify-center gap-2 rounded-xl text-sm transition-colors ${
+                className={`flex h-10 items-center justify-center gap-2 rounded-full border px-3 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                   theme === "dark"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "border-border bg-background text-foreground shadow-sm"
+                    : "border-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground"
                 }`}
               >
-                <Moon className="h-4 w-4" />
+                <Moon className="h-4 w-4" aria-hidden="true" />
                 Dark
               </button>
             </div>

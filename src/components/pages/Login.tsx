@@ -107,41 +107,22 @@ export default function Login() {
             <label htmlFor="login-password" className="mb-2 mt-5 block text-sm font-medium">
               Password
             </label>
-            <div className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-3 focus-within:ring-2 focus-within:ring-ring">
-              <div className="relative min-w-0 flex-1">
-                <div aria-hidden="true" className="grid grid-cols-6 gap-1.5">
-                  {Array.from({ length: 6 }, (_, index) => (
-                    <span
-                      key={index}
-                      className="flex aspect-square min-w-0 items-center justify-center rounded-lg border border-border text-sm font-medium"
-                    >
-                      {password[index] &&
-                        (showPassword ? (
-                          password[index]
-                        ) : (
-                          <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                        ))}
-                    </span>
-                  ))}
-                </div>
-                <input
-                  id="login-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={isCreatingAccount ? "new-password" : "current-password"}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  maxLength={6}
-                  placeholder={isCreatingAccount ? "Create a password" : "Enter your password"}
-                  required
-                  aria-label="Password"
-                  className="absolute inset-0 z-10 h-full w-full cursor-text opacity-0"
-                />
-              </div>
+            <div className="relative">
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                autoComplete={isCreatingAccount ? "new-password" : "current-password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder={isCreatingAccount ? "Create a password" : "Enter your password"}
+                required
+                className="h-12 w-full rounded-2xl border border-border bg-background px-4 pr-12 text-base outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+              />
               <button
                 type="button"
                 onClick={() => setShowPassword((visible) => !visible)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="flex h-9 w-9 shrink-0 items-center justify-center text-muted-foreground"
+                className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>

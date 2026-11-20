@@ -21,7 +21,7 @@ type Sort = "featured" | "price-asc" | "price-desc" | "rating";
 function MobileProductCard({ product }: { product: Product }) {
   return (
     <article className="min-w-0">
-      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-neutral-100">
+      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-muted">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -88,7 +88,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
             aria-label={`Cart, ${cartCount} items`}
             data-cart-target
             data-cart-target-priority="2"
-            className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-100"
+            className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-muted"
           >
             <Handbag className="h-5 w-5" />
             {cartCount > 0 && (
@@ -100,7 +100,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
         </div>
 
         <div className="container-x mx-auto max-w-6xl space-y-5 py-4 md:py-8">
-          <div className="relative flex h-32 items-center overflow-hidden rounded-3xl bg-neutral-100 px-5 md:h-56 md:px-8">
+          <div className="relative flex h-32 items-center overflow-hidden rounded-3xl bg-muted px-5 md:h-56 md:px-8">
             <div className="relative z-10 w-[54%]">
               <h1 className="text-xl font-semibold leading-tight">{category.name}</h1>
               <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
@@ -109,7 +109,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               <p className="mt-3 hidden max-w-sm text-sm leading-6 text-muted-foreground md:block">
                 {category.description}
               </p>
-              <span className="mt-3 inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-medium">
+              <span className="mt-3 inline-flex rounded-full bg-background px-2.5 py-1 text-[11px] font-medium">
                 {items.length} {items.length === 1 ? "Product" : "Products"}
               </span>
             </div>
@@ -128,7 +128,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               onClick={() => setSelectedProductId("all")}
               aria-pressed={selectedFilter === "all"}
               className={`shrink-0 rounded-full px-4 py-2 text-sm ${
-                selectedFilter === "all" ? "bg-foreground text-background" : "bg-neutral-100 text-muted-foreground"
+                selectedFilter === "all" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
               }`}
             >
               All
@@ -142,7 +142,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
                 className={`shrink-0 rounded-full px-4 py-2 text-sm ${
                   selectedFilter === item.id
                     ? "bg-foreground text-background"
-                    : "bg-neutral-100 text-muted-foreground"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
                 {item.name}

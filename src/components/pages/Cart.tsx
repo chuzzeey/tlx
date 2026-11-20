@@ -70,7 +70,7 @@ function MobileCartHeader({ count }: { count: number }) {
         aria-label={`Cart, ${count} items`}
         data-cart-target
         data-cart-target-priority="2"
-        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-100"
+        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-muted"
       >
         <Handbag className="h-5 w-5" />
         {count > 0 && (

@@ -216,7 +216,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 md:aspect-square">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[imgIdx]}
@@ -241,7 +241,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                     onClick={() => setImgIdx(index)}
                     aria-label={`View product image ${index + 1}`}
                     aria-pressed={imgIdx === index}
-                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-white ${
+                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-background ${
                       imgIdx === index ? "border-foreground" : "border-transparent"
                     }`}
                   >

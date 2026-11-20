@@ -67,10 +67,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={satoshi.variable}
     >
       <body>
-        {/* Applies a saved dark preference before first paint; light is the
-            default regardless of system preference. */}
+        {/* Applies the saved theme before first paint, including browser chrome colors. */}
         <Script id="theme-init" strategy="beforeInteractive">
-          {`try{if(localStorage.getItem("aurelle-theme")==="dark"){document.documentElement.classList.add("dark")}}catch(e){}`}
+          {`try{const theme=localStorage.getItem("aurelle-theme")==="dark"?"dark":"light";const root=document.documentElement;root.classList.toggle("dark",theme==="dark");root.style.colorScheme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute("content",theme==="dark"?"#10100f":"#ffffff")}catch(e){}`}
         </Script>
         <Providers>
           <NavigationEffects />
