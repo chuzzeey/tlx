@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -11,7 +12,13 @@ export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loginErrorVisible, setLoginErrorVisible] = useState(false);
+  const loginErrorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCreatingAccount = mode === "create-account";
+
+  useEffect(() => () => {
+    if (loginErrorTimer.current) clearTimeout(loginErrorTimer.current);
+  }, []);
 
   const signIn = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -20,34 +27,34 @@ export default function Login() {
       return;
     }
 
-    toast.error("Email or password is incorrect", {
-      description: "Sign-in will be available when account authentication is connected.",
-    });
+    if (loginErrorTimer.current) clearTimeout(loginErrorTimer.current);
+    setLoginErrorVisible(true);
+    loginErrorTimer.current = setTimeout(() => {
+      setLoginErrorVisible(false);
+      loginErrorTimer.current = null;
+    }, 2600);
   };
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-5 pb-12 pt-5 sm:px-6 sm:pt-8">
-      <Link
-        href="/"
-        aria-label="Back to home"
-        className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-foreground dark:hover:bg-muted"
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Link>
-
-      <section className="mx-auto my-auto w-full max-w-[420px]">
+    <>
+      <main className="mx-auto flex min-h-[100dvh] w-full max-w-[520px] flex-col px-5 pb-12 pt-5 sm:px-6 sm:pt-8">
         <Link
           href="/"
-          aria-label="TLX Originals home"
-          className="mb-8 flex flex-col items-center text-center"
+          aria-label="Back to home"
+          className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-foreground dark:hover:bg-muted"
         >
-          <span className="brand-type font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+
+        <section className="mx-auto my-auto w-full max-w-[420px]">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <span className="brand-type text-3xl font-black tracking-tight sm:text-4xl">
             TLX Originals
           </span>
           <span className="mt-1 font-mono2 text-[10px] tracking-[0.16em] text-muted-foreground">
             No Hype. Just Motion!
           </span>
-        </Link>
+        </div>
 
         <div className="rounded-3xl border border-border bg-card/60 p-5 shadow-sm sm:p-8">
           <div className="text-center">
@@ -86,38 +93,55 @@ export default function Login() {
             <label htmlFor="login-identifier" className="mb-2 block text-sm font-medium">
               Email or Phone Number
             </label>
-            <div className="flex h-[54px] items-center border-b border-border focus-within:border-foreground">
-              <input
-                id="login-identifier"
-                type="text"
-                autoComplete="username"
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                placeholder="Enter your email or phone number"
-                required
-                className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
-              />
-            </div>
+            <input
+              id="login-identifier"
+              type="text"
+              autoComplete="username"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              placeholder="Enter your email or phone number"
+              required
+              className="h-12 w-full rounded-2xl border border-border bg-background px-4 text-base outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring sm:text-sm"
+            />
 
             <label htmlFor="login-password" className="mb-2 mt-5 block text-sm font-medium">
               Password
             </label>
-            <div className="flex h-[54px] items-center border-b border-border focus-within:border-foreground">
-              <input
-                id="login-password"
-                type={showPassword ? "text" : "password"}
-                autoComplete={isCreatingAccount ? "new-password" : "current-password"}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder={isCreatingAccount ? "Create a password" : "Enter your password"}
-                required
-                className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
-              />
+            <div className="flex h-12 items-center gap-2 rounded-2xl border border-border bg-background px-3 focus-within:ring-2 focus-within:ring-ring">
+              <div className="relative min-w-0 flex-1">
+                <div aria-hidden="true" className="grid grid-cols-6 gap-1.5">
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <span
+                      key={index}
+                      className="flex aspect-square min-w-0 items-center justify-center rounded-lg border border-border text-sm font-medium"
+                    >
+                      {password[index] &&
+                        (showPassword ? (
+                          password[index]
+                        ) : (
+                          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                        ))}
+                    </span>
+                  ))}
+                </div>
+                <input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={isCreatingAccount ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  maxLength={6}
+                  placeholder={isCreatingAccount ? "Create a password" : "Enter your password"}
+                  required
+                  aria-label="Password"
+                  className="absolute inset-0 z-10 h-full w-full cursor-text opacity-0"
+                />
+              </div>
               <button
                 type="button"
                 onClick={() => setShowPassword((visible) => !visible)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="flex h-9 w-9 items-center justify-center text-muted-foreground"
+                className="flex h-9 w-9 shrink-0 items-center justify-center text-muted-foreground"
               >
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
@@ -125,9 +149,14 @@ export default function Login() {
 
             {!isCreatingAccount && (
               <div className="mt-4 flex justify-end">
-                <Link href="/support/contact" className="text-sm font-medium">
+                <a
+                  href="https://wa.me/2348029041081"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm font-medium"
+                >
                   Forgot Password?
-                </Link>
+                </a>
               </div>
             )}
 
@@ -201,7 +230,34 @@ export default function Login() {
             {isCreatingAccount ? "Account creation isn't connected yet." : "Sign-in isn't connected yet."}
           </p>
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+      <AnimatePresence>
+        {loginErrorVisible && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/10 px-4 pt-4 backdrop-blur-md"
+          >
+            <motion.div
+              role="alert"
+              aria-live="assertive"
+              initial={{ opacity: 0, y: -14, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.99 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+              className="w-full max-w-[520px] rounded-2xl border border-destructive/30 bg-background px-5 py-4 text-foreground shadow-2xl"
+            >
+              <p className="font-semibold text-destructive">Email or password is incorrect</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Sign-in will be available when account authentication is connected.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

@@ -67,7 +67,7 @@ function MobileCartHeader({ count }: { count: number }) {
       <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-semibold">Cart</h1>
       <Link
         href="/cart"
-        aria-label={`Shopping bag, ${count} items`}
+        aria-label={`Cart, ${count} items`}
         data-cart-target
         data-cart-target-priority="2"
         className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-100"
@@ -167,8 +167,7 @@ export default function Cart() {
     <div>
       <MobileCartHeader count={cartCount} />
       <div className="container-x hidden max-w-6xl py-10 md:block">
-        <p className="label-mono">Your selection</p>
-        <h1 className="mt-2 text-3xl font-semibold">Shopping bag</h1>
+        <h1 className="text-3xl font-semibold">Your cart</h1>
       </div>
       <div className="container-x mx-auto grid max-w-6xl gap-8 py-5 md:gap-12 md:py-10 lg:grid-cols-[1fr_380px]">
         <div className="space-y-3">
@@ -208,7 +207,7 @@ export default function Cart() {
                   aria-label={`Remove ${p.name} from cart`}
                   aria-hidden={!isOpen}
                   tabIndex={isOpen ? 0 : -1}
-                  className="absolute inset-y-0 right-0 flex w-20 items-center justify-center bg-red-100 font-mono2 text-xs tracking-wide text-red-700"
+                  className="absolute inset-y-0 right-0 flex w-20 items-center justify-center bg-background font-mono2 text-xs tracking-wide text-red-700"
                 >
                   remove
                 </button>

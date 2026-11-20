@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Phone } from "lucide-react";
-import { categoryIndexCategories } from "@/data/catalog";
 
 const socialIconPaths = {
   tiktok:
@@ -33,21 +32,14 @@ const cols = [
   {
     title: "Shop",
     links: [
-      { to: "/products", label: "All products" },
+      { to: "/products", label: "Store" },
       { to: "/categories", label: "All categories" },
-      ...categoryIndexCategories.map((category) => ({
-        to: `/categories/${category.slug}`,
-        label: category.name,
-      })),
     ],
   },
   {
     title: "Support",
     links: [
-      { to: "/support", label: "Help centre" },
       { to: "/support/faq", label: "FAQ" },
-      { to: "/support/contact", label: "Contact us" },
-      { to: "/support/returns", label: "Returns" },
     ],
   },
 ];
@@ -60,7 +52,7 @@ export default function Footer() {
           <Link href="/" aria-label="TLX Originals home" className="brand-type font-display text-lg font-bold">
             TLX Originals
           </Link>
-          <p className="mt-2 max-w-xs font-mono2 text-[8px] leading-relaxed text-muted-foreground sm:text-[9px]">
+          <p className="mt-0.5 max-w-xs font-mono2 text-[8px] leading-none text-muted-foreground sm:text-[9px]">
             No Hype. Just Motion!
           </p>
           <p className="label-mono mt-6">Contact</p>

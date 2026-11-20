@@ -85,7 +85,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
           <p className="text-sm font-semibold">Category</p>
           <Link
             href="/cart"
-            aria-label={`Shopping bag, ${cartCount} items`}
+            aria-label={`Cart, ${cartCount} items`}
             data-cart-target
             data-cart-target-priority="2"
             className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-100"

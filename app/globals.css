@@ -100,6 +100,7 @@
   }
   .brand-type {
     font-family: var(--font-satoshi), sans-serif;
+    -webkit-text-stroke: 0.05em currentColor;
   }
   .hairline-grid {
     @apply grid gap-px bg-border border border-border;
@@ -155,5 +156,28 @@
   textarea,
   select {
     font-size: 16px;
+  }
+}
+
+@keyframes popular-card-image-breathe {
+  0%,
+  100% {
+    transform: scale(0.9);
+    opacity: 0.78;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+}
+
+.popular-card-image-breathe {
+  animation: popular-card-image-breathe 7s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popular-card-image-breathe {
+    animation: none;
   }
 }

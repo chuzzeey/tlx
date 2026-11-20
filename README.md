@@ -62,9 +62,6 @@ All 15 routes are statically generated at build time (69 pages total) and serve 
 | `/categories/[categoryId]` | Category detail | Category hero with description, filtered product grid, breadcrumb |
 | `/content` | Journal | Editorial index — 12 essays with tags, read times, and imagery |
 | `/content/[postId]` | Essay | Long-form article with drop cap, pull quotes, author line, and a **Shop the story** rail of the products featured in the piece |
-| `/support` | Support hub | Routes to contact, returns, and FAQ |
-| `/support/contact` | Contact | Contact form with topic picker and expected response times |
-| `/support/returns` | Returns | Return policy, step-by-step process, and exchange notes |
 | `/support/faq` | FAQ | Grouped accordion of common questions (orders, shipping, returns, care) |
 | `/cart` | Bag | Line items with quantity steppers and remove, order summary (subtotal, shipping, tax), free-shipping progress hint (complimentary over ₦203,106), empty state |
 | `/checkout` | Checkout | Four-step flow — Information → Delivery → Payment → Review — with progress indicator, validation, and an order-confirmation screen with barcode |

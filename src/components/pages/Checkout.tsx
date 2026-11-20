@@ -38,7 +38,7 @@ function CheckoutHeader({ count }: { count: number }) {
       <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-semibold">Checkout</h1>
       <Link
         href="/cart"
-        aria-label={`Shopping bag, ${count} items`}
+        aria-label={`Cart, ${count} items`}
         data-cart-target
         data-cart-target-priority="2"
         className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-100"

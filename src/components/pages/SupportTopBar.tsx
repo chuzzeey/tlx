@@ -19,7 +19,7 @@ export default function SupportTopBar({
       >
         <ArrowLeft className="h-5 w-5" />
       </Link>
-      <h1 className="text-sm font-semibold">{title}</h1>
+      <span className="text-sm font-semibold">{title}</span>
       <span aria-hidden="true" className="absolute right-3 h-11 w-11" />
     </div>
   );

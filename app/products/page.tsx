@@ -4,9 +4,9 @@ import JsonLd from "@/components/JsonLd";
 import { products } from "@/data/catalog";
 import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
-const title = "Shop All Products";
+const title = "Store";
 const description =
-  "Shop six TLX Originals pieces: jackets, T-shirts, shoes, bags, and accessories.";
+  "Browse a considered mix of TLX Originals jackets, T-shirts, shoes, bags, and accessories.";
 
 export const metadata: Metadata = {
   title,

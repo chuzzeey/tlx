@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Handbag, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   categoryBySlug,
   formatPrice,
   productById,
+  products,
   productsByCategory,
   reviewsFor,
   type Product,
@@ -34,7 +36,12 @@ function RatingStars({ rating }: { rating: number }) {
       {Array.from({ length: 5 }, (_, index) => (
         <Star
           key={index}
-          className={`h-4 w-4 ${index < Math.round(rating) ? "fill-amber-500 text-amber-500" : "text-neutral-300"}`}
+          className={`h-4 w-4 ${
+            index < Math.round(rating)
+              ? "fill-[#FFC107] text-[#D99700]"
+              : "fill-neutral-200 text-neutral-300"
+          }`}
+          strokeWidth={1.75}
           aria-hidden="true"
         />
       ))}
@@ -42,7 +49,30 @@ function RatingStars({ rating }: { rating: number }) {
   );
 }
 
+function ReviewVerification({
+  review,
+  className = "",
+}: {
+  review: { sample?: boolean; verified?: boolean };
+  className?: string;
+}) {
+  const isDevelopmentSample = process.env.NODE_ENV === "development" && review.sample;
+
+  if (review.sample && !isDevelopmentSample) {
+    return <span className={`text-muted-foreground ${className}`}>Sample review</span>;
+  }
+
+  if (!review.verified && !isDevelopmentSample) return null;
+
+  return (
+    <span className={`inline-flex items-center gap-1 text-green-700 dark:text-green-400 ${className}`}>
+      <Check className="h-3 w-3" /> Verified purchase
+    </span>
+  );
+}
+
 export default function ProductDetail({ productId }: { productId: string }) {
+  const router = useRouter();
   const product = productById(productId);
   const { addToCart, cartCount, recordView, recent } = useShop();
   const [qty, setQty] = useState(1);
@@ -51,6 +81,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
   const [selectedSize, setSelectedSize] = useState("M");
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const scrollToRelatedAfterCollapse = useRef(false);
   const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>([]);
 
   /* Keep a rolling trail of viewed pieces (this browser only) */
@@ -71,6 +102,19 @@ export default function ProductDetail({ productId }: { productId: string }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (showAllReviews || !scrollToRelatedAfterCollapse.current) return;
+
+    scrollToRelatedAfterCollapse.current = false;
+    const reviewListId = window.matchMedia("(min-width: 768px)").matches
+      ? "desktop-review-list"
+      : "mobile-review-list";
+    document
+      .getElementById(reviewListId)
+      ?.querySelector("article:last-child")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [showAllReviews]);
+
   const gallery = useMemo(() => {
     if (!product) return [];
     const siblings = productsByCategory(product.category).filter((p) => p.id !== product.id);
@@ -89,6 +133,8 @@ export default function ProductDetail({ productId }: { productId: string }) {
   const cat = categoryBySlug(product.category);
   const productCustomerReviews = customerReviews.filter((review) => review.productId === product.id);
   const reviews = [...productCustomerReviews, ...reviewsFor(product.id)];
+  const reviewsToShow = reviews.slice(0, showAllReviews ? 8 : 3);
+  const hasMoreReviews = reviews.length > 3;
   const reviewCount = product.reviewCount + productCustomerReviews.length;
   const averageRating = (
     (product.rating * product.reviewCount +
@@ -104,10 +150,26 @@ export default function ProductDetail({ productId }: { productId: string }) {
         p !== undefined && !related.some((relatedProduct) => relatedProduct.id === p.id)
     )
     .slice(0, 4);
+  const suggestionPool = products.filter(
+    (item) => item.id !== product.id && !related.some((relatedProduct) => relatedProduct.id === item.id)
+  );
+  const youMayAlsoLike = [
+    ...recentOthers,
+    ...suggestionPool.filter((item) => !recentOthers.some((recentItem) => recentItem.id === item.id)),
+  ].slice(0, 4);
   const low = product.stock <= 8;
   const hasSizes = product.category === "jackets" || product.category === "apparel";
-  const addOneToCart = () =>
-    addToCart(product.id, 1, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined);
+  const collapseReviews = () => {
+    scrollToRelatedAfterCollapse.current = true;
+    setShowAllReviews(false);
+  };
+  const goBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/products");
+  };
   const descriptionPreview = product.description.match(/.*?[.!?](?:\s|$)/)?.[0].trim() ?? product.description;
   const hasMoreDescription = descriptionPreview.length < product.description.length;
 
@@ -115,19 +177,20 @@ export default function ProductDetail({ productId }: { productId: string }) {
     <div>
       <div className="mobile-product-page">
         <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:hidden">
-          <Link
-            href={`/categories/${product.category}`}
-            aria-label={`Back to ${cat?.name ?? "category"}`}
+          <button
+            type="button"
+            onClick={goBack}
+            aria-label="Go back to previous page"
             className="flex h-11 w-11 items-center justify-center"
           >
             <ArrowLeft className="h-5 w-5" />
-          </Link>
+          </button>
           <p className="absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-base font-semibold">
             {product.name}
           </p>
           <Link
             href="/cart"
-            aria-label={`Shopping bag, ${cartCount} items`}
+            aria-label={`Cart, ${cartCount} items`}
             data-cart-target
             data-cart-target-priority="2"
             className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-muted"
@@ -143,13 +206,14 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
         <div className="container-x mx-auto max-w-[1400px] pb-10 pt-5 md:pt-8">
           <div className="mb-5 hidden md:block">
-            <Link
-              href={`/categories/${product.category}`}
+            <button
+              type="button"
+              onClick={goBack}
               className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground dark:bg-muted"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to {cat?.name}
-            </Link>
+              Back
+            </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 md:aspect-square">
@@ -195,19 +259,9 @@ export default function ProductDetail({ productId }: { productId: string }) {
           </div>
 
           <div className="pt-4 md:pt-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h1 className="text-2xl font-semibold leading-tight md:text-4xl">{product.name}</h1>
-                <p className="mt-1 text-sm text-muted-foreground">{cat?.name}</p>
-              </div>
-              <button
-                type="button"
-                onClick={addOneToCart}
-                aria-label={`Add ${product.name} to cart`}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 shadow-sm transition-colors hover:bg-neutral-200"
-              >
-                <Handbag className="h-4 w-4" />
-              </button>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold leading-tight md:text-4xl">{product.name}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{cat?.name}</p>
             </div>
 
             <div className="mt-3 flex items-center gap-2">
@@ -315,39 +369,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
               </AccordionItem>
             </Accordion>
 
-            <section id="mobile-reviews" className="mt-8 border-t border-border pt-5 md:hidden">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Review ({reviewCount.toLocaleString()})</h2>
-                <button
-                  type="button"
-                  onClick={() => setShowAllReviews((show) => !show)}
-                  aria-expanded={showAllReviews}
-                  className="text-sm text-muted-foreground"
-                >
-                  {showAllReviews ? "See Less" : "See More"}
-                </button>
-              </div>
-              <div className="divide-y divide-border">
-                {(showAllReviews ? reviews : reviews.slice(0, 1)).map((review) => (
-                  <article key={review.id} className="flex gap-3 py-4 first:pt-0">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                      {review.author.split(" ").map((part) => part[0]).join("")}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="truncate text-sm font-semibold">{review.author}</p>
-                        <time className="shrink-0 text-xs text-muted-foreground">
-                          {new Date(review.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                        </time>
-                      </div>
-                      <RatingStars rating={review.rating} />
-                      <p className="mt-1 text-sm leading-5 text-muted-foreground">{review.body}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-
             <div className="mt-7 flex items-stretch gap-3">
               <div className="flex items-center rounded-full border border-border">
                 <button
@@ -373,42 +394,198 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
                 className="flex-1 rounded-full bg-foreground px-4 text-sm font-semibold text-background"
               >
-                Add to bag — {formatPrice(product.price * qty)}
+                Add to cart — {formatPrice(product.price * qty)}
               </button>
             </div>
+
+            <section id="mobile-reviews" className="mt-8 border-t border-border pt-5 md:hidden">
+              <div className="mb-4 flex items-end justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold">Reviews</h2>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-sm font-semibold">{averageRating.toFixed(1)}</span>
+                    <RatingStars rating={averageRating} />
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {reviewCount.toLocaleString()} reviews
+                  </p>
+                </div>
+                {hasMoreReviews && !showAllReviews && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllReviews(true)}
+                    aria-expanded={false}
+                    aria-controls="mobile-review-list"
+                    className="text-sm text-muted-foreground"
+                  >
+                    See More
+                  </button>
+                )}
+              </div>
+              <div id="mobile-review-list" className="space-y-3">
+                {reviewsToShow.map((review) => (
+                  <article key={review.id} className="scroll-mt-24 rounded-2xl border border-border p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <RatingStars rating={review.rating} />
+                        <h3 className="mt-2 text-sm font-semibold">{review.title}</h3>
+                      </div>
+                      <time className="shrink-0 text-xs text-muted-foreground">
+                        {new Date(review.date).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </time>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">{review.body}</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span>{review.location ? `${review.author} · ${review.location}` : review.author}</span>
+                      <ReviewVerification review={review} />
+                    </div>
+                  </article>
+                ))}
+              </div>
+              {hasMoreReviews && showAllReviews && (
+                <div className="mt-4 border-t border-border pt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={collapseReviews}
+                    aria-expanded={true}
+                    aria-controls="mobile-review-list"
+                    className="text-sm text-muted-foreground underline underline-offset-4"
+                  >
+                    See Less
+                  </button>
+                </div>
+              )}
+            </section>
           </div>
           </div>
         </div>
       </div>
 
-      <section className="container-x mx-auto hidden max-w-6xl space-y-12 pb-14 md:block">
-        <div className="grid gap-8 border-t border-border pt-10 lg:grid-cols-[260px_1fr]">
-          <div>
-            <p className="label-mono">Reviews</p>
-            <p className="mt-3 text-5xl font-semibold">{averageRating.toFixed(1)}</p>
-            <Stars rating={averageRating} className="mt-2" />
-            <p className="mt-2 text-sm text-muted-foreground">
-              {reviewCount.toLocaleString()} verified reviews
-            </p>
+      <section className="container-x mx-auto max-w-6xl space-y-8 pb-12 md:hidden">
+        {related.length > 0 && (
+          <div className="border-t border-border pt-8">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold">More in {cat?.name}</h2>
+              <Link
+                href={`/categories/${product.category}`}
+                className="text-sm text-muted-foreground"
+              >
+                View category
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {related.slice(0, 4).map((item, index) => (
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  index={index}
+                  showIndex={false}
+                  showSku={false}
+                />
+              ))}
+            </div>
           </div>
-          <div className="divide-y divide-border border-y border-border">
-            {reviews.slice(0, 3).map((review) => (
-              <article key={review.id} className="py-5 first:pt-0 last:pb-0">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Stars rating={review.rating} />
-                  <h2 className="text-sm font-semibold">{review.title}</h2>
+        )}
+
+        {youMayAlsoLike.length > 0 && (
+          <div className="border-t border-border pt-8">
+            <h2 className="mb-4 text-xl font-semibold">You may also like</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {youMayAlsoLike.map((item, index) => (
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  index={index}
+                  showIndex={false}
+                  showSku={false}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="container-x mx-auto hidden max-w-6xl space-y-12 pb-14 md:block">
+        <div className="border-t border-border pt-10">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="label-mono">Reviews</p>
+              <h2 className="mt-2 text-2xl font-semibold">Customer feedback</h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-muted-foreground">{reviewCount.toLocaleString()} reviews</p>
+              {hasMoreReviews && !showAllReviews && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllReviews(true)}
+                  aria-expanded={false}
+                  aria-controls="desktop-review-list"
+                  className="text-sm text-muted-foreground underline underline-offset-4"
+                >
+                  See More
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+            <aside className="h-fit rounded-2xl border border-border bg-card p-6">
+              <p className="label-mono">Overall rating</p>
+              <div className="mt-3 flex items-baseline gap-2">
+                <p className="font-display text-5xl font-light">{averageRating.toFixed(1)}</p>
+                <span className="text-sm text-muted-foreground">/ 5</span>
+              </div>
+              <div className="mt-2">
+                <RatingStars rating={averageRating} />
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                From {reviewCount.toLocaleString()} reviews
+              </p>
+            </aside>
+            <div>
+              <div id="desktop-review-list" className="space-y-4">
+                {reviewsToShow.map((review) => (
+                  <article key={review.id} className="scroll-mt-24 rounded-2xl border border-border p-5 sm:p-6">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <RatingStars rating={review.rating} />
+                        <h3 className="mt-2 text-base font-semibold">{review.title}</h3>
+                      </div>
+                      <time className="text-xs text-muted-foreground">
+                        {new Date(review.date).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </time>
+                    </div>
+                    <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                      {review.body}
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                      <span>{review.location ? `${review.author} · ${review.location}` : review.author}</span>
+                      <ReviewVerification review={review} />
+                    </div>
+                  </article>
+                ))}
+              </div>
+              {hasMoreReviews && showAllReviews && (
+                <div className="mt-4 border-t border-border pt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={collapseReviews}
+                    aria-expanded={true}
+                    aria-controls="desktop-review-list"
+                    className="text-sm text-muted-foreground underline underline-offset-4"
+                  >
+                    See Less
+                  </button>
                 </div>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{review.body}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {review.author} · {review.location} ·{" "}
-                  {new Date(review.date).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </article>
-            ))}
+              )}
+            </div>
           </div>
         </div>
 
@@ -425,18 +602,18 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
               {related.slice(0, 4).map((item, index) => (
-                <ProductCard key={item.id} product={item} index={index} />
+                <ProductCard key={item.id} product={item} index={index} showIndex={false} showSku={false} />
               ))}
             </div>
           </div>
         )}
 
-        {recentOthers.length > 0 && (
+        {youMayAlsoLike.length > 0 && (
           <div>
-            <h2 className="mb-5 text-xl font-semibold">Recently viewed</h2>
+            <h2 className="mb-5 text-xl font-semibold">You may also like</h2>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-              {recentOthers.map((item, index) => (
-                <ProductCard key={item.id} product={item} index={index} />
+              {youMayAlsoLike.map((item, index) => (
+                <ProductCard key={item.id} product={item} index={index} showIndex={false} showSku={false} />
               ))}
             </div>
           </div>
@@ -586,15 +763,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
               onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
               className="btn-solid-invert flex-1 py-3.5"
             >
-              Add to bag — {formatPrice(product.price * qty)}
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={addOneToCart}
-              aria-label={`Add ${product.name} to cart`}
-              className="flex w-[52px] items-center justify-center border border-border transition-colors hover:border-foreground"
-            >
-              <Handbag className="h-4 w-4" />
+              Add to cart — {formatPrice(product.price * qty)}
             </motion.button>
           </div>
 
@@ -650,7 +819,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             <p className="label-mono">Reviews</p>
             <p className="mt-3 font-display text-6xl font-light">{averageRating.toFixed(1)}</p>
             <Stars rating={averageRating} className="mt-2" />
-            <p className="mt-2 font-mono2 text-[11px] text-muted-foreground">{reviewCount} verified reviews</p>
+            <p className="mt-2 font-mono2 text-[11px] text-muted-foreground">{reviewCount} reviews</p>
             <div className="mt-6 space-y-2">
               {[5, 4, 3, 2, 1].map((s) => {
                 const pct = s === 5 ? 72 : s === 4 ? 21 : s === 3 ? 5 : s === 2 ? 2 : 0;
@@ -682,12 +851,8 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 </div>
                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{r.body}</p>
                 <p className="mt-3 font-mono2 text-[11px] text-muted-foreground">
-                  {r.author} · {r.location} · {new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
-                  {r.verified && (
-                    <span className="ml-2 inline-flex items-center gap-1 text-foreground">
-                      <Check className="h-3 w-3" /> Verified purchase
-                    </span>
-                  )}
+                  {r.location ? `${r.author} · ${r.location}` : r.author} · {new Date(r.date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                  <ReviewVerification review={r} className="ml-2" />
                 </p>
               </article>
               </Reveal>
@@ -708,25 +873,22 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
             <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-4">
               {related.slice(0, 4).map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
+                <ProductCard key={p.id} product={p} index={i} showIndex={false} showSku={false} />
               ))}
             </div>
           </div>
         </section>
       )}
-      {/* Recently viewed */}
-      {recentOthers.length > 0 && (
+      {/* You may also like */}
+      {youMayAlsoLike.length > 0 && (
         <section className="border-t border-border">
           <div className="container-x py-14">
             <div className="mb-8 flex items-end justify-between gap-6">
-              <h2 className="font-display text-3xl font-light tracking-tight">Recently viewed</h2>
-              <span className="shrink-0 font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Kept in this browser only
-              </span>
+              <h2 className="font-display text-3xl font-light tracking-tight">You may also like</h2>
             </div>
             <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-4">
-              {recentOthers.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
+              {youMayAlsoLike.map((p, i) => (
+                <ProductCard key={p.id} product={p} index={i} showIndex={false} showSku={false} />
               ))}
             </div>
           </div>

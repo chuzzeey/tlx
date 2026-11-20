@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, Handbag, Home, LayoutGrid, MessageCircleMore, Search, User, X } from "lucide-react";
+import { ArrowUpRight, Handbag, Home, LayoutGrid, Search, Store as StoreIcon, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useShop } from "@/store/ShopContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -29,7 +29,6 @@ function RollingCount({ value }: { value: number }) {
 
 const profileMenuItems = [
   { to: "/categories", label: "Categories" },
-  { to: "/support", label: "Help centre" },
 ];
 
 export default function Header() {
@@ -74,10 +73,12 @@ export default function Header() {
           <nav aria-label="Main navigation" className="hidden items-center gap-4 md:flex lg:gap-6">
             {[
               { href: "/", label: "Home" },
+              { href: "/products", label: "Store" },
               { href: "/categories", label: "Category" },
             ].map(({ href, label }) => {
               const active =
                 href === "/" ? pathname === "/" :
+                href === "/products" ? isProductsIndex :
                 isCategoryPage;
               return (
                 <Link
@@ -115,19 +116,8 @@ export default function Header() {
               <kbd className="hidden rounded-md bg-background px-2 py-1 font-mono2 text-[9px] text-muted-foreground lg:inline">⌘K</kbd>
             </button>
             <Link
-              href="/support/contact"
-              aria-label="Messages, 2 unread"
-              title="Messages"
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-neutral-100 text-muted-foreground transition-colors hover:text-foreground dark:bg-muted md:hidden"
-            >
-              <MessageCircleMore className="h-[18px] w-[18px]" />
-              <span aria-hidden="true" className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 font-mono2 text-[9px] text-white ring-2 ring-background">
-                2
-              </span>
-            </Link>
-            <Link
               href="/cart"
-              aria-label={`Shopping bag, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
+              aria-label={`Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}`}
               title={`Cart${cartCount > 0 ? ` (${cartCount})` : ""}`}
               data-cart-target
               data-cart-target-priority="1"
@@ -150,7 +140,7 @@ export default function Header() {
 
       <nav
         aria-label="Mobile navigation"
-        className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border pb-[env(safe-area-inset-bottom)] backdrop-blur-md ${
+        className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border pb-[env(safe-area-inset-bottom)] backdrop-blur-md ${
           isProductDetail || isCartPage || isCheckoutPage || isAccountPage || isOrdersPage || isLoginPage ? "hidden" : "md:hidden"
         } ${
           isHome ? "bg-background" : "bg-background/95"
@@ -175,6 +165,16 @@ export default function Header() {
             <Home className="h-[18px] w-[18px]" />
           )}
           Home
+        </Link>
+        <Link
+          href="/products"
+          aria-current={isProductsIndex ? "page" : undefined}
+          className={`flex min-h-16 flex-col items-center justify-center gap-1 font-mono2 text-[10px] transition-colors ${
+            isProductsIndex ? "text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          <StoreIcon className={`h-[18px] w-[18px] ${isProductsIndex ? "fill-current" : ""}`} />
+          Store
         </Link>
         <Link
           href="/categories"

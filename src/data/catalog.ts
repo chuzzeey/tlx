@@ -256,7 +256,7 @@ const productCatalog: Product[] = [
   {
     id: "stussy-jacket", sku: "APP-001", name: "Stussy Jacket", category: "jackets",
     price: 234, rating: 4.9, reviewCount: 5231, image: "/images/products/stussy-jacket.png",
-    description: "The Stussy Jacket is a relaxed varsity-inspired layer with bold graphic details, made to bring an easy statement to everyday outfits. Its comfortable fit makes it simple to wear over a tee or knit through the season.",
+    description: "The Stussy Jacket brings a relaxed varsity silhouette into an easy everyday layer. Its washed-blue finish and bold graphic details give it character without making it difficult to style. The cotton-blend shell has room for a tee or light knit, while the hip-length cut keeps proportions casual. Wear it over simple layers on mild days or when the evening cools.",
     story: "An easy everyday layer with a clean silhouette and unmistakable presence.",
     materials: "Cotton blend outer shell", dimensions: "Relaxed fit; hip length", care: "Machine wash cold with like colors. Hang to dry.",
     stock: 18, badge: "Bestseller", featured: true,
@@ -265,7 +265,7 @@ const productCatalog: Product[] = [
   {
     id: "mwdbl-jacket", sku: "APP-002", name: "MWDBL Jacket", category: "jackets",
     price: 228, rating: 4.8, reviewCount: 4928, image: "/images/products/mwdbl-jacket.png",
-    description: "The MWDBL Jacket pairs a deep green body with cream panels and a relaxed fit for an easy, distinctive everyday layer. Its bold contrast details work well over a tee or lightweight knit.",
+    description: "The MWDBL Jacket pairs a deep green body with cream panels for a clear contrast that still feels easy to wear. Its regular, hip-length cut leaves room for a light layer without looking oversized, and the woven shell gives it a structured outline. Reach for it over a tee on the commute or a knit when the weather turns.",
     story: "A versatile layer designed to work over a tee or knit through changing seasons.",
     materials: "Woven outer shell with a relaxed lining", dimensions: "Regular fit; hip length", care: "Machine wash cold on a gentle cycle. Hang to dry.",
     stock: 16, badge: "New", featured: true,
@@ -275,7 +275,7 @@ const productCatalog: Product[] = [
     id: "chaotic-club", sku: "APP-003", name: "Chaotic Club", category: "apparel",
     price: 88, rating: 4.8, reviewCount: 216, image: "/images/products/chaotic-club-spooky.png",
     gallery: ["/images/products/stussy-jacket.png", "/images/products/mwdbl-jacket.png"],
-    description: "A bold graphic layer with a relaxed fit and standout number detailing. Easy to style over a tee for an expressive everyday look.",
+    description: "Chaotic Club is a relaxed graphic layer built around its standout number detail. The cotton-jersey blend feels soft against a tee or on its own, while the easy hip-length shape leaves room through the body without swallowing the silhouette. Pair it with denim for a low-effort outfit or let the graphic lead while the rest stays simple.",
     story: "Designed as a versatile statement piece that brings streetwear character to a casual wardrobe.",
     materials: "Cotton jersey blend", dimensions: "Relaxed fit; hip length", care: "Machine wash cold with like colors. Hang to dry.",
     stock: 24, badge: "New",
@@ -284,7 +284,7 @@ const productCatalog: Product[] = [
     id: "sneakers", sku: "SHO-001", name: "Sneakers", category: "shoes",
     price: 120, rating: 4.7, reviewCount: 184, image: "/images/products/sneakers.png",
     gallery: ["/images/products/bucket-hat.jpg", "/images/products/chaotic-club-spooky.png"],
-    description: "Everyday sneakers with a layered blue-and-white upper and a cushioned sole, made for comfortable walks and easy styling.",
+    description: "These low-top sneakers combine a layered blue-and-white mesh and synthetic leather upper with a cushioned rubber outsole for everyday walking. The colour adds interest without limiting the rest of an outfit, and the low profile works with denim, casual trousers, or shorts. Made for regular rotation rather than a special occasion, they are easy to reach for on commutes, errands, and relaxed weekends.",
     story: "A practical, versatile pair designed to bring a fresh color accent to daily outfits.",
     materials: "Mesh and synthetic leather upper, rubber outsole", dimensions: "Low-top profile", care: "Spot clean with a soft damp cloth. Air dry.",
     stock: 32, badge: "Bestseller",
@@ -293,7 +293,7 @@ const productCatalog: Product[] = [
     id: "seashell-bag", sku: "BAG-001", name: "Seashell Bag", category: "bags",
     price: 95, rating: 4.9, reviewCount: 93, image: "/images/products/pearl-seashell-bag.png",
     gallery: ["/images/products/baskets.webp", "/images/products/bucket-hat.jpg"],
-    description: "A compact shoulder bag with a softly curved silhouette, a rich burgundy finish, and room for everyday essentials.",
+    description: "The Seashell Bag keeps daily essentials close in a compact shoulder silhouette. Its softly curved shape and deep burgundy finish bring character without making the bag feel tied to one occasion. Textured synthetic leather and metal hardware give it a defined finish, while the practical scale works for a phone, cards, keys, and a few small extras.",
     story: "A distinctive everyday accessory with a sculptural shape that moves easily from day to evening.",
     materials: "Textured synthetic leather with metal hardware", dimensions: "Compact shoulder bag", care: "Wipe clean with a soft dry cloth. Store in a dust bag.",
     stock: 18, badge: "New",
@@ -302,12 +302,141 @@ const productCatalog: Product[] = [
     id: "mens-golf-cap", sku: "ACC-001", name: "Men's Golf Cap", category: "accessories",
     price: 48, rating: 4.6, reviewCount: 71, image: "/images/products/mens-golf-cap.png",
     gallery: ["/images/products/bucket-hat.jpg", "/images/products/mwdbl-jacket.png"],
-    description: "A classic six-panel cap with a curved brim and understated embroidered detail, suited to the course and everyday wear.",
+    description: "The Men's Golf Cap uses a clean six-panel shape and curved brim for a familiar fit on and off the course. Cotton twill keeps the finish casual, while understated embroidery avoids a loud logo. Its adjustable one-size construction makes it easy to fine-tune, and the simple profile pairs naturally with sportswear, weekend layers, or an everyday tee.",
     story: "A versatile finishing piece designed for comfortable wear through long days outdoors.",
     materials: "Cotton twill", dimensions: "Adjustable one-size fit", care: "Spot clean gently. Do not machine wash.",
     stock: 40,
   },
 ];
+
+type HomepagePreviewSpec = Pick<
+  Product,
+  "id" | "sku" | "name" | "category" | "price" | "rating" | "reviewCount" | "image"
+> & { sourceId: string };
+
+const homepagePreviewProducts: Product[] = ([
+  {
+    sourceId: "stussy-jacket",
+    id: "layout-preview-jacket-01",
+    sku: "PRE-001",
+    name: "Varsity Jacket",
+    category: "jackets",
+    price: 218,
+    rating: 4.8,
+    reviewCount: 64,
+    image: "/images/products/stussy-jacket.png",
+  },
+  {
+    sourceId: "mwdbl-jacket",
+    id: "layout-preview-jacket-02",
+    sku: "PRE-002",
+    name: "Track Jacket",
+    category: "jackets",
+    price: 204,
+    rating: 4.7,
+    reviewCount: 38,
+    image: "/images/products/mwdbl-jacket.png",
+  },
+  {
+    sourceId: "chaotic-club",
+    id: "layout-preview-apparel-01",
+    sku: "PRE-003",
+    name: "Graphic Tee",
+    category: "apparel",
+    price: 82,
+    rating: 4.8,
+    reviewCount: 46,
+    image: "/images/products/chaotic-club-spooky.png",
+  },
+  {
+    sourceId: "chaotic-club",
+    id: "layout-preview-apparel-02",
+    sku: "PRE-004",
+    name: "Studio T-Shirt",
+    category: "apparel",
+    price: 76,
+    rating: 4.6,
+    reviewCount: 29,
+    image: "/images/products/chaotic-club-spooky.png",
+  },
+  {
+    sourceId: "sneakers",
+    id: "layout-preview-shoes-01",
+    sku: "PRE-005",
+    name: "Court Sneakers",
+    category: "shoes",
+    price: 118,
+    rating: 4.7,
+    reviewCount: 52,
+    image: "/images/products/sneakers.png",
+  },
+  {
+    sourceId: "sneakers",
+    id: "layout-preview-shoes-02",
+    sku: "PRE-006",
+    name: "Everyday Runners",
+    category: "shoes",
+    price: 126,
+    rating: 4.8,
+    reviewCount: 41,
+    image: "/images/products/sneakers.png",
+  },
+  {
+    sourceId: "seashell-bag",
+    id: "layout-preview-bag-01",
+    sku: "PRE-007",
+    name: "Daily Crossbody",
+    category: "bags",
+    price: 88,
+    rating: 4.7,
+    reviewCount: 35,
+    image: "/images/products/pearl-seashell-bag.png",
+  },
+  {
+    sourceId: "seashell-bag",
+    id: "layout-preview-bag-02",
+    sku: "PRE-008",
+    name: "Mini Shoulder Bag",
+    category: "bags",
+    price: 92,
+    rating: 4.8,
+    reviewCount: 27,
+    image: "/images/products/pearl-seashell-bag.png",
+  },
+  {
+    sourceId: "mens-golf-cap",
+    id: "layout-preview-accessory-01",
+    sku: "PRE-009",
+    name: "Canvas Bucket Hat",
+    category: "accessories",
+    price: 38,
+    rating: 4.6,
+    reviewCount: 22,
+    image: "/images/products/bucket-hat.jpg",
+  },
+  {
+    sourceId: "mens-golf-cap",
+    id: "layout-preview-accessory-02",
+    sku: "PRE-010",
+    name: "Classic Panel Cap",
+    category: "accessories",
+    price: 44,
+    rating: 4.7,
+    reviewCount: 31,
+    image: "/images/products/mens-golf-cap.png",
+  },
+ ] satisfies HomepagePreviewSpec[]).map(({ sourceId, ...preview }) => {
+  const source = productCatalog.find((product) => product.id === sourceId);
+  if (!source) throw new Error(`Missing homepage preview source product: ${sourceId}`);
+
+  return {
+    ...source,
+    ...preview,
+    description: "Temporary local preview item for checking the homepage product layout.",
+    story: "Temporary product data for a local homepage layout preview.",
+    badge: "New" as const,
+  };
+});
 
 const availableProductIds = new Set([
   "stussy-jacket",
@@ -318,7 +447,10 @@ const availableProductIds = new Set([
   "mens-golf-cap",
 ]);
 
-export const products = productCatalog.filter((product) => availableProductIds.has(product.id));
+export const products = [
+  ...productCatalog.filter((product) => availableProductIds.has(product.id)),
+  ...(process.env.NODE_ENV === "development" ? homepagePreviewProducts : []),
+];
 
 export interface Review {
   id: string;
@@ -329,36 +461,82 @@ export interface Review {
   title: string;
   body: string;
   verified: boolean;
+  sample?: boolean;
 }
 
-const reviewPool: Review[] = [
-  { id: "r01", author: "Maren K.", location: "Copenhagen", rating: 5, date: "2026-07-28", title: "Exceeded every expectation", body: "The weight, the finish, the packaging — everything signals care. This is the third piece I've bought from TLX Originals and the quality has never wavered.", verified: true },
-  { id: "r02", author: "Daniel O.", location: "Melbourne", rating: 5, date: "2026-07-19", title: "Better in person", body: "Photos don't do it justice. The texture and colour depth are something you only get in real life. Shipping was faster than promised, too.", verified: true },
-  { id: "r03", author: "Sofia L.", location: "Barcelona", rating: 4, date: "2026-07-11", title: "Lovely, slight variation", body: "Beautiful piece. Mine is slightly darker than the product photo, which I actually prefer — but worth knowing each one is unique.", verified: true },
-  { id: "r04", author: "James T.", location: "London", rating: 5, date: "2026-06-30", title: "The comment magnet", body: "Every guest asks where it's from. It has quietly become the focal point of the room. Would buy again without hesitation.", verified: true },
-  { id: "r05", author: "Aisha R.", location: "Toronto", rating: 4, date: "2026-06-22", title: "Slow ship, great product", body: "Took nine days to arrive, which tested my patience — but the moment I unboxed it I forgave everything. Genuinely well made.", verified: true },
-  { id: "r06", author: "Henrik B.", location: "Oslo", rating: 5, date: "2026-06-15", title: "Heirloom territory", body: "This feels like something I'll hand down. The materials are honest and the construction is flawless. TLX Originals' care guide was a thoughtful touch.", verified: true },
-  { id: "r07", author: "Yuki M.", location: "Kyoto", rating: 5, date: "2026-06-08", title: "Quietly perfect", body: "No branding, no noise — just a beautifully resolved object. It sits in my home like it was always meant to be there.", verified: true },
-  { id: "r08", author: "Clara W.", location: "New York", rating: 4, date: "2026-05-29", title: "Great, wish I'd bought two", body: "Quality is superb for the price. My only regret is ordering one — I'm already back for a second. The wishlist feature came in handy.", verified: true },
-  { id: "r09", author: "Tomás E.", location: "Lisbon", rating: 5, date: "2026-05-20", title: "Craft you can feel", body: "You can tell within seconds of handling it that a person made this. Slight irregularities in the finish are, to me, the whole point.", verified: true },
-  { id: "r10", author: "Ingrid S.", location: "Stockholm", rating: 5, date: "2026-05-12", title: "Worth every cent", body: "I compared a dozen alternatives before choosing this. None matched the materials at this price. Delivery was tracked the whole way.", verified: true },
-  { id: "r11", author: "Oliver P.", location: "Dublin", rating: 3, date: "2026-05-03", title: "Good, not flawless", body: "Lovely object overall, though mine arrived with a tiny mark on the underside. Support responded within a day and made it right — impressive service.", verified: true },
-  { id: "r12", author: "Leila H.", location: "Beirut", rating: 5, date: "2026-04-25", title: "Gifted, then kept", body: "Bought as a gift and nearly kept it for myself. The unboxing alone is an experience — recycled packaging, a handwritten care card. Class.", verified: true },
-  { id: "r13", author: "Marcus D.", location: "Berlin", rating: 4, date: "2026-04-17", title: "Solid daily companion", body: "Three months of daily use and it looks better now than on day one. The patina developing on the surface is gorgeous.", verified: true },
-  { id: "r14", author: "Naomi F.", location: "Cape Town", rating: 5, date: "2026-04-09", title: "Exactly as described", body: "Rare these days: a product that is precisely what the listing claims. Dimensions, colour, weight — all true. Highly recommended.", verified: true },
-  { id: "r15", author: "Ravi N.", location: "Mumbai", rating: 4, date: "2026-03-31", title: "Beautiful, handle with care", body: "Stunning craftsmanship. It is more delicate than it looks, so treat it gently — the care instructions are worth reading, not skimming.", verified: true },
-  { id: "r16", author: "Elise V.", location: "Paris", rating: 5, date: "2026-03-22", title: "A small daily luxury", body: "It's the object I reach for most often, and the one that gives me the most quiet pleasure. That, to me, is the entire point of good design.", verified: true },
-];
+type ReviewSeed = Omit<Review, "id" | "verified" | "sample">;
 
-/** Deterministically assign 3 reviews to each product from the pool. */
+const reviewSeeds: Record<string, ReviewSeed[]> = {
+  "stussy-jacket": [
+    { author: "Maya R.", location: "Lagos", rating: 5, date: "2026-11-08", title: "An easy layer", body: "Fits over a tee or light knit without feeling bulky. The blue has a little more depth in person." },
+    { author: "T. A.", location: "Abuja", rating: 4, date: "2026-10-25", title: "Good fit, long sleeves", body: "The body fits true to size; the cuffs cover more of my hands than expected. Still reaching for it most days." },
+    { author: "Anonymous", location: "", rating: 5, date: "2026-10-14", title: "Better than expected", body: "Light enough to wear indoors but holds its shape outside. The pockets are actually useful." },
+    { author: "Nneka O.", location: "Port Harcourt", rating: 5, date: "2026-10-02", title: "A solid everyday piece", body: "The relaxed cut works with jeans and smarter trousers. It feels considered without trying too hard." },
+    { author: "J. K.", location: "", rating: 4, date: "2026-09-21", title: "Just check the size guide", body: "I usually take a medium and could have gone down one. The fabric and finish are both lovely." },
+    { author: "Ibrahim S.", location: "Kaduna", rating: 3, date: "2026-09-09", title: "One small zip snag", body: "The zipper caught the lining once or twice at first. It has settled down, and the jacket itself is comfortable." },
+    { author: "Anonymous", location: "", rating: 4, date: "2026-08-28", title: "Wearing it more than planned", body: "The collar sits well and it is not too warm for a mild day. A dependable grab-and-go layer." },
+    { author: "Dara E.", location: "Lagos", rating: 5, date: "2026-08-16", title: "A good gift", body: "Bought this for my brother. He liked the understated details and has worn it every time we have met since." },
+  ],
+  "mwdbl-jacket": [
+    { author: "Kelechi M.", location: "Lagos", rating: 5, date: "2026-11-06", title: "The fit is the best part", body: "Room through the shoulders without looking oversized. I can layer a hoodie underneath comfortably." },
+    { author: "R. B.", location: "London", rating: 4, date: "2026-10-23", title: "Good jacket for the price", body: "The material feels sturdy and the pockets sit where I need them. Slightly heavier than I expected." },
+    { author: "Anonymous", location: "", rating: 5, date: "2026-10-12", title: "A regular in my rotation", body: "Works with most of what I own and still looks neat after a full day out." },
+    { author: "Tomi A.", location: "Ibadan", rating: 5, date: "2026-09-30", title: "Nice details up close", body: "The stitching and hardware feel well finished. It looks simple from a distance, which I like." },
+    { author: "F. O.", location: "", rating: 4, date: "2026-09-18", title: "Runs a little roomy", body: "I prefer a closer fit, so I would size down next time. The jacket is comfortable and easy to style." },
+    { author: "Zainab L.", location: "Abuja", rating: 3, date: "2026-09-05", title: "Good, with a small caveat", body: "The lining took a little while to soften. After a few wears it sits better and feels much more natural." },
+    { author: "Anonymous", location: "", rating: 4, date: "2026-08-24", title: "Useful from day one", body: "Warm enough for an evening commute and easy to throw over a shirt. No fuss, which is exactly right." },
+    { author: "Emeka N.", location: "Enugu", rating: 5, date: "2026-08-11", title: "Would buy again", body: "The cut is easy and the finish is better than jackets I have paid more for. Delivery was straightforward." },
+  ],
+  "chaotic-club": [
+    { author: "Amara D.", location: "Lagos", rating: 5, date: "2026-11-04", title: "The print has personality", body: "The graphic is bold without taking over the whole outfit. The cotton feels soft after washing." },
+    { author: "S. P.", location: "Accra", rating: 4, date: "2026-10-21", title: "A relaxed fit", body: "Loose in the way I hoped. If you like a neater shape, consider sizing down." },
+    { author: "Anonymous", location: "", rating: 5, date: "2026-10-10", title: "Better in person", body: "The colours are a little richer than they look online, and the fabric is comfortable all day." },
+    { author: "Chidi O.", location: "Abuja", rating: 5, date: "2026-09-28", title: "Easy to wear", body: "I have worn it with denim and under a jacket. The print still looks good after a gentle wash." },
+    { author: "M. J.", location: "", rating: 4, date: "2026-09-16", title: "Check the measurements", body: "The shoulders are intentionally roomy. I measured a shirt I already own and got the size right." },
+    { author: "Rita E.", location: "Benin City", rating: 3, date: "2026-09-03", title: "A little thinner than expected", body: "Nice graphic and a comfortable cut, though I expected a heavier tee. Best for layering." },
+    { author: "Anonymous", location: "", rating: 4, date: "2026-08-22", title: "A fun everyday tee", body: "The print gets noticed, but the fit is what keeps me wearing it. Nothing scratchy around the neck." },
+    { author: "Femi A.", location: "Lagos", rating: 5, date: "2026-08-09", title: "One of my favourites", body: "The shape holds up and the artwork feels distinctive. I would happily pick up another colour." },
+  ],
+  sneakers: [
+    { author: "Oliver P.", location: "Dublin", rating: 3, date: "2026-11-02", title: "Good, not flawless", body: "Lovely pair overall, though mine arrived with a tiny mark on the sole. Support responded within a day and made it right." },
+    { author: "Elise V.", location: "Paris", rating: 5, date: "2026-10-19", title: "A comfortable daily pair", body: "They are the shoes I reach for most often. Comfortable on a long walk and easy to wear with simple outfits." },
+    { author: "Aisha R.", location: "Toronto", rating: 4, date: "2026-10-08", title: "Slow ship, good shoes", body: "Took nine days to arrive, which tested my patience — but they felt comfortable straight out of the box." },
+    { author: "N. C.", location: "", rating: 5, date: "2026-09-26", title: "More comfortable than they look", body: "The sole has enough cushioning for a full day on my feet. They needed almost no breaking in." },
+    { author: "Chisom B.", location: "Lagos", rating: 4, date: "2026-09-14", title: "The colour goes with a lot", body: "The blue is subtle in person and works with more outfits than I expected. Sizing felt standard for me." },
+    { author: "Anonymous", location: "", rating: 3, date: "2026-09-01", title: "A little narrow at first", body: "The toe box felt snug for the first few wears, then eased up. I would check the size details if you prefer extra room." },
+    { author: "M. O.", location: "Bristol", rating: 5, date: "2026-08-20", title: "Good everyday trainers", body: "Light, easy to clean, and comfortable on the walk to work. They have held their shape so far." },
+    { author: "Daniel K.", location: "Abuja", rating: 4, date: "2026-08-07", title: "As pictured", body: "The colours and shape match the photos. They feel sturdy without being too heavy." },
+  ],
+  "seashell-bag": [
+    { author: "Leila H.", location: "Beirut", rating: 5, date: "2026-11-01", title: "Small but useful", body: "Fits my phone, card case, keys, and a few small extras. The curved shape sits nicely against the body." },
+    { author: "P. N.", location: "", rating: 4, date: "2026-10-18", title: "A lovely colour", body: "The burgundy is rich but still easy to wear. The strap could be a little longer for a heavier coat." },
+    { author: "Anonymous", location: "", rating: 5, date: "2026-10-07", title: "Just enough room", body: "I wanted a bag for essentials rather than everything. The clasp is simple and the lining feels neat." },
+    { author: "Ngozi T.", location: "Lagos", rating: 5, date: "2026-09-25", title: "Nice shape, no fuss", body: "It keeps its shape when set down and the finish wipes clean easily. I have used it most weekends." },
+    { author: "M. A.", location: "Nairobi", rating: 4, date: "2026-09-12", title: "Good for going out", body: "Light enough to carry all evening. I would not choose it when I need to bring a tablet or a water bottle." },
+    { author: "Anonymous", location: "", rating: 3, date: "2026-08-30", title: "The strap took adjusting", body: "It took a couple of tries to find the right strap length, but it stays put now and the bag is comfortable." },
+    { author: "Sarah W.", location: "Manchester", rating: 5, date: "2026-08-18", title: "A thoughtful gift", body: "Bought it for my mum and she liked the shape immediately. The packaging was simple and arrived in good condition." },
+    { author: "Tunde A.", location: "Ibadan", rating: 4, date: "2026-08-05", title: "Well made for everyday", body: "The stitching looks tidy and the hardware feels solid. It is compact, just as described." },
+  ],
+  "mens-golf-cap": [
+    { author: "Henrik B.", location: "Oslo", rating: 5, date: "2026-10-30", title: "A cap that fits properly", body: "The adjuster gives a secure fit without pressing at the sides. The brim keeps its shape." },
+    { author: "J. L.", location: "", rating: 4, date: "2026-10-17", title: "Good for daily wear", body: "Lightweight and comfortable on a warm day. The embroidery is subtle, which suits me." },
+    { author: "Anonymous", location: "", rating: 5, date: "2026-10-06", title: "Exactly what I needed", body: "No stiff crown or oversized logo. It packs easily and still looks tidy when I put it back on." },
+    { author: "Ade O.", location: "Lagos", rating: 4, date: "2026-09-24", title: "Nice shape", body: "The curved brim is just right and the cotton feels breathable. I would have liked one more colour option." },
+    { author: "M. R.", location: "Dublin", rating: 5, date: "2026-09-11", title: "Simple and comfortable", body: "Bought it for the course but wear it on errands too. The strap is easy to adjust." },
+    { author: "Anonymous", location: "", rating: 3, date: "2026-08-29", title: "Runs a touch small", body: "It fits, but there is not much room left on the adjuster for a larger head. The finish is otherwise good." },
+    { author: "Kola S.", location: "Abuja", rating: 5, date: "2026-08-17", title: "A good everyday cap", body: "The fabric feels durable and the shape does not collapse after a few wears. Easy to clean by hand." },
+    { author: "F. D.", location: "", rating: 4, date: "2026-08-04", title: "Understated in a good way", body: "Comfortable, practical, and without extra branding. It is the one I keep by the door." },
+  ],
+};
+
+/** Temporary product-specific samples; replace with customer-submitted reviews when available. */
 export function reviewsFor(productId: string): Review[] {
-  let hash = 0;
-  for (let i = 0; i < productId.length; i++) hash = (hash * 31 + productId.charCodeAt(i)) % 997;
-  const out: Review[] = [];
-  for (let k = 0; k < 3; k++) {
-    out.push(reviewPool[(hash + k * 5) % reviewPool.length]);
-  }
-  return out;
+  return (reviewSeeds[productId] ?? []).map((review, index) => ({
+    ...review,
+    id: `${productId}-sample-${index + 1}`,
+    verified: false,
+    sample: true,
+  }));
 }
 
 const cardReviewCountOverrides: Record<string, number> = {

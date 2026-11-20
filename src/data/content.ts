@@ -205,10 +205,10 @@ export const faqs: Faq[] = [
   { group: "Products & Fit", q: "Can you help me choose a size?", a: "Send us the product name and your sizing question on WhatsApp. We’ll help you review the information available for that item." },
   { group: "Products & Fit", q: "Where can I find product materials and details?", a: "Each product page includes the available description and details for that item." },
   { group: "Delivery & Returns", q: "Where can I see delivery options and costs?", a: "Enter your delivery details during checkout to review the available delivery information before placing your order." },
-  { group: "Delivery & Returns", q: "How do I start a return?", a: "Open Returns & Exchanges and follow the request form. Have the order number and checkout email ready." },
+  { group: "Delivery & Returns", q: "How do I start a return?", a: "Message us on WhatsApp with your order number and checkout email to discuss a return." },
   { group: "Delivery & Returns", q: "What if an item arrives damaged or incorrect?", a: "Contact us on WhatsApp with your order number and a clear photo of the item so we can help." },
   { group: "Payments & Contact", q: "Which payment methods are available?", a: "The available payment options are shown during checkout before you confirm your order." },
-  { group: "Payments & Contact", q: "How do I contact TLX Originals?", a: "Call or WhatsApp us at +234 802 904 1081, or send a message through the contact page." },
+  { group: "Payments & Contact", q: "How do I contact TLX Originals?", a: "Call or WhatsApp us at +234 802 904 1081." },
 ];
 
 /** Products woven into each essay — powers the "Pieces from this essay" strip. */

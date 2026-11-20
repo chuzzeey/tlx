@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Star } from "lucide-react";
@@ -9,6 +9,7 @@ import AddToCartButton from "@/components/AddToCartButton";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
 const filters = [
+  { label: "All", category: "all" },
   { label: "Jacket", category: "jackets" },
   { label: "T-Shirts", category: "apparel" },
   { label: "Shoes", category: "shoes" },
@@ -16,7 +17,111 @@ const filters = [
   { label: "Accessories", category: "accessories" },
 ];
 
-function JacketCard({ product, priority = false }: { product: Product; priority?: boolean }) {
+const popularImageBreaths = [
+  { animationDuration: "5.2s", animationDelay: "-1.3s" },
+  { animationDuration: "6.4s", animationDelay: "-4.8s" },
+  { animationDuration: "4.7s", animationDelay: "-2.1s" },
+  { animationDuration: "6.9s", animationDelay: "-5.6s" },
+];
+
+const initialPopularProducts = popularItems.map((item) => {
+  const productId = item.href.slice(item.href.lastIndexOf("/") + 1);
+  const product = products.find((candidate) => candidate.id === productId);
+  if (!product) throw new Error(`Missing popular homepage product: ${productId}`);
+  return product;
+});
+
+function randomCardOrder(count: number) {
+  const order = Array.from({ length: count }, (_, index) => index);
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [order[index], order[swapIndex]] = [order[swapIndex], order[index]];
+  }
+  return order;
+}
+
+function PopularProductCard({
+  product,
+  index,
+  isChanging,
+  onTransitionComplete,
+}: {
+  product: Product;
+  index: number;
+  isChanging: boolean;
+  onTransitionComplete: () => void;
+}) {
+  const [typedProduct, setTypedProduct] = useState({ productId: product.id, text: product.name });
+
+  useEffect(() => {
+    if (!isChanging) return;
+
+    let characterIndex = 0;
+    let completionTimer: number | null = null;
+    const typingTimer = window.setInterval(() => {
+      characterIndex += 1;
+      setTypedProduct({
+        productId: product.id,
+        text: product.name.slice(0, characterIndex),
+      });
+
+      if (characterIndex >= product.name.length) {
+        window.clearInterval(typingTimer);
+        completionTimer = window.setTimeout(onTransitionComplete, 350);
+      }
+    }, 45);
+
+    return () => {
+      window.clearInterval(typingTimer);
+      if (completionTimer !== null) window.clearTimeout(completionTimer);
+    };
+  }, [isChanging, onTransitionComplete, product.id, product.name]);
+
+  const visibleName = isChanging
+    ? typedProduct.productId === product.id ? typedProduct.text : ""
+    : product.name;
+  const showImage = !isChanging || visibleName.length === product.name.length;
+
+  return (
+    <Link
+      href={`/products/${product.id}`}
+      aria-label={`View ${product.name}`}
+      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-neutral-100 pl-3 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
+    >
+      <span
+        className="max-w-[78px] text-[15px] font-bold leading-tight text-foreground md:max-w-[110px] md:text-base"
+        style={{ WebkitTextStroke: "0.25px currentColor" }}
+      >
+        {visibleName}
+        {isChanging && (
+          <span aria-hidden="true" className="ml-px inline-block h-[0.9em] w-px animate-pulse bg-current align-middle" />
+        )}
+      </span>
+      <div className="relative h-full w-[46%] shrink-0 md:w-[42%]">
+        <div className={`absolute inset-0 ${product.id === "chaotic-club" ? "scale-[0.93]" : ""}`}>
+          <div className={`absolute inset-0 transition-all duration-700 ease-in-out ${showImage ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}>
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 25vw, 160px"
+              className={`popular-card-image-breathe ${product.id === "chaotic-club" ? "object-contain" : "object-cover"}`}
+              style={popularImageBreaths[index % popularImageBreaths.length]}
+            />
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function JacketCard({
+  product,
+  priority = false,
+}: {
+  product: Product;
+  priority?: boolean;
+}) {
   return (
     <article className="group relative min-w-0">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#f5f5f5] dark:bg-[#242424]">
@@ -47,8 +152,69 @@ function JacketCard({ product, priority = false }: { product: Product; priority?
 }
 
 export default function Home() {
-  const [activeFilter, setActiveFilter] = useState("jackets");
-  const visibleProducts = products.filter((product) => product.category === activeFilter);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [popularProducts, setPopularProducts] = useState(initialPopularProducts);
+  const [changingPopularIndex, setChangingPopularIndex] = useState<number | null>(null);
+  const popularProductsRef = useRef(initialPopularProducts);
+  const popularRotationTimer = useRef<number | null>(null);
+  const popularRotationOrder = useRef<number[]>([]);
+  const nextRotationPosition = useRef(0);
+  const startPopularChange = useCallback((index: number) => {
+    const displayedIds = new Set(popularProductsRef.current.map((product) => product.id));
+    const alternatives = products.filter((product) => !displayedIds.has(product.id));
+    if (alternatives.length === 0) return;
+
+    const nextProduct = alternatives[Math.floor(Math.random() * alternatives.length)];
+    const nextProducts = popularProductsRef.current.map((product, slot) =>
+      slot === index ? nextProduct : product
+    );
+    popularProductsRef.current = nextProducts;
+    setPopularProducts(nextProducts);
+    setChangingPopularIndex(index);
+  }, []);
+  const handlePopularTransitionComplete = useCallback(() => {
+    setChangingPopularIndex(null);
+    if (nextRotationPosition.current < popularRotationOrder.current.length) {
+      const nextIndex = popularRotationOrder.current[nextRotationPosition.current];
+      nextRotationPosition.current += 1;
+      if (nextIndex !== undefined) {
+        popularRotationTimer.current = window.setTimeout(() => startPopularChange(nextIndex), 1000);
+      }
+      return;
+    }
+
+    popularRotationTimer.current = window.setTimeout(() => {
+      const order = randomCardOrder(initialPopularProducts.length);
+      popularRotationOrder.current = order;
+      nextRotationPosition.current = 1;
+      const firstIndex = order[0];
+      if (firstIndex !== undefined) startPopularChange(firstIndex);
+    }, 3000);
+  }, [startPopularChange]);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    popularRotationOrder.current = randomCardOrder(initialPopularProducts.length);
+    nextRotationPosition.current = 1;
+    const firstIndex = popularRotationOrder.current[0];
+    if (firstIndex === undefined) return;
+
+    popularRotationTimer.current = window.setTimeout(() => startPopularChange(firstIndex), 3000);
+    return () => {
+      if (popularRotationTimer.current !== null) window.clearTimeout(popularRotationTimer.current);
+    };
+  }, [startPopularChange]);
+
+  const visibleProducts =
+    activeFilter === "all"
+      ? filters
+          .filter((filter) => filter.category !== "all")
+          .flatMap((filter) => products.filter((product) => product.category === filter.category))
+      : products.filter((product) => product.category === activeFilter);
+  const displayedProducts = visibleProducts.slice(0, 12);
+  const hasMoreProducts = visibleProducts.length > displayedProducts.length;
+  const viewAllHref = activeFilter === "all" ? "/products" : `/categories/${activeFilter}`;
 
   return (
     <main className="home-page min-h-screen bg-background">
@@ -56,7 +222,7 @@ export default function Home() {
         <div className="mb-3 flex items-center justify-between gap-4">
           <h1 id="popular-products-title" className="text-base font-medium md:text-xl lg:text-2xl">Popular Product</h1>
           <Link
-            href="/categories/jackets"
+            href={activeFilter === "all" ? "/products" : `/categories/${activeFilter}`}
             className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-foreground/35 md:text-base"
           >
             See more
@@ -65,23 +231,14 @@ export default function Home() {
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-2 sm:gap-3 md:mb-8 md:grid-cols-4 md:gap-4">
-          {popularItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-neutral-100 pl-3 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
-            >
-              <span className="max-w-[78px] text-[15px] font-semibold leading-tight md:max-w-[110px] md:text-base">{item.name}</span>
-              <div className="relative h-full w-[46%] shrink-0 md:w-[42%]">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  sizes="(max-width: 640px) 25vw, 160px"
-                  className={item.name === "Chaotic Club" ? "scale-[0.93] object-contain" : "object-cover"}
-                />
-              </div>
-            </Link>
+          {popularProducts.map((product, index) => (
+            <PopularProductCard
+              key={index}
+              product={product}
+              index={index}
+              isChanging={changingPopularIndex === index}
+              onTransitionComplete={handlePopularTransitionComplete}
+            />
           ))}
         </div>
 
@@ -104,8 +261,8 @@ export default function Home() {
         </div>
 
         {visibleProducts.length > 0 ? (
-          <div className="mx-auto grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4 md:gap-y-6 lg:max-w-5xl lg:gap-x-8">
-            {visibleProducts.map((product, index) => (
+          <div className="mx-auto grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4 md:grid-cols-3 md:gap-y-6 lg:max-w-5xl lg:gap-x-8">
+            {displayedProducts.map((product, index) => (
               <JacketCard key={product.id} product={product} priority={index < 2} />
             ))}
           </div>
@@ -113,6 +270,17 @@ export default function Home() {
           <p className="border-t border-border py-12 text-center text-sm text-muted-foreground">
             No products in this category yet.
           </p>
+        )}
+        {hasMoreProducts && (
+          <div className="mt-8 flex justify-center">
+            <Link
+              href={viewAllHref}
+              className="inline-flex items-center gap-1 rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              View all in store
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+          </div>
         )}
       </section>
     </main>

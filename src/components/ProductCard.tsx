@@ -22,7 +22,17 @@ export function Stars({ rating, className = "" }: { rating: number; className?: 
   );
 }
 
-export default function ProductCard({ product, index }: { product: Product; index?: number }) {
+export default function ProductCard({
+  product,
+  index,
+  showIndex = true,
+  showSku = true,
+}: {
+  product: Product;
+  index?: number;
+  showIndex?: boolean;
+  showSku?: boolean;
+}) {
   return (
     <motion.div
       layout
@@ -45,7 +55,7 @@ export default function ProductCard({ product, index }: { product: Product; inde
             <span className="link-underline text-sm font-medium leading-snug">{product.name}</span>
           </Link>
         </div>
-        {typeof index === "number" && (
+        {showIndex && typeof index === "number" && (
           <span className="font-mono2 text-[10px] text-muted-foreground">{String(index + 1).padStart(3, "0")}</span>
         )}
       </div>
@@ -57,7 +67,11 @@ export default function ProductCard({ product, index }: { product: Product; inde
             <span className="ml-2 text-xs text-muted-foreground line-through">{formatPrice(product.compareAt)}</span>
           )}
         </span>
-        <span className="font-mono2 text-[10px] uppercase tracking-wider text-muted-foreground">{product.sku}</span>
+        {showSku && (
+          <span className="font-mono2 text-[10px] uppercase tracking-wider text-muted-foreground">
+            {product.sku}
+          </span>
+        )}
       </div>
 
       <div className="relative mt-4 aspect-square overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">

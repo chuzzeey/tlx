@@ -80,18 +80,13 @@ function Orders() {
                 <p className="font-mono2 text-[11px] text-muted-foreground">
                   <MapPin className="mr-1 inline h-3 w-3" /> {o.address}
                 </p>
-                <div className="flex gap-4">
-                  {o.status === "In transit" && (
+                {o.status === "In transit" && (
+                  <div className="flex gap-4">
                     <button onClick={() => toast.info("Tracking", { description: "Parcel is in transit — expected Thursday." })} className="link-underline font-mono2 text-[11px] uppercase tracking-[0.15em]">
                       Track parcel
                     </button>
-                  )}
-                  {o.status === "Delivered" && (
-                    <Link href="/support/returns" className="link-underline font-mono2 text-[11px] uppercase tracking-[0.15em]">
-                      Start a return
-                    </Link>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
