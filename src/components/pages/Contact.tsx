@@ -29,7 +29,7 @@ export default function Contact() {
     }
     setReference(`MSG-${Math.floor(1000 + Math.random() * 9000)}`);
     setSent(true);
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
 
   return (
