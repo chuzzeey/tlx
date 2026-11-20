@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -68,7 +68,7 @@ export default function Login() {
                 <label htmlFor="login-name" className="mb-2 block text-sm font-medium">
                   Name
                 </label>
-                <div className="mb-5 flex h-[54px] items-center gap-3 rounded-2xl bg-neutral-50 px-4 dark:bg-muted">
+                <div className="mb-5 flex h-[54px] items-center border-b border-border focus-within:border-foreground">
                   <input
                     id="login-name"
                     type="text"
@@ -77,7 +77,7 @@ export default function Login() {
                     onChange={(event) => setName(event.target.value)}
                     placeholder="Your name"
                     required
-                    className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
                   />
                 </div>
               </>
@@ -86,8 +86,7 @@ export default function Login() {
             <label htmlFor="login-identifier" className="mb-2 block text-sm font-medium">
               Email or Phone Number
             </label>
-            <div className="flex h-[54px] items-center gap-3 rounded-2xl bg-neutral-50 px-4 dark:bg-muted">
-              <Mail className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <div className="flex h-[54px] items-center border-b border-border focus-within:border-foreground">
               <input
                 id="login-identifier"
                 type="text"
@@ -96,15 +95,14 @@ export default function Login() {
                 onChange={(event) => setIdentifier(event.target.value)}
                 placeholder="Enter your email or phone number"
                 required
-                className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
               />
             </div>
 
             <label htmlFor="login-password" className="mb-2 mt-5 block text-sm font-medium">
               Password
             </label>
-            <div className="flex h-[54px] items-center gap-3 rounded-2xl bg-neutral-50 px-4 dark:bg-muted">
-              <KeyRound className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <div className="flex h-[54px] items-center border-b border-border focus-within:border-foreground">
               <input
                 id="login-password"
                 type={showPassword ? "text" : "password"}
@@ -113,7 +111,7 @@ export default function Login() {
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder={isCreatingAccount ? "Create a password" : "Enter your password"}
                 required
-                className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
               />
               <button
                 type="button"
