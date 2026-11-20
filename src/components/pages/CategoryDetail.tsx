@@ -27,7 +27,7 @@ function MobileProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.name}
             fill
-            sizes="(max-width: 767px) 50vw"
+            sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
             className="object-contain p-2"
           />
         </Link>
@@ -117,7 +117,9 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               src={category.image}
               alt=""
               fill
-              sizes="(max-width: 767px) 50vw"
+              loading="eager"
+              fetchPriority="high"
+              sizes="(max-width: 767px) 54vw, 620px"
               className="object-contain object-right p-2"
             />
           </div>

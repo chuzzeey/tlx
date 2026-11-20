@@ -79,6 +79,7 @@ export default function ProductCard({
           <FadeImage
             src={product.image}
             alt={product.name}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
             className="h-full w-full bg-transparent"
             imgClassName="h-full w-full object-contain p-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
           />

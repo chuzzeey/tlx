@@ -67,6 +67,8 @@ export default function ContentHub() {
                   <FadeImage
                     src={featured.image}
                     alt={featured.title}
+                    eager
+                    sizes="(max-width: 1023px) 100vw, 50vw"
                     className="aspect-[3/2] h-full"
                     imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
@@ -98,6 +100,7 @@ export default function ContentHub() {
                     <FadeImage
                       src={p.image}
                       alt={p.title}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1023px) 50vw, 33vw"
                       className="aspect-[3/2]"
                       imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     />

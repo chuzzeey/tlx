@@ -272,7 +272,7 @@ export default function SearchPalette({
                                 src={item.image}
                                 alt={item.name}
                                 fill
-                                sizes="(max-width: 767px) 50vw"
+                                sizes="(max-width: 767px) 50vw, 360px"
                                 className="object-contain p-2"
                               />
                             </Link>

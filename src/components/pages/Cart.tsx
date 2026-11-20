@@ -224,7 +224,7 @@ export default function Cart() {
                       src={p.image}
                       alt={p.name}
                       fill
-                      sizes="104px"
+                      sizes="(max-width: 767px) 104px, 128px"
                       className="object-contain p-2"
                     />
                   </Link>

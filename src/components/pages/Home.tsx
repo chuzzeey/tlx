@@ -117,10 +117,10 @@ function PopularProductCard({
 
 function JacketCard({
   product,
-  priority = false,
+  eager = false,
 }: {
   product: Product;
-  priority?: boolean;
+  eager?: boolean;
 }) {
   return (
     <article className="group relative min-w-0">
@@ -130,7 +130,8 @@ function JacketCard({
             src={product.image}
             alt={product.name}
             fill
-            priority={priority}
+            loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : undefined}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 320px"
             className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
           />
@@ -263,7 +264,7 @@ export default function Home() {
         {visibleProducts.length > 0 ? (
           <div className="mx-auto grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4 md:grid-cols-3 md:gap-y-6 lg:max-w-5xl lg:gap-x-8">
             {displayedProducts.map((product, index) => (
-              <JacketCard key={product.id} product={product} priority={index < 2} />
+              <JacketCard key={product.id} product={product} eager={index === 0} />
             ))}
           </div>
         ) : (

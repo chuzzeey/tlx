@@ -18,7 +18,7 @@ export default function FadeImage({
   className = "",
   imgClassName = "",
   eager = false,
-  sizes = "(max-width: 768px) 100vw, 50vw",
+  sizes = "(max-width: 768px) 50vw, 33vw",
 }: {
   src: string;
   alt: string;
@@ -37,11 +37,12 @@ export default function FadeImage({
         alt={alt}
         fill
         sizes={sizes}
-        priority={eager}
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : undefined}
         onLoad={onLoad}
         initial={{ opacity: 0 }}
         animate={{ opacity: loaded ? 1 : 0 }}
-        transition={{ duration: 0.6, ease: EASE }}
+        transition={{ duration: 0.2, ease: EASE }}
         className={imgClassName}
       />
       {!loaded && <div aria-hidden className="pointer-events-none absolute inset-0 animate-pulse bg-muted" />}

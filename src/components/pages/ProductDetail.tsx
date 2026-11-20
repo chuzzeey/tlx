@@ -225,6 +225,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 fill
                 sizes="(max-width: 767px) 100vw, (max-width: 1400px) 50vw, 700px"
                 loading="eager"
+                fetchPriority="high"
                 className="object-contain p-3"
                 initial={{ opacity: 0, scale: 1.04 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -648,8 +649,8 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 src={gallery[imgIdx]}
                 alt={product.name}
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                loading="eager"
+                sizes="(max-width: 767px) 100vw, 50vw"
+                loading="lazy"
                 className="object-cover"
                 initial={{ opacity: 0, scale: 1.06 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -666,7 +667,14 @@ export default function ProductDetail({ productId }: { productId: string }) {
                   onClick={() => setImgIdx(i)}
                   className={`border transition-colors ${i === imgIdx ? "border-foreground" : "border-border hover:border-foreground/50"}`}
                 >
-                  <Image src={g} alt="" width={400} height={400} className="aspect-square w-full bg-muted object-cover" />
+                  <Image
+                    src={g}
+                    alt=""
+                    width={400}
+                    height={400}
+                    sizes="(max-width: 767px) 48px, 16vw"
+                    className="aspect-square w-full bg-muted object-cover"
+                  />
                 </button>
               ))}
             </div>

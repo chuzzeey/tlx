@@ -167,13 +167,13 @@ export function ImageReveal({
         alt={alt}
         fill
         sizes={sizes}
-        priority
+        loading="lazy"
         onLoad={onLoad}
         className={imgClassName}
         initial={{ scale: 1.12, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
         viewport={{ once: true, margin: "0px 0px 200px 0px" }}
-        transition={{ duration: 1.3, delay, ease: EASE }}
+        transition={{ duration: 0.45, delay, ease: EASE }}
       />
     </motion.div>
   );

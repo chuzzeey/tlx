@@ -53,6 +53,8 @@ export default function Categories() {
                   <FadeImage
                     src={category.image}
                     alt={category.name}
+                    eager={index === 0}
+                    sizes="(max-width: 767px) 54vw, (max-width: 1023px) 27vw, 18vw"
                     className="absolute inset-y-0 right-0 w-[54%] bg-transparent"
                     imgClassName="object-contain object-right p-2 transition-transform duration-500 group-hover:scale-105"
                   />

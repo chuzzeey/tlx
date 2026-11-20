@@ -68,13 +68,14 @@ export default function PostDetail({ postId }: { postId: string }) {
             src={post.image}
             alt={post.title}
             fill
-            priority
+            loading="eager"
+            fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 1024px"
             onLoad={heroOnLoad}
             className="object-cover"
             initial={{ opacity: 0, scale: 1.1 }}
             animate={heroLoaded ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.1 }}
-            transition={{ duration: 1.4, ease: EASE }}
+            transition={{ duration: 0.45, ease: EASE }}
           />
         </motion.div>
       </div>
@@ -151,6 +152,7 @@ export default function PostDetail({ postId }: { postId: string }) {
                 <FadeImage
                   src={p.image}
                   alt={p.title}
+                  sizes="192px"
                   className="w-40 shrink-0 sm:w-48"
                   imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
                 />

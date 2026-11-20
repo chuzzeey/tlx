@@ -41,7 +41,7 @@ function CheckoutHeader({ count }: { count: number }) {
         aria-label={`Cart, ${count} items`}
         data-cart-target
         data-cart-target-priority="2"
-        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-100"
+        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-muted"
       >
         <Handbag className="h-5 w-5" />
         {count > 0 && (
@@ -174,7 +174,7 @@ export default function Checkout() {
                   if (!p) return null;
                   return (
                     <li key={line.productId + (line.color ?? "") + (line.size ?? "")} className="flex items-center gap-4 py-4">
-                      <Image src={p.image} alt="" width={72} height={72} className="h-[72px] w-[72px] shrink-0 rounded-xl bg-neutral-100 object-contain p-1.5 dark:bg-background" />
+                      <Image src={p.image} alt="" width={72} height={72} sizes="72px" className="h-[72px] w-[72px] shrink-0 rounded-xl bg-neutral-100 object-contain p-1.5 dark:bg-background" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium">{p.name}</span>
                         {(line.size || line.color) && (

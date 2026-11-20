@@ -121,7 +121,8 @@ function StoreProductCard({ product, index }: { product: Product; index: number 
             src={product.image}
             alt={product.name}
             fill
-            priority={index < 2}
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchPriority={index === 0 ? "high" : undefined}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
           />
