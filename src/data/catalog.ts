@@ -16,6 +16,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   image: string;
+  gallery?: string[];
   description: string;
   story: string;
   materials: string;
@@ -40,7 +41,22 @@ export const categories: Category[] = [
   { slug: "garden", name: "Garden", tagline: "Small-scale green", description: "Terracotta, steel and tools for balconies, sills and tiny plots. Proof that a garden is a practice, not a postcode.", image: "/images/products/planters.webp" },
   { slug: "storage", name: "Storage", tagline: "Order, beautifully", description: "Woven baskets and modular shelving that make putting things away feel like arranging a still life.", image: "/images/products/baskets.webp" },
   { slug: "tableware", name: "Tableware", tagline: "Set the table properly", description: "Cutlery and glassware with genuine heft. Mouth-blown stems, hand-finished tines — details your guests will notice without knowing why.", image: "/images/products/wine-glasses.webp" },
-  { slug: "jackets", name: "Jackets", tagline: "Layers for every day", description: "Everyday outerwear, from sherpa-lined denim to relaxed bomber jackets.", image: "/images/products/sherpa-denim-jacket.jpg" },
+  { slug: "jackets", name: "Jackets", tagline: "Layers for every day", description: "Everyday outerwear, from statement jackets to relaxed bombers.", image: "/images/products/stussy-jacket.png" },
+  { slug: "apparel", name: "T-Shirts", tagline: "Casual essentials", description: "Distinctive everyday clothing from independent labels, made for easy layering and self-expression.", image: "/images/products/chaotic-club-spooky.png" },
+  { slug: "shoes", name: "Shoes", tagline: "Made to move", description: "Comfortable everyday footwear with considered materials and distinctive details.", image: "/images/products/sneakers.png" },
+  { slug: "bags", name: "Bags", tagline: "Carry your day", description: "Practical carryalls with thoughtful shapes and details for everyday use.", image: "/images/products/pearl-seashell-bag.png" },
+  { slug: "accessories", name: "Accessories", tagline: "The finishing details", description: "Useful finishing pieces designed to bring character to everyday outfits.", image: "/images/products/mens-golf-cap.png" },
+];
+
+export const categoryIndexCategories = ["jackets", "apparel", "shoes", "bags", "accessories"]
+  .map((slug) => categories.find((category) => category.slug === slug))
+  .filter((category): category is Category => category !== undefined);
+
+export const popularItems = [
+  { name: "Chaotic Club", image: "/images/products/chaotic-club-spooky.png", href: "/products/chaotic-club" },
+  { name: "Sneakers", image: "/images/products/sneakers.png", href: "/products/sneakers" },
+  { name: "Seashell Bag", image: "/images/products/pearl-seashell-bag.png", href: "/products/seashell-bag" },
+  { name: "Men's Golf Cap", image: "/images/products/mens-golf-cap.png", href: "/products/mens-golf-cap" },
 ];
 
 export const products: Product[] = [
@@ -250,22 +266,58 @@ export const products: Product[] = [
     stock: 15, badge: "Bestseller",
   },
   {
-    id: "sherpa-denim-jacket", sku: "APP-001", name: "Sherpa-Lined Denim Jacket", category: "jackets",
-    price: 234, rating: 4.9, reviewCount: 5231, image: "/images/products/sherpa-denim-jacket.jpg",
-    description: "A relaxed denim jacket with a soft sherpa collar and warm lining for cooler days.",
-    story: "An easy everyday layer with a classic denim finish and a cozy collar.",
-    materials: "Cotton denim shell, sherpa lining", dimensions: "Relaxed fit; hip length", care: "Machine wash cold with like colors. Hang to dry.",
+    id: "stussy-jacket", sku: "APP-001", name: "Stussy Jacket", category: "jackets",
+    price: 234, rating: 4.9, reviewCount: 5231, image: "/images/products/stussy-jacket.png",
+    description: "The Stussy Jacket is a relaxed varsity-inspired layer with bold graphic details, made to bring an easy statement to everyday outfits. Its comfortable fit makes it simple to wear over a tee or knit through the season.",
+    story: "An easy everyday layer with a clean silhouette and unmistakable presence.",
+    materials: "Cotton blend outer shell", dimensions: "Relaxed fit; hip length", care: "Machine wash cold with like colors. Hang to dry.",
     stock: 18, badge: "Bestseller", featured: true,
     colors: [{ name: "Washed blue", hex: "#71879a" }],
   },
   {
-    id: "rust-bomber-jacket", sku: "APP-002", name: "Rust Bomber Jacket", category: "jackets",
-    price: 228, rating: 4.8, reviewCount: 4928, image: "/images/products/brown-jacket.jpg",
-    description: "A lightweight bomber jacket in a warm rust shade, finished with a zip front and ribbed trims.",
+    id: "mwdbl-jacket", sku: "APP-002", name: "MWDBL Jacket", category: "jackets",
+    price: 228, rating: 4.8, reviewCount: 4928, image: "/images/products/mwdbl-jacket.png",
+    description: "The MWDBL Jacket pairs a deep green body with cream panels and a relaxed fit for an easy, distinctive everyday layer. Its bold contrast details work well over a tee or lightweight knit.",
     story: "A versatile layer designed to work over a tee or knit through changing seasons.",
-    materials: "Woven shell with cotton-blend ribbed trims", dimensions: "Regular fit; hip length", care: "Machine wash cold on a gentle cycle. Hang to dry.",
+    materials: "Woven outer shell with a relaxed lining", dimensions: "Regular fit; hip length", care: "Machine wash cold on a gentle cycle. Hang to dry.",
     stock: 16, badge: "New", featured: true,
     colors: [{ name: "Rust", hex: "#ad694f" }],
+  },
+  {
+    id: "chaotic-club", sku: "APP-003", name: "Chaotic Club", category: "apparel",
+    price: 88, rating: 4.8, reviewCount: 216, image: "/images/products/chaotic-club-spooky.png",
+    gallery: ["/images/products/stussy-jacket.png", "/images/products/mwdbl-jacket.png"],
+    description: "A bold graphic layer with a relaxed fit and standout number detailing. Easy to style over a tee for an expressive everyday look.",
+    story: "Designed as a versatile statement piece that brings streetwear character to a casual wardrobe.",
+    materials: "Cotton jersey blend", dimensions: "Relaxed fit; hip length", care: "Machine wash cold with like colors. Hang to dry.",
+    stock: 24, badge: "New",
+  },
+  {
+    id: "sneakers", sku: "SHO-001", name: "Sneakers", category: "shoes",
+    price: 120, rating: 4.7, reviewCount: 184, image: "/images/products/sneakers.png",
+    gallery: ["/images/products/bucket-hat.jpg", "/images/products/chaotic-club-spooky.png"],
+    description: "Everyday sneakers with a layered blue-and-white upper and a cushioned sole, made for comfortable walks and easy styling.",
+    story: "A practical, versatile pair designed to bring a fresh color accent to daily outfits.",
+    materials: "Mesh and synthetic leather upper, rubber outsole", dimensions: "Low-top profile", care: "Spot clean with a soft damp cloth. Air dry.",
+    stock: 32, badge: "Bestseller",
+  },
+  {
+    id: "seashell-bag", sku: "BAG-001", name: "Seashell Bag", category: "bags",
+    price: 95, rating: 4.9, reviewCount: 93, image: "/images/products/pearl-seashell-bag.png",
+    gallery: ["/images/products/baskets.webp", "/images/products/bucket-hat.jpg"],
+    description: "A compact shoulder bag with a softly curved silhouette, a rich burgundy finish, and room for everyday essentials.",
+    story: "A distinctive everyday accessory with a sculptural shape that moves easily from day to evening.",
+    materials: "Textured synthetic leather with metal hardware", dimensions: "Compact shoulder bag", care: "Wipe clean with a soft dry cloth. Store in a dust bag.",
+    stock: 18, badge: "New",
+  },
+  {
+    id: "mens-golf-cap", sku: "ACC-001", name: "Men's Golf Cap", category: "accessories",
+    price: 48, rating: 4.6, reviewCount: 71, image: "/images/products/mens-golf-cap.png",
+    gallery: ["/images/products/bucket-hat.jpg", "/images/products/mwdbl-jacket.png"],
+    description: "A classic six-panel cap with a curved brim and understated embroidered detail, suited to the course and everyday wear.",
+    story: "A versatile finishing piece designed for comfortable wear through long days outdoors.",
+    materials: "Cotton twill", dimensions: "Adjustable one-size fit", care: "Spot clean gently. Do not machine wash.",
+    stock: 40,
   },
 ];
 
@@ -281,12 +333,12 @@ export interface Review {
 }
 
 const reviewPool: Review[] = [
-  { id: "r01", author: "Maren K.", location: "Copenhagen", rating: 5, date: "2026-07-28", title: "Exceeded every expectation", body: "The weight, the finish, the packaging — everything signals care. This is the third piece I've bought from Aurelle and the quality has never wavered.", verified: true },
+  { id: "r01", author: "Maren K.", location: "Copenhagen", rating: 5, date: "2026-07-28", title: "Exceeded every expectation", body: "The weight, the finish, the packaging — everything signals care. This is the third piece I've bought from TLX Originals and the quality has never wavered.", verified: true },
   { id: "r02", author: "Daniel O.", location: "Melbourne", rating: 5, date: "2026-07-19", title: "Better in person", body: "Photos don't do it justice. The texture and colour depth are something you only get in real life. Shipping was faster than promised, too.", verified: true },
   { id: "r03", author: "Sofia L.", location: "Barcelona", rating: 4, date: "2026-07-11", title: "Lovely, slight variation", body: "Beautiful piece. Mine is slightly darker than the product photo, which I actually prefer — but worth knowing each one is unique.", verified: true },
   { id: "r04", author: "James T.", location: "London", rating: 5, date: "2026-06-30", title: "The comment magnet", body: "Every guest asks where it's from. It has quietly become the focal point of the room. Would buy again without hesitation.", verified: true },
   { id: "r05", author: "Aisha R.", location: "Toronto", rating: 4, date: "2026-06-22", title: "Slow ship, great product", body: "Took nine days to arrive, which tested my patience — but the moment I unboxed it I forgave everything. Genuinely well made.", verified: true },
-  { id: "r06", author: "Henrik B.", location: "Oslo", rating: 5, date: "2026-06-15", title: "Heirloom territory", body: "This feels like something I'll hand down. The materials are honest and the construction is flawless. Aurelle's care guide was a thoughtful touch.", verified: true },
+  { id: "r06", author: "Henrik B.", location: "Oslo", rating: 5, date: "2026-06-15", title: "Heirloom territory", body: "This feels like something I'll hand down. The materials are honest and the construction is flawless. TLX Originals' care guide was a thoughtful touch.", verified: true },
   { id: "r07", author: "Yuki M.", location: "Kyoto", rating: 5, date: "2026-06-08", title: "Quietly perfect", body: "No branding, no noise — just a beautifully resolved object. It sits in my home like it was always meant to be there.", verified: true },
   { id: "r08", author: "Clara W.", location: "New York", rating: 4, date: "2026-05-29", title: "Great, wish I'd bought two", body: "Quality is superb for the price. My only regret is ordering one — I'm already back for a second. The wishlist feature came in handy.", verified: true },
   { id: "r09", author: "Tomás E.", location: "Lisbon", rating: 5, date: "2026-05-20", title: "Craft you can feel", body: "You can tell within seconds of handling it that a person made this. Slight irregularities in the finish are, to me, the whole point.", verified: true },
@@ -308,6 +360,15 @@ export function reviewsFor(productId: string): Review[] {
     out.push(reviewPool[(hash + k * 5) % reviewPool.length]);
   }
   return out;
+}
+
+const cardReviewCountOverrides: Record<string, number> = {
+  "stussy-jacket": 216,
+  "mwdbl-jacket": 184,
+};
+
+export function cardReviewCount(product: Product): number {
+  return cardReviewCountOverrides[product.id] ?? product.reviewCount;
 }
 
 export function productById(id: string): Product | undefined {

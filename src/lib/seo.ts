@@ -1,12 +1,11 @@
 import { categoryName, priceInNgn, type Product } from "@/data/catalog";
 import type { Post } from "@/data/content";
 
-/** Public origin used for canonical URLs, Open Graph and JSON-LD.
- *  Swap for the real domain when the shop goes live. */
-export const SITE_URL = "https://aurelle.shop";
-export const SITE_NAME = "Aurelle";
+/** Set NEXT_PUBLIC_SITE_URL to the production origin before deployment. */
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+export const SITE_NAME = "TLX Originals";
 export const SITE_DESCRIPTION =
-  "Ceramics, textiles, lighting and furniture from 38 independent studios — chosen slowly, made honestly, and guaranteed to be worth keeping.";
+  "No Hype. Just Motion! Shop jackets, T-shirts, shoes, bags, and accessories from TLX Originals.";
 
 export const abs = (path: string) => `${SITE_URL}${path}`;
 
@@ -20,11 +19,10 @@ export function organizationJsonLd() {
       name: SITE_NAME,
       url: SITE_URL,
       description: SITE_DESCRIPTION,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "Gothersgade 21",
-        addressLocality: "Copenhagen",
-        addressCountry: "DK",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+234 802 904 1081",
+        contactType: "customer service",
       },
     },
     {

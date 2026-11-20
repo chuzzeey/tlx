@@ -2,6 +2,8 @@ export interface OrderItem {
   productId: string;
   qty: number;
   price: number;
+  size?: string;
+  color?: string;
 }
 
 export interface Order {
@@ -14,6 +16,16 @@ export interface Order {
 }
 
 export const orders: Order[] = [
+  {
+    id: "AUR-1056", date: "2026-08-08", status: "Processing", shipping: 0,
+    address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
+    items: [{ productId: "mwdbl-jacket", qty: 2, price: 228, size: "M" }],
+  },
+  {
+    id: "AUR-1053", date: "2026-08-07", status: "Processing", shipping: 0,
+    address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
+    items: [{ productId: "mens-golf-cap", qty: 1, price: 48 }],
+  },
   {
     id: "AUR-1042", date: "2026-08-06", status: "In transit", shipping: 0,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
@@ -73,7 +85,7 @@ export const accountProfile = {
   email: "astrid.vester@example.com",
   phone: "+45 31 44 20 18",
   joined: "March 2023",
-  tier: "Circle member",
+  tier: "Platinum Member",
 };
 
 export function orderTotal(o: Order): number {

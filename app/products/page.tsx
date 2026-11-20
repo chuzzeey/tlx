@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import Products from "@/components/pages/Products";
 import JsonLd from "@/components/JsonLd";
 import { products } from "@/data/catalog";
-import { collectionJsonLd } from "@/lib/seo";
+import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
-const title = "Shop All Objects";
+const title = "Shop All Products";
 const description =
-  "The full Aurelle collection — ceramics, textiles, lighting, furniture and more, made slowly by independent studios and kept for decades.";
+  "Shop the full TLX Originals collection of jackets, T-shirts, shoes, bags, and accessories.";
 
 export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/products" },
-  openGraph: { title: `${title} — Aurelle`, description, images: ["/images/products/vase-01.webp"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/vase-01.webp"] },
 };
 
 export default function Page() {

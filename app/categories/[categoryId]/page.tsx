@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import CategoryDetail from "@/components/pages/CategoryDetail";
 import JsonLd from "@/components/JsonLd";
 import { categories, categoryBySlug, productsByCategory } from "@/data/catalog";
-import { breadcrumbJsonLd, collectionJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 type Params = Promise<{ categoryId: string }>;
 
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     description: category.description,
     alternates: { canonical: `/categories/${category.slug}` },
     openGraph: {
-      title: `${category.name} — Aurelle`,
+      title: `${category.name} — ${SITE_NAME}`,
       description: category.description,
       images: [{ url: category.image, alt: category.name }],
     },

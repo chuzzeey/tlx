@@ -3,7 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown, LogOut, MapPin, Moon, Package, Settings, Sun, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowUpRight,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  CreditCard,
+  Crown,
+  LayoutGrid,
+  LogOut,
+  MapPin,
+  Moon,
+  Package,
+  Settings,
+  Store,
+  Sun,
+  Ticket,
+  Truck,
+  User,
+} from "lucide-react";
 import { accountProfile, addresses, orders, orderTotal } from "@/data/account";
 import { formatPrice, productById, type Product } from "@/data/catalog";
 import { PageHeader } from "@/components/ProductCard";
@@ -67,9 +86,11 @@ function Orders() {
                       Track parcel
                     </button>
                   )}
-                  <Link href="/support/returns" className="link-underline font-mono2 text-[11px] uppercase tracking-[0.15em]">
-                    Start a return
-                  </Link>
+                  {o.status === "Delivered" && (
+                    <Link href="/support/returns" className="link-underline font-mono2 text-[11px] uppercase tracking-[0.15em]">
+                      Start a return
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -80,7 +101,141 @@ function Orders() {
   );
 }
 
+function ProfileMenuRow({
+  icon: Icon,
+  label,
+  value,
+  href,
+  onClick,
+}: {
+  icon: typeof CreditCard;
+  label: string;
+  value?: string;
+  href?: string;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <Icon className="h-6 w-6 shrink-0 text-neutral-400" strokeWidth={1.6} aria-hidden="true" />
+      <span className="flex-1 text-[15px] font-medium">{label}</span>
+      {value && <span className="text-sm text-neutral-400">{value}</span>}
+      <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden="true" />
+    </>
+  );
+  const className = "flex min-h-[72px] w-full items-center gap-4 border-b border-neutral-100 py-3 text-left";
+
+  return href ? (
+    <Link href={href} className={className}>
+      {content}
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} className={className}>
+      {content}
+    </button>
+  );
+}
+
+function MobileAccountProfile({
+  name,
+  tier,
+  onSignOut,
+}: {
+  name: string;
+  tier: string;
+  onSignOut: () => void;
+}) {
+  const initials = name
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const transactions = [
+    { label: "Payment", group: "Waiting Payment", icon: CreditCard, active: true },
+    { label: "Packing", group: "Packing", icon: Package, active: false },
+    { label: "On Delivery", group: "On Delivery", icon: Truck, active: false },
+    { label: "Completed", group: "Completed", icon: Check, active: false },
+  ];
+
+  return (
+    <main className="min-h-[100dvh] bg-background md:hidden">
+      <div className="mx-auto max-w-[480px] px-4 pb-10 pt-8">
+        <section className="flex flex-col items-center text-center" aria-label="Profile">
+          <div
+            aria-hidden="true"
+            className="flex h-20 w-20 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 font-display text-3xl font-light text-neutral-600"
+          >
+            {initials}
+          </div>
+          <p className="mt-2 text-base font-semibold">{name}</p>
+          <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#f7edd9] px-4 py-2 text-sm font-medium text-[#896b36]">
+            <Crown className="h-4 w-4" aria-hidden="true" />
+            {tier}
+          </span>
+        </section>
+
+        <section className="mt-6" aria-labelledby="account-transactions">
+          <h1 id="account-transactions" className="text-lg font-semibold">Transaction</h1>
+          <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2">
+            {transactions.map(({ label, group, icon: Icon, active }) => (
+              <Link
+                key={label}
+                href={`/orders?group=${encodeURIComponent(group)}`}
+                aria-label={`${label} orders`}
+                className={`flex h-[92px] min-w-[108px] shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border px-3 text-center text-sm transition-colors ${
+                  active
+                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    : "border-neutral-100 bg-white text-neutral-400"
+                }`}
+              >
+                <Icon className="h-5 w-5" aria-hidden="true" />
+                <span className="whitespace-nowrap">{label}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <nav className="mt-2 border-t border-neutral-100" aria-label="Account services">
+          <ProfileMenuRow
+            icon={CreditCard}
+            label="E-Wallet"
+            onClick={() => toast.info("E-Wallet isn't available in this demo yet.")}
+          />
+          <ProfileMenuRow
+            icon={Crown}
+            label="Membership"
+            value={tier}
+            onClick={() => toast.info(`You're a ${tier}.`)}
+          />
+          <ProfileMenuRow
+            icon={Ticket}
+            label="Vouchers"
+            value="20 Vouchers"
+            onClick={() => toast.info("Voucher details aren't available in this demo yet.")}
+          />
+          <ProfileMenuRow
+            icon={Store}
+            label="Followed Shop"
+            onClick={() => toast.info("Followed shops aren't available in this demo yet.")}
+          />
+          <ProfileMenuRow icon={LayoutGrid} label="My Catalogue" href="/categories" />
+        </nav>
+
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="mt-8 inline-flex items-center gap-2 py-2 text-sm text-muted-foreground"
+        >
+          <LogOut className="h-4 w-4" aria-hidden="true" />
+          Sign out
+        </button>
+      </div>
+    </main>
+  );
+}
+
 export default function Account() {
+  const router = useRouter();
   const { theme, toggle } = useTheme();
   const { recent } = useShop();
   const [profile, setProfile] = useState({ name: accountProfile.name, email: accountProfile.email, phone: accountProfile.phone });
@@ -89,9 +244,17 @@ export default function Account() {
     .map((id) => productById(id))
     .filter((p): p is Product => Boolean(p))
     .slice(0, 6);
+  const signOut = () => {
+    window.localStorage.removeItem("aurelle-demo-session");
+    toast("Signed out", { description: "This is a demo — see you soon." });
+    router.push("/login");
+  };
 
   return (
-    <div>
+    <>
+      <MobileAccountProfile name={profile.name} tier={accountProfile.tier} onSignOut={signOut} />
+      <div className="hidden md:block">
+        <div>
       <PageHeader
         kicker={`${accountProfile.tier} · since ${accountProfile.joined}`}
         title={`Good evening, ${accountProfile.name.split(" ")[0]}.`}
@@ -144,6 +307,11 @@ export default function Account() {
           </TabsList>
 
           <TabsContent value="orders" className="mt-8">
+            <div className="mb-5 flex justify-end">
+              <Link href="/orders" className="inline-flex items-center gap-1.5 font-mono2 text-[11px] uppercase tracking-[0.15em] text-muted-foreground hover:text-foreground">
+                Open order history <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
             <Orders />
             <Footnote className="mt-6">
               Order history is kept for seven years — for warranty and repairs, not for marketing.
@@ -169,7 +337,11 @@ export default function Account() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="submit" className="btn-solid-invert">Save changes</button>
-                <button type="button" onClick={() => toast("Signed out", { description: "This is a demo — see you soon." })} className="btn-outline-invert">
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="btn-outline-invert"
+                >
                   <LogOut className="h-4 w-4" /> Sign out
                 </button>
               </div>
@@ -239,6 +411,8 @@ export default function Account() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

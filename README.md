@@ -1,4 +1,4 @@
-# Aurelle
+# TLX Originals
                    
 Live : [https://kimi-k3-ecommerce-storefront.vercel.app/](https://kimi-k3-ecommerce-storefront.vercel.app/)
 
@@ -91,7 +91,8 @@ All 15 routes are statically generated at build time (69 pages total) and serve 
 
 ### SEO
 
-- **Per-page metadata** — unique titles (`"%s — Aurelle"` template), descriptions, canonical URLs, Open Graph and Twitter cards with images; article pages use `og:type="article"` with publish dates and authors
+- **Per-page metadata** — unique titles (`"%s — TLX Originals"` template), descriptions, canonical URLs, Open Graph and Twitter cards with images; article pages use `og:type="article"` with publish dates and authors
+- Set `NEXT_PUBLIC_SITE_URL` to the production origin; the default is `http://localhost:3000` for local development
 - **Structured data (JSON-LD)** — Product (offers, price, availability, aggregate rating), Article, FAQPage, CollectionPage + ItemList, BreadcrumbList, Organization + WebSite
 - **Discovery** — `sitemap.xml` covering every public route, `robots.txt` referencing it
 - **Noindex** on bag, checkout, account, and wishlist so thin/private pages stay out of search results

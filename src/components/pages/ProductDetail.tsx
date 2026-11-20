@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Check, Heart, Minus, Plus, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import { ArrowLeft, Check, Handbag, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   categoryBySlug,
@@ -13,10 +13,12 @@ import {
   reviewsFor,
   type Product,
 } from "@/data/catalog";
+import { readCustomerReviews, type CustomerReview } from "@/data/customerReviews";
 import ProductCard, { Stars } from "@/components/ProductCard";
 import { EASE, Reveal, Stagger, StaggerItem } from "@/components/motion/motion";
 import { Barcode, Footnote } from "@/components/Ornaments";
 import { useShop } from "@/store/ShopContext";
+import { toast } from "sonner";
 import {
   Accordion,
   AccordionContent,
@@ -26,12 +28,30 @@ import {
 
 const MotionImage = motion.create(Image);
 
+function RatingStars({ rating }: { rating: number }) {
+  return (
+    <span className="inline-flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
+      {Array.from({ length: 5 }, (_, index) => (
+        <Star
+          key={index}
+          className={`h-4 w-4 ${index < Math.round(rating) ? "fill-amber-500 text-amber-500" : "text-neutral-300"}`}
+          aria-hidden="true"
+        />
+      ))}
+    </span>
+  );
+}
+
 export default function ProductDetail({ productId }: { productId: string }) {
   const product = productById(productId);
-  const { addToCart, toggleWishlist, wishlist, recordView, recent } = useShop();
+  const { addToCart, cartCount, recordView, recent } = useShop();
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState<string | undefined>(undefined);
   const [imgIdx, setImgIdx] = useState(0);
+  const [selectedSize, setSelectedSize] = useState("M");
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>([]);
 
   /* Keep a rolling trail of viewed pieces (this browser only) */
   useEffect(() => {
@@ -39,10 +59,22 @@ export default function ProductDetail({ productId }: { productId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?.id]);
 
+  useEffect(() => {
+    try {
+      // Browser-only review data is loaded after hydration to keep server markup stable.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCustomerReviews(readCustomerReviews());
+    } catch (error) {
+      toast.error("Saved reviews couldn't be loaded.", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  }, []);
+
   const gallery = useMemo(() => {
     if (!product) return [];
     const siblings = productsByCategory(product.category).filter((p) => p.id !== product.id);
-    return [product.image, ...siblings.map((s) => s.image)].slice(0, 3);
+    return [...new Set([product.image, ...(product.gallery ?? []), ...siblings.map((s) => s.image)])].slice(0, 3);
   }, [product]);
 
   if (!product) {
@@ -55,18 +87,253 @@ export default function ProductDetail({ productId }: { productId: string }) {
   }
 
   const cat = categoryBySlug(product.category);
-  const reviews = reviewsFor(product.id);
+  const productCustomerReviews = customerReviews.filter((review) => review.productId === product.id);
+  const reviews = [...productCustomerReviews, ...reviewsFor(product.id)];
+  const reviewCount = product.reviewCount + productCustomerReviews.length;
+  const averageRating = (
+    (product.rating * product.reviewCount +
+      productCustomerReviews.reduce((sum, review) => sum + review.rating, 0)) /
+    reviewCount
+  );
   const related = productsByCategory(product.category).filter((p) => p.id !== product.id);
   const recentOthers = recent
     .filter((id) => id !== product.id)
     .map((id) => productById(id))
     .filter((p): p is Product => Boolean(p))
     .slice(0, 4);
-  const wished = wishlist.includes(product.id);
   const low = product.stock <= 8;
+  const hasSizes = product.category === "jackets" || product.category === "apparel";
+  const addOneToCart = () =>
+    addToCart(product.id, 1, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined);
+  const descriptionPreview = product.description.match(/.*?[.!?](?:\s|$)/)?.[0].trim() ?? product.description;
+  const hasMoreDescription = descriptionPreview.length < product.description.length;
 
   return (
     <div>
+      <div className="mobile-product-page md:hidden">
+        <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4">
+          <Link
+            href={`/categories/${product.category}`}
+            aria-label={`Back to ${cat?.name ?? "category"}`}
+            className="flex h-11 w-11 items-center justify-center"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <p className="absolute left-1/2 max-w-[60%] -translate-x-1/2 truncate text-base font-semibold">
+            {product.name}
+          </p>
+          <Link
+            href="/cart"
+            aria-label={`Shopping bag, ${cartCount} items`}
+            data-cart-target
+            data-cart-target-priority="2"
+            className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-muted"
+          >
+            <Handbag className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+                {cartCount}
+              </span>
+            )}
+          </Link>
+        </div>
+
+        <div className="container-x pb-10 pt-5">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100">
+            <AnimatePresence mode="popLayout" initial={false}>
+              <MotionImage
+                key={gallery[imgIdx]}
+                src={gallery[imgIdx]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 767px) 100vw"
+                loading="eager"
+                className="object-contain p-3"
+                initial={{ opacity: 0, scale: 1.04 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45, ease: EASE }}
+              />
+            </AnimatePresence>
+            {gallery.length > 1 && (
+              <div className="absolute inset-x-0 bottom-3 z-10 flex justify-center gap-2">
+                {gallery.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setImgIdx(index)}
+                    aria-label={`View product image ${index + 1}`}
+                    aria-pressed={imgIdx === index}
+                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-white ${
+                      imgIdx === index ? "border-foreground" : "border-transparent"
+                    }`}
+                  >
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="48px"
+                      className="rounded-xl object-contain"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="pt-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-semibold leading-tight">{product.name}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{cat?.name}</p>
+              </div>
+              <button
+                type="button"
+                onClick={addOneToCart}
+                aria-label={`Add ${product.name} to cart`}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 shadow-sm transition-colors hover:bg-neutral-200"
+              >
+                <Handbag className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-3 flex items-center gap-2">
+              <RatingStars rating={averageRating} />
+              <span className="text-sm font-medium">{averageRating.toFixed(1)}</span>
+              <span className="text-sm text-muted-foreground">({reviewCount.toLocaleString()} Reviews)</span>
+            </div>
+
+            <p className="mt-4 text-2xl font-semibold">{formatPrice(product.price)}</p>
+            {product.compareAt && (
+              <p className="mt-1 text-sm text-muted-foreground line-through">{formatPrice(product.compareAt)}</p>
+            )}
+
+            {hasSizes && (
+              <div className="mt-5">
+                <p className="mb-2 text-base font-medium">Size</p>
+                <div className="flex flex-wrap gap-2.5">
+                  {["S", "M", "L", "XL", "XXL"].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => setSelectedSize(size)}
+                      aria-pressed={selectedSize === size}
+                      className={`h-9 min-w-9 rounded-full border px-3 text-sm transition-colors ${
+                        selectedSize === size
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-background text-muted-foreground hover:border-foreground"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {product.colors && product.colors.length > 1 && (
+              <div className="mt-5">
+                <p className="mb-3 text-sm font-medium">Color — {color ?? product.colors[0].name}</p>
+                <div className="flex gap-2.5">
+                  {product.colors.map((option) => (
+                    <button
+                      key={option.name}
+                      type="button"
+                      onClick={() => setColor(option.name)}
+                      aria-label={option.name}
+                      aria-pressed={(color ?? product.colors![0].name) === option.name}
+                      className={`h-8 w-8 rounded-full border-2 ${
+                        (color ?? product.colors![0].name) === option.name ? "border-foreground" : "border-transparent"
+                      }`}
+                      style={{ backgroundColor: option.hex }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <section className="mt-5">
+              <h2 className="text-base font-semibold">Description</h2>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                {descriptionExpanded ? product.description : descriptionPreview}
+                {hasMoreDescription && (
+                <button
+                  type="button"
+                  onClick={() => setDescriptionExpanded((expanded) => !expanded)}
+                  className="ml-1 inline text-sm font-medium text-sky-700"
+                >
+                  {descriptionExpanded ? "Read less" : "Read more..."}
+                </button>
+                )}
+              </p>
+            </section>
+
+            <section id="mobile-reviews" className="mt-8 border-t border-border pt-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Review ({reviewCount.toLocaleString()})</h2>
+                <button
+                  type="button"
+                  onClick={() => setShowAllReviews((show) => !show)}
+                  aria-expanded={showAllReviews}
+                  className="text-sm text-muted-foreground"
+                >
+                  {showAllReviews ? "See Less" : "See More"}
+                </button>
+              </div>
+              <div className="divide-y divide-border">
+                {(showAllReviews ? reviews : reviews.slice(0, 1)).map((review) => (
+                  <article key={review.id} className="flex gap-3 py-4 first:pt-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                      {review.author.split(" ").map((part) => part[0]).join("")}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="truncate text-sm font-semibold">{review.author}</p>
+                        <time className="shrink-0 text-xs text-muted-foreground">
+                          {new Date(review.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </time>
+                      </div>
+                      <RatingStars rating={review.rating} />
+                      <p className="mt-1 text-sm leading-5 text-muted-foreground">{review.body}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <div className="mt-7 flex items-stretch gap-3">
+              <div className="flex items-center rounded-full border border-border">
+                <button
+                  type="button"
+                  onClick={() => setQty((current) => Math.max(1, current - 1))}
+                  className="flex h-12 w-10 items-center justify-center"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="w-6 text-center text-sm">{qty}</span>
+                <button
+                  type="button"
+                  onClick={() => setQty((current) => Math.min(product.stock, current + 1))}
+                  className="flex h-12 w-10 items-center justify-center"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
+                className="flex-1 rounded-full bg-foreground px-4 text-sm font-semibold text-background"
+              >
+                Add to bag — {formatPrice(product.price * qty)}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:block">
       {/* Breadcrumb */}
       <div className="border-b border-border">
         <div className="container-x flex items-center gap-2 py-4 font-mono2 text-[11px] uppercase tracking-[0.15em] text-muted-foreground">
@@ -95,7 +362,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 alt={product.name}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
-                priority={imgIdx === 0}
+                loading="eager"
                 className="object-cover"
                 initial={{ opacity: 0, scale: 1.06 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -206,18 +473,18 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name)}
+              onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
               className="btn-solid-invert flex-1 py-3.5"
             >
               Add to bag — {formatPrice(product.price * qty)}
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.85 }}
-              onClick={() => toggleWishlist(product.id)}
-              aria-label="Toggle wishlist"
+              onClick={addOneToCart}
+              aria-label={`Add ${product.name} to cart`}
               className="flex w-[52px] items-center justify-center border border-border transition-colors hover:border-foreground"
             >
-              <Heart className={`h-4 w-4 ${wished ? "fill-foreground" : ""}`} />
+              <Handbag className="h-4 w-4" />
             </motion.button>
           </div>
 
@@ -271,9 +538,9 @@ export default function ProductDetail({ productId }: { productId: string }) {
         <div className="container-x grid gap-12 py-14 lg:grid-cols-[280px_1fr]">
           <div>
             <p className="label-mono">Reviews</p>
-            <p className="mt-3 font-display text-6xl font-light">{product.rating.toFixed(1)}</p>
-            <Stars rating={product.rating} className="mt-2" />
-            <p className="mt-2 font-mono2 text-[11px] text-muted-foreground">{product.reviewCount} verified reviews</p>
+            <p className="mt-3 font-display text-6xl font-light">{averageRating.toFixed(1)}</p>
+            <Stars rating={averageRating} className="mt-2" />
+            <p className="mt-2 font-mono2 text-[11px] text-muted-foreground">{reviewCount} verified reviews</p>
             <div className="mt-6 space-y-2">
               {[5, 4, 3, 2, 1].map((s) => {
                 const pct = s === 5 ? 72 : s === 4 ? 21 : s === 3 ? 5 : s === 2 ? 2 : 0;
@@ -355,6 +622,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
           </div>
         </section>
       )}
+      </div>
     </div>
   );
 }

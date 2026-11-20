@@ -1,4 +1,3 @@
-import { formatPrice } from "@/data/catalog";
 
 export interface Post {
   slug: string;
@@ -196,23 +195,20 @@ export interface Faq {
   group: string;
 }
 
-export const faqGroups = ["Shipping & Delivery", "Orders & Payment", "Returns & Exchanges", "Product Care"];
+export const faqGroups = ["Orders", "Products & Fit", "Delivery & Returns", "Payments & Contact"];
 
 export const faqs: Faq[] = [
-  { group: "Shipping & Delivery", q: "How long does delivery take?", a: "Orders are dispatched within 1–2 business days from our Rotterdam studio. Standard delivery takes 3–5 business days within the EU, 5–8 days to the UK and North America, and 7–12 days elsewhere. You'll receive tracking the moment your parcel leaves us." },
-  { group: "Shipping & Delivery", q: "How much does shipping cost?", a: `Shipping is a flat ${formatPrice(9)} for orders under ${formatPrice(150)} and complimentary above that. Furniture pieces (like the Boucle Lounge Chair) ship via white-glove courier at a flat ${formatPrice(49)}, which includes room-of-choice placement and packaging removal.` },
-  { group: "Shipping & Delivery", q: "Do you ship internationally?", a: "Yes — we ship to 42 countries. Duties and taxes are calculated and prepaid at checkout for most destinations, so the price you see is the price you pay, with no surprise fees at the door." },
-  { group: "Shipping & Delivery", q: "How are fragile items packed?", a: "Ceramics and glass travel in moulded recycled-pulp cradles inside double-walled boxes — no plastic foam. Our breakage rate is under 0.4%, and if anything arrives damaged, a photo is all we need to send a replacement immediately." },
-  { group: "Orders & Payment", q: "Which payment methods do you accept?", a: "Visa, Mastercard, American Express, PayPal, Apple Pay and Google Pay. All transactions are processed over encrypted connections; we never store full card numbers on our servers." },
-  { group: "Orders & Payment", q: "Can I change or cancel my order?", a: "You have 90 minutes after ordering to cancel or modify from your account page — after that, orders enter the packing queue. If it's too late to change, you can always use the 30-day return once it arrives." },
-  { group: "Orders & Payment", q: "Do you offer gift wrapping?", a: "Yes, and it's complimentary. Select the gift option at checkout and we'll wrap in kraft paper with linen ribbon, include a handwritten note, and omit prices from the packing slip." },
-  { group: "Orders & Payment", q: "Will I receive an invoice?", a: "A PDF invoice is emailed automatically with your shipping confirmation, and all past invoices live in your account under Orders. Business customers can add a VAT number at checkout for a full VAT invoice." },
-  { group: "Returns & Exchanges", q: "What is your return policy?", a: `You have 30 days from delivery to return any unused item in its original condition for a full refund. Returns are free within the EU; elsewhere we deduct a ${formatPrice(9)} return label fee. Refunds land within 5 business days of the parcel reaching us.` },
-  { group: "Returns & Exchanges", q: "How do I start a return?", a: "From your account's Orders page, select the order and choose 'Start a return' — or use the returns page with your order number and email. We'll email a prepaid label; drop the parcel at any carrier point. Furniture returns are collected from your home, free." },
-  { group: "Returns & Exchanges", q: "Can I exchange instead of refund?", a: "Absolutely. Choose 'exchange' when starting your return and tell us the item and colour you'd like. We ship the replacement as soon as the carrier scans your return — you don't wait for it to reach us first." },
-  { group: "Product Care", q: "How do I care for handmade ceramics?", a: "Hand-wash where possible (the sink, not the machine, is where most breakages happen), avoid sudden temperature shocks, and lift cutlery marks from matte glazes with a baking-soda paste. Full guide in our Journal under 'Caring for Ceramics'." },
-  { group: "Product Care", q: "Will the brass and leather items change over time?", a: "Yes — deliberately. Unlacquered brass deepens to a warm brown and vegetable-tanned leather darkens with sun and touch. If you prefer the original shine, a brass cloth restores it in minutes; if you love the patina, do nothing at all." },
-  { group: "Product Care", q: "Are your textiles machine washable?", a: "Linen and cotton pieces are — cold wash, line dry, no softener (it coats fibres and kills absorbency). The merino throw prefers a spot clean or gentle wool cycle. Every product page lists care specific to that piece." },
+  { group: "Orders", q: "Where can I see my order status?", a: "Open Order history from the profile menu to review your recent purchases and their available status details." },
+  { group: "Orders", q: "What should I do if I can't find my order?", a: "Check that you are using the same account used at checkout. If it still isn't listed, message us on WhatsApp with your order number." },
+  { group: "Orders", q: "Can I change an order after checkout?", a: "Contact us as soon as possible with your order number. We’ll confirm what changes are still possible." },
+  { group: "Products & Fit", q: "Where can I find sizing and fit information?", a: "Open the product page and check its size and fit details before choosing your option." },
+  { group: "Products & Fit", q: "Can you help me choose a size?", a: "Send us the product name and your sizing question on WhatsApp. We’ll help you review the information available for that item." },
+  { group: "Products & Fit", q: "Where can I find product materials and details?", a: "Each product page includes the available description and details for that item." },
+  { group: "Delivery & Returns", q: "Where can I see delivery options and costs?", a: "Enter your delivery details during checkout to review the available delivery information before placing your order." },
+  { group: "Delivery & Returns", q: "How do I start a return?", a: "Open Returns & Exchanges and follow the request form. Have the order number and checkout email ready." },
+  { group: "Delivery & Returns", q: "What if an item arrives damaged or incorrect?", a: "Contact us on WhatsApp with your order number and a clear photo of the item so we can help." },
+  { group: "Payments & Contact", q: "Which payment methods are available?", a: "The available payment options are shown during checkout before you confirm your order." },
+  { group: "Payments & Contact", q: "How do I contact TLX Originals?", a: "Call or WhatsApp us at +234 802 904 1081, or send a message through the contact page." },
 ];
 
 /** Products woven into each essay — powers the "Pieces from this essay" strip. */

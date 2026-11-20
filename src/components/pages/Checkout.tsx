@@ -3,25 +3,24 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, Check, CreditCard, Lock, PackageCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, CreditCard, Handbag, Lock, PackageCheck, ShoppingCart } from "lucide-react";
 import { Barcode, Stamp } from "@/components/Ornaments";
 import { AnimatePresence, motion } from "framer-motion";
 import { formatPrice, productById } from "@/data/catalog";
-import { PageHeader, PageSkeleton } from "@/components/ProductCard";
+import { PageSkeleton } from "@/components/ProductCard";
 import { EASE } from "@/components/motion/motion";
 import { useShop } from "@/store/ShopContext";
 import { toast } from "sonner";
-
-const steps = ["Information", "Delivery", "Payment", "Review"] as const;
+import CountryRegionPicker from "@/components/checkout/CountryRegionPicker";
 
 interface Form {
-  email: string; first: string; last: string; street: string; city: string; zip: string; country: string;
-  delivery: string; card: string; expiry: string; cvc: string; nameOnCard: string; gift: boolean; notes: string;
+  email: string; name: string; phone: string; street: string; city: string; country: string; region: string;
+  delivery: string; card: string; expiry: string; cvc: string; nameOnCard: string; notes: string;
 }
 
 const initial: Form = {
-  email: "", first: "", last: "", street: "", city: "", zip: "", country: "Denmark",
-  delivery: "standard", card: "", expiry: "", cvc: "", nameOnCard: "", gift: false, notes: "",
+  email: "", name: "", phone: "", street: "", city: "", country: "Denmark", region: "",
+  delivery: "standard", card: "", expiry: "", cvc: "", nameOnCard: "", notes: "",
 };
 
 const deliveryOptions = [
@@ -30,23 +29,57 @@ const deliveryOptions = [
   { id: "whiteglove", name: "White-glove (furniture)", eta: "Scheduled with you", price: 49 },
 ];
 
+function CheckoutHeader({ count }: { count: number }) {
+  return (
+    <div className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 md:static md:mx-auto md:max-w-4xl md:px-6">
+      <Link href="/cart" aria-label="Back to cart" className="flex h-11 w-11 items-center justify-center">
+        <ArrowLeft className="h-5 w-5" />
+      </Link>
+      <h1 className="absolute left-1/2 -translate-x-1/2 text-base font-semibold">Checkout</h1>
+      <Link
+        href="/cart"
+        aria-label={`Shopping bag, ${count} items`}
+        data-cart-target
+        data-cart-target-priority="2"
+        className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-100"
+      >
+        <Handbag className="h-5 w-5" />
+        {count > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] text-white">
+            {count}
+          </span>
+        )}
+      </Link>
+    </div>
+  );
+}
+
 export default function Checkout() {
-  const { cart, subtotal, clearCart, hydrated } = useShop();
+  const { cart, cartCount, subtotal, clearCart, hydrated } = useShop();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(initial);
   const [placed, setPlaced] = useState<string | null>(null);
 
   const delivery = deliveryOptions.find((d) => d.id === form.delivery)!;
   const shipping = cart.length === 0 ? 0 : subtotal >= 150 && delivery.id !== "whiteglove" ? delivery.price : delivery.price + (subtotal >= 150 ? 0 : 9);
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const total = subtotal + shipping;
 
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const canContinue = useMemo(() => {
-    if (step === 0) return form.email.includes("@") && form.first && form.last && form.street && form.city && form.zip;
-    if (step === 2) return form.card.replace(/\s/g, "").length >= 12 && form.expiry.length >= 4 && form.cvc.length >= 3 && form.nameOnCard;
+    if (step === 1) {
+      return Boolean(
+        form.email.includes("@") &&
+        form.name.trim() &&
+        form.phone.trim() &&
+        form.street.trim() &&
+        form.city.trim() &&
+        form.country.trim() &&
+        form.region.trim()
+      );
+    }
+    if (step === 3) return form.card.replace(/\s/g, "").length >= 12 && form.expiry.length >= 4 && form.cvc.length >= 3 && form.nameOnCard;
     return true;
   }, [step, form]);
 
@@ -54,7 +87,7 @@ export default function Checkout() {
     return (
       <div className="container-x relative flex flex-col items-center py-24 text-center">
         <Stamp
-          text="Received · Aurelle Studio · Rotterdam · "
+          text="Received · TLX Originals · "
           className="absolute right-2 top-4 h-20 w-20 rotate-12 text-muted-foreground/50 sm:right-10"
         />
         <motion.span
@@ -72,16 +105,16 @@ export default function Checkout() {
           className="flex flex-col items-center"
         >
         <p className="label-mono mt-8">Order confirmed</p>
-        <h1 className="mt-4 font-display text-4xl font-light sm:text-5xl">Thank you, {form.first}.</h1>
+        <h1 className="mt-4 font-display text-4xl font-light sm:text-5xl">Thank you, {form.name}.</h1>
         <p className="mt-5 max-w-md text-[15px] leading-relaxed text-muted-foreground">
-          Order <span className="font-mono2 text-foreground">{placed}</span> is being wrapped in Rotterdam.
+          Order <span className="font-mono2 text-foreground">{placed}</span> is being prepared by TLX Originals.
           A confirmation is on its way to <span className="text-foreground">{form.email}</span>, and tracking
           will follow within 48 hours.
         </p>
         <div className="mt-8 flex flex-col items-center gap-2 text-foreground/70">
           <Barcode code={placed} className="h-8 w-44" />
           <span className="font-mono2 text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
-            {placed} · wrapped in Rotterdam
+            {placed} · TLX Originals
           </span>
         </div>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
@@ -97,11 +130,14 @@ export default function Checkout() {
 
   if (cart.length === 0) {
     return (
-      <div className="container-x flex flex-col items-center py-24 text-center">
-        <h1 className="font-display text-3xl font-light">Nothing to check out yet.</h1>
-        <p className="mt-4 max-w-md text-sm text-muted-foreground">Your bag is empty. Add a few considered pieces first.</p>
-        <Link href="/products" className="btn-outline-invert mt-8">Browse the collection</Link>
-      </div>
+      <>
+        <CheckoutHeader count={cartCount} />
+        <div className="container-x flex flex-col items-center py-24 text-center">
+          <h2 className="font-display text-3xl font-light">Nothing to check out yet.</h2>
+          <p className="mt-4 max-w-md text-sm text-muted-foreground">Your bag is empty. Add a few considered pieces first.</p>
+          <Link href="/categories" className="btn-outline-invert mt-8 rounded-[12px]">Browse categories</Link>
+        </div>
+      </>
     );
   }
 
@@ -115,25 +151,10 @@ export default function Checkout() {
 
   return (
     <div>
-      <PageHeader kicker="Secure checkout" title="Almost home." />
-      <div className="container-x grid gap-12 py-12 lg:grid-cols-[1fr_380px]">
+      <CheckoutHeader count={cartCount} />
+      <div className="container-x mx-auto max-w-4xl py-10 md:py-12">
         <div>
-          {/* Stepper */}
-          <ol className="mb-10 grid grid-cols-4 border border-border">
-            {steps.map((s, i) => (
-              <li
-                key={s}
-                className={`flex items-center justify-center gap-2 border-r border-border px-2 py-3 font-mono2 text-[10px] uppercase tracking-[0.12em] last:border-r-0 sm:text-[11px] ${
-                  i === step ? "bg-foreground text-background" : i < step ? "text-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {i < step ? <Check className="h-3.5 w-3.5" /> : <span>{i + 1}.</span>}
-                <span className="hidden sm:inline">{s}</span>
-              </li>
-            ))}
-          </ol>
-
-          {/* Step 0: information */}
+          {/* Step 0: order review */}
           <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -143,43 +164,77 @@ export default function Checkout() {
             transition={{ duration: 0.4, ease: EASE }}
           >
           {step === 0 && (
-            <div className="space-y-8">
-              <div>
-                <p className="label-mono mb-4">Contact</p>
-                <input type="email" value={form.email} onChange={set("email")} placeholder="Email address" className="input-plain" />
+            <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50/70 dark:border-border dark:bg-muted/40">
+              <div className="border-b border-neutral-200 px-5 py-5 dark:border-border sm:px-7">
+                <p className="label-mono text-center">Order summary</p>
               </div>
+              <ul className="divide-y divide-neutral-200 px-5 dark:divide-border sm:px-7">
+                {cart.map((line) => {
+                  const p = productById(line.productId);
+                  if (!p) return null;
+                  return (
+                    <li key={line.productId + (line.color ?? "") + (line.size ?? "")} className="flex items-center gap-4 py-4">
+                      <Image src={p.image} alt="" width={72} height={72} className="h-[72px] w-[72px] shrink-0 rounded-xl bg-neutral-100 object-contain p-1.5 dark:bg-background" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium">{p.name}</span>
+                        {(line.size || line.color) && (
+                          <span className="mt-1 block text-xs text-muted-foreground">
+                            {[line.size && `Size ${line.size}`, line.color].filter(Boolean).join(" · ")}
+                          </span>
+                        )}
+                        <span className="mt-1 block font-mono2 text-[11px] text-muted-foreground">Quantity: {line.qty}</span>
+                      </span>
+                      <span className="shrink-0 font-mono2 text-sm">{formatPrice(p.price * line.qty)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <dl className="space-y-3 border-t border-neutral-200 px-5 py-5 text-sm dark:border-border sm:px-7">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Subtotal</dt>
+                  <dd className="font-mono2">{formatPrice(subtotal)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Shipping</dt>
+                  <dd className="font-mono2">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
+                </div>
+                <div className="flex justify-between border-t border-neutral-200 pt-3 text-base font-medium dark:border-border">
+                  <dt>Total</dt>
+                  <dd className="font-mono2">{formatPrice(total)}</dd>
+                </div>
+              </dl>
+            </section>
+          )}
+
+          {/* Step 1: contact and address */}
+          {step === 1 && (
+            <div className="space-y-8">
               <div>
                 <p className="label-mono mb-4">Shipping address</p>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <input value={form.first} onChange={set("first")} placeholder="First name" className="input-plain" />
-                  <input value={form.last} onChange={set("last")} placeholder="Last name" className="input-plain" />
-                  <input value={form.street} onChange={set("street")} placeholder="Street & number" className="input-plain sm:col-span-2" />
-                  <input value={form.city} onChange={set("city")} placeholder="City" className="input-plain" />
-                  <input value={form.zip} onChange={set("zip")} placeholder="Postal code" className="input-plain" />
-                  <select value={form.country} onChange={set("country")} className="input-plain sm:col-span-2">
-                    {["Denmark", "Germany", "France", "Netherlands", "Sweden", "United Kingdom", "United States", "Canada", "Japan", "Australia"].map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
+                  <CountryRegionPicker
+                    country={form.country}
+                    region={form.region}
+                    onCountryChange={(country) => setForm((current) => ({ ...current, country, region: "" }))}
+                    onRegionChange={(region) => setForm((current) => ({ ...current, region }))}
+                  />
+                  <input value={form.street} onChange={set("street")} placeholder="Street & number" autoComplete="street-address" className="input-plain rounded-2xl sm:col-span-2" />
+                  <input value={form.city} onChange={set("city")} placeholder="City" autoComplete="address-level2" className="input-plain rounded-2xl sm:col-span-2" />
                 </div>
               </div>
-              <label className="flex cursor-pointer items-start gap-3 border border-border p-4">
-                <input
-                  type="checkbox"
-                  checked={form.gift}
-                  onChange={(e) => setForm((f) => ({ ...f, gift: e.target.checked }))}
-                  className="mt-0.5 h-4 w-4 accent-current"
-                />
-                <span>
-                  <span className="block text-sm font-medium">This is a gift</span>
-                  <span className="block text-[13px] text-muted-foreground">Complimentary kraft & linen wrap, handwritten note, no prices on the slip.</span>
-                </span>
-              </label>
+              <div>
+                <p className="label-mono mb-4">Contact</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <input value={form.name} onChange={set("name")} placeholder="Name" autoComplete="name" className="input-plain rounded-2xl sm:col-span-2" />
+                  <input type="email" value={form.email} onChange={set("email")} placeholder="Email address" autoComplete="email" className="input-plain rounded-2xl" />
+                  <input type="tel" value={form.phone} onChange={set("phone")} placeholder="Phone number" autoComplete="tel" className="input-plain rounded-2xl" />
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Step 1: delivery */}
-          {step === 1 && (
+          {/* Step 2: delivery */}
+          {step === 2 && (
             <div className="space-y-4">
               <p className="label-mono mb-2">Delivery method</p>
               {deliveryOptions.map((d) => (
@@ -215,8 +270,8 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* Step 2: payment (mock) */}
-          {step === 2 && (
+          {/* Step 3: payment (mock) */}
+          {step === 3 && (
             <div className="space-y-6">
               <div className="flex items-center gap-2 border border-border bg-card p-4">
                 <Lock className="h-4 w-4 text-primary" />
@@ -260,100 +315,43 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* Step 3: review */}
-          {step === 3 && (
-            <div className="space-y-6">
-              {[
-                { label: "Contact", value: form.email },
-                { label: "Ship to", value: `${form.first} ${form.last}, ${form.street}, ${form.zip} ${form.city}, ${form.country}` },
-                { label: "Delivery", value: `${delivery.name} — ${delivery.eta}` },
-                { label: "Payment", value: `Card ending ${form.card.replace(/\s/g, "").slice(-4) || "····"}` },
-                ...(form.gift ? [{ label: "Gift wrap", value: "Kraft & linen, with handwritten note" }] : []),
-              ].map((r) => (
-                <div key={r.label} className="flex items-start justify-between gap-6 border-b border-border pb-4">
-                  <p className="label-mono pt-0.5">{r.label}</p>
-                  <p className="text-right text-sm">{r.value}</p>
-                </div>
-              ))}
-              <div className="border border-border bg-card p-5">
-                <p className="label-mono mb-4">Items</p>
-                <ul className="space-y-3">
-                  {cart.map((l) => {
-                    const p = productById(l.productId);
-                    if (!p) return null;
-                    return (
-                      <li key={l.productId + (l.color ?? "")} className="flex items-center justify-between gap-4 text-sm">
-                        <span className="flex items-center gap-3">
-                          <Image src={p.image} alt="" width={44} height={44} className="h-11 w-11 border border-border bg-muted object-cover" />
-                          <span>{p.name} <span className="font-mono2 text-[11px] text-muted-foreground">× {l.qty}</span></span>
-                        </span>
-                        <span className="font-mono2">{formatPrice(p.price * l.qty)}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </div>
-          )}
           </motion.div>
           </AnimatePresence>
 
           {/* Nav buttons */}
-          <div className="mt-10 flex items-center justify-between">
-            {step > 0 ? (
-              <button onClick={() => setStep((s) => s - 1)} className="btn-outline-invert">
+          {step === 0 ? (
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <button
+                onClick={() => setStep(1)}
+                className="btn-solid-invert h-10 w-full max-w-xs rounded-[10px] px-4 py-2 text-[11px]"
+              >
+                <ShoppingCart className="h-4 w-4" /> Proceed with payment
+              </button>
+              <Link href="/categories" className="inline-flex items-center gap-1.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
+                <ArrowLeft className="h-3.5 w-3.5" /> Back to store
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-10 flex items-center justify-between gap-4">
+              <button onClick={() => setStep((s) => s - 1)} className="btn-outline-invert h-10 rounded-[10px] px-4 py-2 text-[11px]">
                 <ArrowLeft className="h-4 w-4" /> Back
               </button>
-            ) : (
-              <Link href="/cart" className="btn-outline-invert">
-                <ArrowLeft className="h-4 w-4" /> Back to bag
-              </Link>
-            )}
-            {step < 3 ? (
-              <button
-                onClick={() => (canContinue ? setStep((s) => s + 1) : toast.error("Please complete the required fields"))}
-                className="btn-solid-invert"
-              >
-                Continue <ArrowRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <button onClick={placeOrder} className="btn-solid-invert">
-                <Lock className="h-4 w-4" /> Place order — {formatPrice(total)}
-              </button>
-            )}
-          </div>
+              {step < 3 ? (
+                <button
+                  onClick={() => (canContinue ? setStep((s) => s + 1) : toast.error("Please complete the required fields"))}
+                  className="btn-solid-invert h-10 rounded-[10px] px-4 py-2 text-[11px]"
+                >
+                  {step === 1 ? "Continue to delivery" : "Continue to payment"}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <button onClick={placeOrder} className="btn-solid-invert h-10 rounded-[10px] px-4 py-2 text-[11px]">
+                  <Lock className="h-4 w-4" /> Place order — {formatPrice(total)}
+                </button>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Summary */}
-        <aside>
-          <div className="sticky top-32 border border-border bg-card p-7">
-            <p className="label-mono">Summary</p>
-            <ul className="mt-5 space-y-4">
-              {cart.map((l) => {
-                const p = productById(l.productId);
-                if (!p) return null;
-                return (
-                  <li key={l.productId + (l.color ?? "")} className="flex items-center gap-3">
-                    <span className="relative shrink-0">
-                      <Image src={p.image} alt="" width={56} height={56} className="h-14 w-14 border border-border bg-muted object-cover" />
-                      <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center bg-foreground font-mono2 text-[10px] text-background">
-                        {l.qty}
-                      </span>
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm">{p.name}</span>
-                    <span className="font-mono2 text-sm">{formatPrice(p.price * l.qty)}</span>
-                  </li>
-                );
-              })}
-            </ul>
-            <dl className="mt-6 space-y-2.5 border-t border-border pt-4 text-sm">
-              <div className="flex justify-between"><dt className="text-muted-foreground">Subtotal</dt><dd className="font-mono2">{formatPrice(subtotal)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Delivery</dt><dd className="font-mono2">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd></div>
-              <div className="flex justify-between"><dt className="text-muted-foreground">Tax (8%)</dt><dd className="font-mono2">{formatPrice(tax)}</dd></div>
-              <div className="flex justify-between border-t border-border pt-3 font-medium"><dt>Total</dt><dd className="font-mono2">{formatPrice(total)}</dd></div>
-            </dl>
-          </div>
-        </aside>
       </div>
     </div>
   );

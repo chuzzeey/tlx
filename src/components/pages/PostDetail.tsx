@@ -82,7 +82,7 @@ export default function PostDetail({ postId }: { postId: string }) {
       {/* Body */}
       <div className="container-x relative max-w-2xl pb-16 pt-4">
         <MarginNote className="absolute -right-20 top-2">
-          Aurelle Journal · Nº {String(posts.indexOf(post) + 1).padStart(2, "0")}
+          TLX Originals Journal · Nº {String(posts.indexOf(post) + 1).padStart(2, "0")}
         </MarginNote>
         <div className="prose-body text-[16px]">
           <p className="mb-5 font-display text-xl leading-relaxed text-foreground">{post.excerpt}</p>
@@ -108,7 +108,7 @@ export default function PostDetail({ postId }: { postId: string }) {
             <p className="text-sm font-medium">{post.author.name}</p>
             <p className="mt-0.5 font-mono2 text-[11px] text-muted-foreground">{post.author.role}</p>
             <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-              Writing for the Aurelle Journal on craft, materials and the long life of good objects.
+              Writing for the TLX Originals Journal on style, movement, and the details behind the collection.
             </p>
           </div>
         </div>

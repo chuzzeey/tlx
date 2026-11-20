@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Contact from "@/components/pages/Contact";
 
 export const metadata: Metadata = {
-  title: "Contact the Studio",
+  title: "Contact TLX Originals",
   description:
-    "Questions about an order, a piece, or a trade enquiry — write to the Aurelle studio in Copenhagen and expect a reply within a day.",
+    "Questions about an order, a product, or sizing? Contact TLX Originals by WhatsApp, phone, or message.",
   alternates: { canonical: "/support/contact" },
 };
 

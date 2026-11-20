@@ -7,7 +7,7 @@ import { faqJsonLd } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Frequently Asked Questions",
   description:
-    "Shipping, payment, returns and care — the fourteen questions the Aurelle studio is asked most, answered properly.",
+    "Shipping, payment, returns, and care. Answers to common TLX Originals customer questions.",
   alternates: { canonical: "/support/faq" },
 };
 

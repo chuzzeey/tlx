@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import Categories from "@/components/pages/Categories";
 import JsonLd from "@/components/JsonLd";
-import { categories } from "@/data/catalog";
-import { collectionJsonLd } from "@/lib/seo";
+import { categoryIndexCategories } from "@/data/catalog";
+import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 const title = "Categories";
 const description =
-  "Twelve departments of considered goods — ceramics, lighting, textiles, kitchen, furniture and more, each from studios that specialise in one thing done well.";
+  "Browse jackets, T-shirts, shoes, bags, and accessories from TLX Originals.";
 
 export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/categories" },
-  openGraph: { title: `${title} — Aurelle`, description, images: ["/images/products/lantern-lamp.webp"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/lantern-lamp.webp"] },
 };
 
 export default function Page() {
@@ -23,7 +23,10 @@ export default function Page() {
           "Shop by Category",
           description,
           "/categories",
-          categories.map((c) => ({ name: c.name, url: `/categories/${c.slug}` }))
+          categoryIndexCategories.map((category) => ({
+            name: category.name,
+            url: `/categories/${category.slug}`,
+          }))
         )}
       />
       <Categories />

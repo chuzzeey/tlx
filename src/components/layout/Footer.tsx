@@ -1,14 +1,44 @@
 import Link from "next/link";
+import { Phone } from "lucide-react";
+import { categoryIndexCategories } from "@/data/catalog";
+
+const socialIconPaths = {
+  tiktok:
+    "M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z",
+  snapchat:
+    "M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.15-.055-.225-.015-.243.165-.465.42-.509 3.264-.54 4.73-3.879 4.791-4.02l.016-.029c.18-.345.224-.645.119-.869-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z",
+  facebook:
+    "M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z",
+  whatsapp:
+    "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z",
+} as const;
+
+type SocialIconName = keyof typeof socialIconPaths;
+
+function SocialIcon({ name, className }: { name: SocialIconName; className: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d={socialIconPaths[name]} />
+    </svg>
+  );
+}
+
+const socialPlatforms: { label: string; icon: Exclude<SocialIconName, "whatsapp"> }[] = [
+  { label: "TikTok", icon: "tiktok" },
+  { label: "Snapchat", icon: "snapchat" },
+  { label: "Facebook", icon: "facebook" },
+];
 
 const cols = [
   {
     title: "Shop",
     links: [
       { to: "/products", label: "All products" },
-      { to: "/categories", label: "Categories" },
-      { to: "/categories/ceramics", label: "Ceramics" },
-      { to: "/categories/furniture", label: "Furniture" },
-      { to: "/categories/fragrance", label: "Fragrance" },
+      { to: "/categories", label: "All categories" },
+      ...categoryIndexCategories.map((category) => ({
+        to: `/categories/${category.slug}`,
+        label: category.name,
+      })),
     ],
   },
   {
@@ -20,29 +50,61 @@ const cols = [
       { to: "/support/returns", label: "Returns" },
     ],
   },
-  {
-    title: "Studio",
-    links: [
-      { to: "/content", label: "Journal" },
-      { to: "/content/the-slow-home", label: "The Slow Home" },
-      { to: "/account", label: "Account" },
-      { to: "/wishlist", label: "Wishlist" },
-    ],
-  },
 ];
 
 export default function Footer() {
   return (
     <footer className="mt-auto border-t border-border">
-      <div className="container-x grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="container-x grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <p className="brand-type font-display text-2xl font-medium">Aurelle.</p>
-          <p className="mt-3 max-w-xs font-mono2 text-[11px] leading-relaxed text-muted-foreground">
-            Considered goods for modern living. Made slowly in small batches by independent
-            studios, kept by you for decades.
+          <Link href="/" aria-label="TLX Originals home" className="brand-type font-display text-lg font-bold">
+            TLX Originals
+          </Link>
+          <p className="mt-2 max-w-xs font-mono2 text-[8px] leading-relaxed text-muted-foreground sm:text-[9px]">
+            No Hype. Just Motion!
           </p>
-          <p className="mt-6 font-mono2 text-[11px] text-muted-foreground">
-            Studio & showroom — Gothersgade 21, Copenhagen
+          <p className="label-mono mt-6">Contact</p>
+          <div className="mt-3 flex items-center gap-2">
+            <a
+              href="https://wa.me/2348029041081"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="WhatsApp TLX Originals"
+              title="WhatsApp"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground/75 transition-colors hover:border-foreground hover:text-foreground"
+            >
+              <SocialIcon name="whatsapp" className="h-4 w-4" />
+            </a>
+            <a
+              href="tel:+2348029041081"
+              aria-label="Call TLX Originals"
+              title="Phone"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground/75 transition-colors hover:border-foreground hover:text-foreground"
+            >
+              <Phone className="h-4 w-4" strokeWidth={1.6} />
+            </a>
+            {socialPlatforms.map(({ label, icon }) => (
+              <span
+                key={label}
+                role="img"
+                aria-label={`${label}, not linked yet`}
+                title={`${label} — not linked yet`}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground"
+              >
+                <SocialIcon name={icon} className="h-4 w-4" />
+              </span>
+            ))}
+          </div>
+          <a
+            href="https://wa.me/2348029041081"
+            target="_blank"
+            rel="noreferrer"
+            className="link-underline mt-3 inline-block text-sm text-foreground/80 hover:text-foreground"
+          >
+            +234 802 904 1081
+          </a>
+          <p className="mt-1 font-mono2 text-[10px] text-muted-foreground">
+            TikTok, Snapchat, and Facebook links coming soon
           </p>
         </div>
         {cols.map((c) => (
@@ -63,19 +125,13 @@ export default function Footer() {
       <div className="border-t border-border">
         <div className="container-x flex flex-col items-center justify-between gap-3 py-5 sm:flex-row">
           <p className="font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            © 2026 Aurelle Studio ApS
-          </p>
-          <p className="order-first font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60 sm:order-none">
-            Set in the system font — printed in the browser
-          </p>
-          <p className="font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Terms · Privacy · Cookies
+            © 2026 TLX Originals. All rights reserved.
           </p>
         </div>
       </div>
       <div className="overflow-hidden border-t border-border py-4" aria-hidden>
-        <p         className="brand-type whitespace-nowrap text-center font-display text-[13vw] font-light leading-none tracking-tight text-foreground/[0.05] select-none">
-          AURELLE
+        <p         className="brand-type whitespace-nowrap text-center font-display text-[13vw] font-medium leading-none tracking-tight text-foreground/[0.05] select-none">
+          TLX ORIGINALS
         </p>
       </div>
     </footer>

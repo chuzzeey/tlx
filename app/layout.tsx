@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import "./globals.css";
 import Providers from "./providers";
@@ -8,41 +8,43 @@ import Footer from "@/components/layout/Footer";
 import JsonLd from "@/components/JsonLd";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, organizationJsonLd } from "@/lib/seo";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
+const satoshi = localFont({
+  src: [
+    { path: "./fonts/satoshi-medium.woff2", weight: "500" },
+    { path: "./fonts/satoshi-bold.woff2", weight: "700" },
+  ],
+  variable: "--font-satoshi",
   display: "swap",
-  axes: ["opsz"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Aurelle — Considered Goods for Modern Living",
-    template: "%s — Aurelle",
+    default: "TLX Originals — No Hype. Just Motion!",
+    template: "%s — TLX Originals",
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
-    "considered goods",
-    "independent studios",
-    "ceramics",
-    "textiles",
-    "lighting",
-    "furniture",
-    "slow living",
+    "TLX Originals",
+    "streetwear",
+    "jackets",
+    "T-shirts",
+    "shoes",
+    "bags",
+    "accessories",
   ],
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: "Aurelle — Considered Goods for Modern Living",
+    title: "TLX Originals — No Hype. Just Motion!",
     description: SITE_DESCRIPTION,
     url: SITE_URL,
-    images: [{ url: "/images/hero/hero-main.webp", width: 1200, height: 800, alt: "A considered interior with Aurelle pieces" }],
+    images: [{ url: "/images/hero/hero-main.webp", width: 1200, height: 800, alt: "TLX Originals" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aurelle — Considered Goods for Modern Living",
+    title: "TLX Originals — No Hype. Just Motion!",
     description: SITE_DESCRIPTION,
     images: ["/images/hero/hero-main.webp"],
   },
@@ -61,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={fraunces.variable}
+      className={satoshi.variable}
     >
       <body>
         {/* Applies a saved dark preference before first paint; light is the

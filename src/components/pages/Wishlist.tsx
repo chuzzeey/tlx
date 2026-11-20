@@ -54,7 +54,7 @@ export default function Wishlist() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      addToCart(p.id, 1, undefined, true);
+                      addToCart(p.id, 1);
                       toggleWishlist(p.id);
                       toast.success("Moved to bag", { description: p.name });
                     }}

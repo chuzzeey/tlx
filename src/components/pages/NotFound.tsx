@@ -9,7 +9,7 @@ export default function NotFound() {
       <p className="font-mono2 text-xs uppercase tracking-[0.25em] text-muted-foreground">Error 404</p>
       <h1 className="mt-6 font-display text-6xl font-light tracking-tight sm:text-7xl">Lost &amp; not found.</h1>
       <Stamp
-        text="Lost property · Aurelle Studio · "
+        text="Lost property · TLX Originals · "
         className="mt-10 h-20 w-20 -rotate-6 text-muted-foreground/60"
       />
       <p className="mt-6 max-w-md text-[15px] leading-relaxed text-muted-foreground">

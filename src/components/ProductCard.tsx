@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { categoryName, formatPrice, type Product } from "@/data/catalog";
-import { useShop } from "@/store/ShopContext";
 import { EASE } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
+import AddToCartButton from "@/components/AddToCartButton";
+import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
 export function Stars({ rating, className = "" }: { rating: number; className?: string }) {
   return (
@@ -22,9 +23,6 @@ export function Stars({ rating, className = "" }: { rating: number; className?: 
 }
 
 export default function ProductCard({ product, index }: { product: Product; index?: number }) {
-  const { wishlist, toggleWishlist, addToCart } = useShop();
-  const wished = wishlist.includes(product.id);
-
   return (
     <motion.div
       layout
@@ -62,16 +60,18 @@ export default function ProductCard({ product, index }: { product: Product; inde
         <span className="font-mono2 text-[10px] uppercase tracking-wider text-muted-foreground">{product.sku}</span>
       </div>
 
-      <Link href={`/products/${product.id}`} className="relative mt-4 block flex-1">
-        <FadeImage
-          src={product.image}
-          alt={product.name}
-          className="aspect-square"
-          imgClassName="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
-        />
+      <div className="relative mt-4 aspect-square overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">
+        <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
+          <FadeImage
+            src={product.image}
+            alt={product.name}
+            className="h-full w-full bg-transparent"
+            imgClassName="h-full w-full object-contain p-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
+          />
+        </Link>
         {product.badge && (
           <span
-            className={`absolute left-0 top-0 px-2 py-1 font-mono2 text-[9px] uppercase tracking-[0.15em] ${
+            className={`absolute left-2 top-2 z-10 rounded-full px-2 py-1 font-mono2 text-[9px] uppercase tracking-[0.15em] ${
               product.badge === "Sale"
                 ? "bg-destructive text-destructive-foreground"
                 : "bg-foreground text-background"
@@ -80,32 +80,12 @@ export default function ProductCard({ product, index }: { product: Product; inde
             {product.badge}
           </span>
         )}
-      </Link>
-
-      <div className="mt-4 flex items-center gap-2">
-        <motion.button
-          whileTap={{ scale: 0.96 }}
-          onClick={() => addToCart(product.id, 1)}
-          className="flex-1 border border-foreground py-2 font-mono2 text-[10px] uppercase tracking-[0.18em] transition-colors hover:bg-foreground hover:text-background"
-        >
-          Add to bag
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.8 }}
-          onClick={() => toggleWishlist(product.id)}
-          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-          className="flex h-9 w-9 items-center justify-center border border-border transition-colors hover:border-foreground"
-        >
-          <motion.span
-            key={String(wished)}
-            initial={{ scale: wished ? 0.4 : 1 }}
-            animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 600, damping: 18 }}
-            className="flex"
-          >
-            <Heart className={`h-4 w-4 ${wished ? "fill-foreground" : ""}`} />
-          </motion.span>
-        </motion.button>
+        <ProductFavoriteButton product={product} />
+        <AddToCartButton
+          product={product}
+          label="Add to bag"
+          className="absolute bottom-2.5 left-3 right-3 z-10 rounded-full"
+        />
       </div>
       </motion.div>
     </motion.div>

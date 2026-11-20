@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import PostDetail from "@/components/pages/PostDetail";
 import JsonLd from "@/components/JsonLd";
 import { postBySlug, posts } from "@/data/content";
-import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { articleJsonLd, breadcrumbJsonLd, SITE_NAME } from "@/lib/seo";
 
 type Params = Promise<{ postId: string }>;
 
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     alternates: { canonical: `/content/${post.slug}` },
     openGraph: {
       type: "article",
-      title: `${post.title} — Aurelle Journal`,
+      title: `${post.title} — ${SITE_NAME} Journal`,
       description: post.excerpt,
       publishedTime: post.date,
       authors: [post.author.name],

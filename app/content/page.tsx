@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import ContentHub from "@/components/pages/ContentHub";
 import JsonLd from "@/components/JsonLd";
 import { posts } from "@/data/content";
-import { collectionJsonLd } from "@/lib/seo";
+import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 const title = "The Journal";
 const description =
-  "Notes on living well — guides, rituals and material stories from the Aurelle studio and the makers behind the collection.";
+  "Notes on style, movement, and the details behind the TLX Originals collection.";
 
 export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/content" },
-  openGraph: { title: `${title} — Aurelle`, description, images: ["/images/posts/slow-home.webp"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/posts/slow-home.webp"] },
 };
 
 export default function Page() {

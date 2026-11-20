@@ -18,7 +18,7 @@ const policies = [
   { t: "30 days to decide", d: "Live with the piece. If it isn't right, send it back within 30 days of delivery — unused, in original condition." },
   { t: "Free returns in the EU", d: `Prepaid labels for all EU returns. Outside the EU, a ${formatPrice(9)} label fee is deducted from your refund.` },
   { t: "Exchanges ship first", d: "Ask for an exchange and the replacement leaves us as soon as the carrier scans your return — no waiting for it to arrive." },
-  { t: "Damaged on arrival?", d: "One photo to hello@aurelle.example and a replacement ships within 48 hours. Keep or recycle the packaging; we'll handle the rest." },
+  { t: "Damaged on arrival?", d: "Send us a photo on WhatsApp at +234 802 904 1081 and our team will help." },
   { t: "Furniture & large items", d: "White-glove items are collected free from your home. Our courier will call to arrange a two-hour window." },
   { t: "What can't come back", d: "For hygiene, used candles and opened diffusers are final sale — unless faulty, in which case they're replaced immediately." },
 ];
@@ -89,7 +89,7 @@ export default function Returns() {
             {done ? (
               <div className="relative">
                 <Stamp
-                  text="Label sent · Aurelle Studio · "
+                  text="Label sent · TLX Originals · "
                   className="absolute -top-4 right-0 h-16 w-16 rotate-12 text-muted-foreground/70"
                 />
                 <span className="flex h-12 w-12 items-center justify-center border border-foreground">
@@ -140,7 +140,7 @@ export default function Returns() {
                   </div>
                   <button type="submit" className="btn-solid-invert w-full">Email me a return label</button>
                   <p className="text-center font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                    Prefer to talk? +45 33 12 40 90
+                    Prefer to talk? <a href="https://wa.me/2348029041081" className="underline underline-offset-4">WhatsApp +234 802 904 1081</a>
                   </p>
                 </form>
               </>

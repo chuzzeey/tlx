@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Search, SlidersHorizontal } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories, formatPrice, products, type Product } from "@/data/catalog";
 import ProductCard, { PageHeader } from "@/components/ProductCard";
@@ -80,7 +81,7 @@ function Filters({
       <div>
         <p className="label-mono mb-4">Availability</p>
         <p className="text-[13px] leading-relaxed text-muted-foreground">
-          Everything listed is in our Rotterdam studio and ships within 48 hours.
+          Explore the latest jackets, T-shirts, shoes, bags, and accessories from TLX Originals.
         </p>
       </div>
       <Footnote>
@@ -120,11 +121,24 @@ export default function Products() {
 
   return (
     <div>
-      <PageHeader
-        kicker="The full collection"
-        title="Everything, considered."
-        lede="Twenty-seven pieces from thirteen categories. Each one chosen to be kept. Filter by what you need."
-      />
+      <div className="sticky top-0 z-30 flex h-14 items-center justify-center border-b border-border bg-background md:hidden">
+        <Link
+          href="/"
+          aria-label="Back to home"
+          className="absolute left-3 flex h-11 w-11 items-center justify-center"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <h1 className="text-sm font-semibold">Products</h1>
+      </div>
+
+      <div className="hidden md:block">
+        <PageHeader
+          kicker="The full collection"
+          title="Everything, considered."
+          lede="Twenty-seven pieces from thirteen categories. Each one chosen to be kept. Filter by what you need."
+        />
+      </div>
 
       <div className="container-x flex flex-col gap-10 py-10 lg:flex-row">
         {/* Sidebar — desktop */}
