@@ -21,11 +21,11 @@ export default function FavoriteAddedToast({ item }: { item: FavoriteFeedbackIte
           key={item.id}
           role="status"
           aria-live="polite"
-          initial={{ y: -28, opacity: 0, scale: 0.96 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          exit={{ y: -18, opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
-          className="pointer-events-none fixed left-1/2 top-4 z-[130] flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-3 rounded-full border border-neutral-200 bg-neutral-100/95 px-4 py-3 text-sm text-neutral-800 shadow-lg backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-100"
+          initial={{ left: "50vw", top: "1rem", x: "-50%", y: -64, opacity: 0, scale: 0.96 }}
+          animate={{ left: "50vw", top: "1rem", x: "-50%", y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: -64, opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="pointer-events-none fixed z-[130] flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-full border border-neutral-200 bg-neutral-100/95 px-4 py-3 text-sm text-neutral-800 shadow-lg backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-100"
         >
           <Heart className="h-4 w-4 shrink-0 fill-neutral-900 text-neutral-900 dark:fill-neutral-100 dark:text-neutral-100" aria-hidden="true" />
           <span className="truncate">

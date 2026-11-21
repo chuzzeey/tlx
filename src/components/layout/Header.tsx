@@ -110,6 +110,20 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              onClick={toggle}
+              aria-label="Toggle color theme"
+              aria-pressed={theme === "dark"}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-neutral-100 text-foreground transition-colors hover:bg-foreground hover:text-background dark:bg-muted md:flex md:h-11 md:w-11"
+            >
+              {theme === "light" ? (
+                <Moon className="h-[18px] w-[18px]" aria-hidden="true" />
+              ) : (
+                <Sun className="h-[18px] w-[18px]" aria-hidden="true" />
+              )}
+            </button>
+            <button
               onClick={() => setSearchOpen(true)}
               aria-label="Search products"
               title="Search — press / or ⌘K"

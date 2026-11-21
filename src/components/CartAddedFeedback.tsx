@@ -13,34 +13,56 @@ export interface CartAddedFeedbackItem {
   size?: string;
 }
 
+interface CartTarget {
+  x: number;
+  y: number;
+}
+
+function getFunnelPaths(target: CartTarget): [string, string] {
+  const dx = target.x - window.innerWidth / 2;
+  const dy = target.y - window.innerHeight / 2;
+  const distance = Math.max(Math.hypot(dx, dy), 1);
+  const directionX = dx / distance;
+  const directionY = dy / distance;
+  const normalX = -directionY;
+  const normalY = directionX;
+  const baseX = target.x - directionX * 72;
+  const baseY = target.y - directionY * 72;
+  const halfWidth = 34;
+
+  return [
+    `M ${baseX + normalX * halfWidth} ${baseY + normalY * halfWidth} L ${target.x} ${target.y}`,
+    `M ${baseX - normalX * halfWidth} ${baseY - normalY * halfWidth} L ${target.x} ${target.y}`,
+  ];
+}
+
 function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
   const [phase, setPhase] = useState<"arrival" | "flight">("arrival");
-  const [target, setTarget] = useState<{ x: number; y: number } | null>(null);
+  const [target, setTarget] = useState<CartTarget | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const cartTargets = Array.from(document.querySelectorAll<HTMLElement>("[data-cart-target]"))
+      const cart = Array.from(document.querySelectorAll<HTMLElement>("[data-cart-target]"))
         .map((element) => ({
           element,
           priority: Number(element.dataset.cartTargetPriority ?? 0),
         }))
         .filter(({ element }) => element.getClientRects().length > 0)
-        .sort((a, b) => b.priority - a.priority);
-      const cart = cartTargets[0]?.element;
+        .sort((a, b) => b.priority - a.priority)[0]?.element;
+      const bounds = cart?.getBoundingClientRect();
 
-      if (cart) {
-        const bounds = cart.getBoundingClientRect();
-        setTarget({ x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 });
-      } else {
-        setTarget({ x: window.innerWidth - 24, y: 24 });
-      }
+      setTarget(
+        bounds
+          ? { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }
+          : { x: window.innerWidth - 24, y: 24 }
+      );
       setPhase("flight");
-    }, 1350);
+    }, 1450);
 
     return () => clearTimeout(timer);
   }, []);
 
-  const flightTarget = target ?? { x: window.innerWidth - 24, y: 24 };
+  const funnelPaths = target ? getFunnelPaths(target) : null;
 
   return (
     <motion.div
@@ -58,21 +80,55 @@ function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
         aria-hidden="true"
         className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.78)_0%,_rgba(229,231,235,0.36)_58%,_rgba(156,163,175,0.12)_100%)] dark:bg-[radial-gradient(ellipse_at_center,_rgba(39,39,42,0.72)_0%,_rgba(24,24,27,0.46)_58%,_rgba(9,9,11,0.32)_100%)]"
       />
+      {target && funnelPaths && (
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 z-10 h-full w-full text-neutral-500 dark:text-neutral-300"
+          viewBox={`0 0 ${window.innerWidth} ${window.innerHeight}`}
+          preserveAspectRatio="none"
+        >
+          {funnelPaths.map((path) => (
+            <motion.path
+              key={path}
+              d={path}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={
+                phase === "flight"
+                  ? { pathLength: 1, opacity: [0, 0.9, 0] }
+                  : { pathLength: 0, opacity: 0 }
+              }
+              transition={{ duration: 0.62, delay: 0.12, ease: "easeInOut" }}
+            />
+          ))}
+        </svg>
+      )}
       <motion.section
         role="status"
         aria-live="polite"
-        initial={{ left: "115vw", top: "50vh", x: "-50%", y: "-50%", scale: 0.68, opacity: 0 }}
+        initial={{ left: "115vw", top: "50vh", x: "-50%", y: "-50%", scale: 0.72, opacity: 0 }}
         animate={
           phase === "arrival"
             ? { left: "50vw", top: "50vh", x: "-50%", y: "-50%", scale: 1, opacity: 1 }
-            : { left: flightTarget.x, top: flightTarget.y, x: "-50%", y: "-50%", scale: 0.08, opacity: 0 }
+            : {
+                left: target?.x ?? "50vw",
+                top: target?.y ?? "50vh",
+                x: "-50%",
+                y: "-50%",
+                scale: [1, 0.55, 0.06],
+                opacity: [1, 0.95, 0],
+              }
         }
+        exit={{ scale: 0.92, opacity: 0 }}
         transition={
           phase === "arrival"
             ? { type: "spring", stiffness: 150, damping: 20 }
-            : { duration: 0.72, ease: [0.22, 1, 0.36, 1] }
+            : { duration: 0.82, ease: [0.22, 1, 0.36, 1], times: [0, 0.58, 1] }
         }
-        className="fixed flex w-[min(88vw,24rem)] flex-col items-center overflow-hidden rounded-[28px] bg-white/45 px-7 py-7 text-center shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-xl dark:bg-neutral-950/75"
+        className="fixed z-20 flex w-[min(88vw,24rem)] flex-col items-center overflow-hidden rounded-[28px] bg-white/45 px-7 py-7 text-center shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-xl dark:bg-neutral-950/75"
       >
         <div
           aria-hidden="true"
