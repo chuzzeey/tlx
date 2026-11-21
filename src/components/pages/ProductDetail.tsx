@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check, Handbag, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -74,6 +74,7 @@ function ReviewVerification({
 
 export default function ProductDetail({ productId, initialProduct }: { productId: string; initialProduct: Product }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { products, status, error, source } = useCatalog();
   const product = status === "loading"
     ? initialProduct
@@ -243,6 +244,10 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     setShowAllReviews(false);
   };
   const goBack = () => {
+    if (searchParams.get("from") === "home") {
+      router.replace("/");
+      return;
+    }
     if (window.history.length > 1) {
       router.back();
       return;
@@ -295,7 +300,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-muted md:aspect-square">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-900 md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[imgIdx]}
@@ -719,7 +724,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
         >
-          <div className="relative aspect-square overflow-hidden border border-border bg-muted">
+          <div className="relative aspect-square overflow-hidden border border-border bg-neutral-100 dark:bg-neutral-900">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[imgIdx]}

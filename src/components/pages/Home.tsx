@@ -79,7 +79,7 @@ function PopularProductCard({
 
   return (
     <Link
-      href={`/products/${product.id}`}
+      href={`/products/${product.id}?from=home`}
       aria-label={`View ${product.name}`}
       className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-neutral-100 pl-3 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
     >
@@ -120,7 +120,7 @@ function JacketCard({
   return (
     <article className="group relative min-w-0">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#f5f5f5] dark:bg-[#242424]">
-        <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
+        <Link href={`/products/${product.id}?from=home`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
             alt={product.name}
@@ -135,7 +135,7 @@ function JacketCard({
         <ProductFavoriteButton product={product} />
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
-      <Link href={`/products/${product.id}`} className="block pt-3">
+      <Link href={`/products/${product.id}?from=home`} className="block pt-3">
         <h2 className="h-6 truncate text-sm font-medium leading-6 sm:text-base">{product.name}</h2>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden />
