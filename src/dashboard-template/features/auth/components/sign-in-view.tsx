@@ -3,8 +3,8 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
-import { InteractiveGridPattern } from './interactive-grid';
 
 function getSafeNextPath(value: string | null) {
   const fallback = '/dashboard/overview';
@@ -54,32 +54,64 @@ export default function SignInViewPage() {
   }
 
   return (
-    <div className='relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background text-foreground md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>
-      <div className='relative hidden h-full flex-col p-10 lg:flex'>
-        <div className='absolute inset-0 bg-sidebar' />
-        <div className='text-sidebar-foreground relative z-20 flex items-center text-lg font-semibold'>
-          TLX Originals
-        </div>
-        <InteractiveGridPattern
-          className='mask-[radial-gradient(400px_circle_at_center,white,transparent)] inset-x-0 inset-y-0 h-full skew-y-12'
+    <div className='relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f5] text-foreground dark:bg-background lg:grid lg:grid-cols-2 lg:px-0'>
+      <aside className='relative flex min-h-[280px] flex-col overflow-hidden bg-gradient-to-br from-[#f3f1e9] via-[#e8ede7] to-[#dfe8df] px-6 py-6 text-[#17372e] dark:from-[#14231f] dark:via-[#192d26] dark:to-[#23392f] dark:text-white sm:min-h-[310px] sm:px-8 lg:min-h-screen lg:px-12 lg:py-10'>
+        <div className='absolute -right-24 top-[12%] h-[34rem] w-[34rem] rounded-full border border-emerald-950/10 dark:border-white/10' />
+        <div className='absolute right-[5%] top-[20%] h-[27rem] w-[27rem] rounded-full border border-emerald-950/10 dark:border-white/10' />
+        <Image
+          src='/images/products/mwdbl-jacket.png'
+          alt='Green and cream MWDBL jacket'
+          fill
+          preload
+          sizes='(max-width: 1023px) 100vw, 50vw'
+          className='z-10 object-contain px-4 pb-10 pt-14 sm:px-10 lg:px-12 lg:pb-44 lg:pt-20'
         />
-        <div className='text-sidebar-foreground relative z-20 mt-auto'>
-          <p className='text-lg'>Store operations, all in one place.</p>
+        <div className='relative z-20 flex items-center justify-between gap-4'>
+          <div className='flex items-center gap-3'>
+            <span className='flex size-10 items-center justify-center rounded-full bg-[#17372e] text-sm font-bold text-white dark:bg-white dark:text-[#17372e]'>
+              T
+            </span>
+            <div>
+              <p className='text-sm font-semibold tracking-tight'>TLX Originals</p>
+              <p className='mt-0.5 font-mono text-[9px] uppercase tracking-[0.2em] opacity-70'>
+                No Hype. Just Motion.
+              </p>
+            </div>
+          </div>
+          <span className='hidden rounded-full border border-emerald-950/15 bg-white/60 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] sm:inline-flex dark:border-white/15 dark:bg-white/10'>
+            Admin · 01
+          </span>
         </div>
-      </div>
-      <div className='flex w-full items-center justify-center p-6 lg:p-8'>
-        <div className='w-full max-w-sm space-y-6'>
-          <div className='space-y-2 text-center'>
-            <p className='font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground'>
-              TLX Originals · Admin
+        <div className='relative z-20 mt-auto hidden max-w-md lg:block'>
+          <p className='font-mono text-[10px] uppercase tracking-[0.2em] opacity-70'>
+            Store operations
+          </p>
+          <h2 className='mt-3 max-w-sm font-display text-4xl font-light leading-tight'>
+            Keep your store in motion.
+          </h2>
+          <p className='mt-3 max-w-sm text-sm leading-6 text-foreground/70'>
+            Products, images, and reviews—organized in one calm workspace.
+          </p>
+        </div>
+        <p className='relative z-20 mt-auto font-mono text-[9px] uppercase tracking-[0.2em] lg:hidden'>
+          Store administration
+        </p>
+      </aside>
+      <main className='flex w-full flex-1 items-center justify-center bg-[#faf9f5] px-5 py-8 dark:bg-background sm:px-8 sm:py-10 lg:min-h-screen lg:px-12 lg:py-12'>
+        <div className='w-full max-w-[430px] rounded-[28px] border border-border/70 bg-background/95 p-6 shadow-[0_28px_90px_-48px_rgba(23,55,46,0.28)] sm:p-9'>
+          <div className='mb-8 space-y-3'>
+            <p className='font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>
+              Secure admin access
             </p>
-            <h1 className='text-2xl font-semibold'>Sign in to your store</h1>
-            <p className='text-sm text-muted-foreground'>
-              Sign in with an email and password created in Supabase Auth.
-            </p>
+            <div className='space-y-2'>
+              <h1 className='text-3xl font-semibold tracking-tight'>Sign in to your store</h1>
+              <p className='text-sm leading-6 text-muted-foreground'>
+                Use the email and password linked to your Supabase Auth account.
+              </p>
+            </div>
           </div>
           <form onSubmit={signInWithPassword} className='space-y-4'>
-            <label htmlFor='admin-email' className='block space-y-1.5 text-sm font-medium'>
+            <label htmlFor='admin-email' className='block space-y-2 text-sm font-medium'>
               Email
               <input
                 id='admin-email'
@@ -90,56 +122,58 @@ export default function SignInViewPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder='you@example.com'
-                className='h-10 w-full rounded-md border border-input bg-background px-3 font-normal placeholder:text-muted-foreground'
+                className='h-12 w-full rounded-xl border border-input bg-background px-4 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15'
               />
             </label>
-            <label htmlFor='admin-password' className='block space-y-1.5 text-sm font-medium'>
+            <div className='space-y-2'>
+              <label htmlFor='admin-password' className='block text-sm font-medium'>
               Password
-            </label>
-            <div className='relative'>
-              <input
-                id='admin-password'
-                name='password'
-                type={showPassword ? 'text' : 'password'}
-                autoComplete='current-password'
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder='Enter your password'
-                className='h-10 w-full rounded-md border border-input bg-background px-3 pr-10 font-normal placeholder:text-muted-foreground'
-              />
-              <button
-                type='button'
-                onClick={() => setShowPassword((visible) => !visible)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                aria-pressed={showPassword}
-                aria-controls='admin-password'
-                className='absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-              >
-                {showPassword
-                  ? <EyeOff className='h-4 w-4' aria-hidden='true' />
-                  : <Eye className='h-4 w-4' aria-hidden='true' />}
-              </button>
+              </label>
+              <div className='relative'>
+                <input
+                  id='admin-password'
+                  name='password'
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete='current-password'
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder='Enter your password'
+                  className='h-12 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15'
+                />
+                <button
+                  type='button'
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  aria-controls='admin-password'
+                  className='absolute inset-y-0 right-1 flex w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                >
+                  {showPassword
+                    ? <EyeOff className='h-4 w-4' aria-hidden='true' />
+                    : <Eye className='h-4 w-4' aria-hidden='true' />}
+                </button>
+              </div>
             </div>
             {errorMessage && (
-              <p role='alert' className='text-sm text-destructive'>
+              <p role='alert' className='rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm text-destructive'>
                 {errorMessage}
               </p>
             )}
             <button
               type='submit'
               disabled={isSubmitting}
-              className='inline-flex min-h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60'
+              className='inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60'
             >
               {isSubmitting ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
-          <p className='text-center text-xs text-muted-foreground'>
+          <p className='mt-6 border-t border-border pt-4 text-center text-xs leading-5 text-muted-foreground'>
             Admin access is limited to configured email addresses. Accounts must be added in
             Supabase; public sign-up is disabled.
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
