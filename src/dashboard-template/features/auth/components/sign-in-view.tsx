@@ -59,8 +59,8 @@ export default function SignInViewPage() {
       <div className='pointer-events-none absolute left-1/2 top-[20%] z-0 h-[27rem] w-[27rem] -translate-x-1/2 rounded-full border border-emerald-950/10 dark:border-white/10' />
       <aside className='relative z-10 flex min-h-[280px] flex-col overflow-hidden bg-transparent px-6 py-6 text-[#17372e] dark:text-white sm:min-h-[310px] sm:px-8 lg:min-h-screen lg:px-12 lg:py-10'>
         <Image
-          src='/images/products/mwdbl-jacket.png'
-          alt='Green and cream MWDBL jacket'
+          src='/images/products/stussy-jacket.png'
+          alt='Black and white Stussy jacket'
           fill
           preload
           sizes='(max-width: 1023px) 100vw, 50vw'
@@ -165,10 +165,6 @@ export default function SignInViewPage() {
               {isSubmitting ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
-          <p className='mt-6 border-t border-border pt-4 text-center text-xs leading-5 text-muted-foreground'>
-            Admin access is limited to configured email addresses. Accounts must be added in
-            Supabase; public sign-up is disabled.
-          </p>
         </div>
       </main>
     </div>
