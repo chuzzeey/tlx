@@ -54,10 +54,10 @@ export default function SignInViewPage() {
   }
 
   return (
-    <div className='relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f5] text-foreground dark:bg-background lg:grid lg:grid-cols-2 lg:px-0'>
-      <aside className='relative flex min-h-[280px] flex-col overflow-hidden bg-gradient-to-br from-[#f3f1e9] via-[#e8ede7] to-[#dfe8df] px-6 py-6 text-[#17372e] dark:from-[#14231f] dark:via-[#192d26] dark:to-[#23392f] dark:text-white sm:min-h-[310px] sm:px-8 lg:min-h-screen lg:px-12 lg:py-10'>
-        <div className='absolute -right-24 top-[12%] h-[34rem] w-[34rem] rounded-full border border-emerald-950/10 dark:border-white/10' />
-        <div className='absolute right-[5%] top-[20%] h-[27rem] w-[27rem] rounded-full border border-emerald-950/10 dark:border-white/10' />
+    <div className='relative isolate flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-[#f3f1e9] via-[#e8ede7] to-[#dfe8df] text-foreground dark:from-[#14231f] dark:via-[#192d26] dark:to-[#23392f] lg:grid lg:grid-cols-2 lg:px-0'>
+      <div className='pointer-events-none absolute left-1/2 top-[12%] z-0 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full border border-emerald-950/10 dark:border-white/10' />
+      <div className='pointer-events-none absolute left-1/2 top-[20%] z-0 h-[27rem] w-[27rem] -translate-x-1/2 rounded-full border border-emerald-950/10 dark:border-white/10' />
+      <aside className='relative z-10 flex min-h-[280px] flex-col overflow-hidden bg-transparent px-6 py-6 text-[#17372e] dark:text-white sm:min-h-[310px] sm:px-8 lg:min-h-screen lg:px-12 lg:py-10'>
         <Image
           src='/images/products/mwdbl-jacket.png'
           alt='Green and cream MWDBL jacket'
@@ -89,16 +89,13 @@ export default function SignInViewPage() {
           <h2 className='mt-3 max-w-sm font-display text-4xl font-light leading-tight'>
             Keep your store in motion.
           </h2>
-          <p className='mt-3 max-w-sm text-sm leading-6 text-foreground/70'>
-            Products, images, and reviews—organized in one calm workspace.
-          </p>
         </div>
         <p className='relative z-20 mt-auto font-mono text-[9px] uppercase tracking-[0.2em] lg:hidden'>
           Store administration
         </p>
       </aside>
-      <main className='flex w-full flex-1 items-center justify-center bg-[#faf9f5] px-5 py-8 dark:bg-background sm:px-8 sm:py-10 lg:min-h-screen lg:px-12 lg:py-12'>
-        <div className='w-full max-w-[430px] rounded-[28px] border border-border/70 bg-background/95 p-6 shadow-[0_28px_90px_-48px_rgba(23,55,46,0.28)] sm:p-9'>
+      <main className='relative z-10 flex w-full flex-1 items-center justify-center bg-transparent px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:px-12 lg:py-12'>
+        <div className='w-full max-w-[430px] rounded-[28px] border border-[#dce8dd] bg-[#f4f8f3] p-6 shadow-[0_28px_90px_-48px_rgba(23,55,46,0.28)] sm:p-9 dark:border-border dark:bg-background/95'>
           <div className='mb-8 space-y-3'>
             <p className='font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>
               Secure admin access
@@ -122,12 +119,12 @@ export default function SignInViewPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder='you@example.com'
-                className='h-12 w-full rounded-xl border border-input bg-background px-4 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15'
+                className='h-12 w-full rounded-xl border border-input bg-background px-4 text-base font-normal shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15'
               />
             </label>
             <div className='space-y-2'>
               <label htmlFor='admin-password' className='block text-sm font-medium'>
-              Password
+                Password
               </label>
               <div className='relative'>
                 <input
@@ -139,7 +136,7 @@ export default function SignInViewPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder='Enter your password'
-                  className='h-12 w-full rounded-xl border border-input bg-background px-4 pr-12 text-sm font-normal shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15'
+                  className='h-12 w-full rounded-xl border border-input bg-background px-4 pr-12 text-base font-normal shadow-sm outline-none transition placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15'
                 />
                 <button
                   type='button'
@@ -163,7 +160,7 @@ export default function SignInViewPage() {
             <button
               type='submit'
               disabled={isSubmitting}
-              className='inline-flex h-12 w-full items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60'
+              className='inline-flex h-12 w-full items-center justify-center rounded-xl border border-[#cbdccc] bg-[#e5efe6] px-4 text-sm font-semibold text-[#17372e] shadow-sm transition-colors hover:bg-[#d9e8dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-50 dark:hover:bg-emerald-900/70 dark:focus-visible:ring-emerald-300/40'
             >
               {isSubmitting ? 'Signing in…' : 'Sign in'}
             </button>
