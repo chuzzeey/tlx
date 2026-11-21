@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Eye, EyeOff } from 'lucide-react';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
 import { InteractiveGridPattern } from './interactive-grid';
 
@@ -24,6 +25,7 @@ export default function SignInViewPage() {
   const nextPath = getSafeNextPath(searchParams.get('next'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState(
     searchParams.get('error') === 'configuration'
       ? 'Supabase Auth is not configured for this app. Check the Supabase URL and publishable key.'
@@ -77,28 +79,48 @@ export default function SignInViewPage() {
             </p>
           </div>
           <form onSubmit={signInWithPassword} className='space-y-4'>
-            <label className='block space-y-1.5 text-sm font-medium'>
+            <label htmlFor='admin-email' className='block space-y-1.5 text-sm font-medium'>
               Email
               <input
+                id='admin-email'
+                name='email'
                 type='email'
                 autoComplete='username'
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className='h-10 w-full rounded-md border border-input bg-background px-3 font-normal'
+                placeholder='you@example.com'
+                className='h-10 w-full rounded-md border border-input bg-background px-3 font-normal placeholder:text-muted-foreground'
               />
             </label>
-            <label className='block space-y-1.5 text-sm font-medium'>
+            <label htmlFor='admin-password' className='block space-y-1.5 text-sm font-medium'>
               Password
+            </label>
+            <div className='relative'>
               <input
-                type='password'
+                id='admin-password'
+                name='password'
+                type={showPassword ? 'text' : 'password'}
                 autoComplete='current-password'
                 required
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className='h-10 w-full rounded-md border border-input bg-background px-3 font-normal'
+                placeholder='Enter your password'
+                className='h-10 w-full rounded-md border border-input bg-background px-3 pr-10 font-normal placeholder:text-muted-foreground'
               />
-            </label>
+              <button
+                type='button'
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                aria-controls='admin-password'
+                className='absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              >
+                {showPassword
+                  ? <EyeOff className='h-4 w-4' aria-hidden='true' />
+                  : <Eye className='h-4 w-4' aria-hidden='true' />}
+              </button>
+            </div>
             {errorMessage && (
               <p role='alert' className='text-sm text-destructive'>
                 {errorMessage}
