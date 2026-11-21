@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, CreditCard, Package, Star, Truck } from "lucide-react";
 import { toast } from "sonner";
-import { formatPrice, productById, type Product } from "@/data/catalog";
+import { formatPrice, type Product } from "@/data/catalog";
 import { orders, orderTotal, type Order, type OrderItem } from "@/data/account";
 import { readCustomerReviews, saveCustomerReview, type CustomerReview } from "@/data/customerReviews";
 import { useShop } from "@/store/ShopContext";
+import { useCatalog } from "@/store/CatalogContext";
 import {
   Sheet,
   SheetContent,
@@ -48,6 +49,7 @@ function OrderHeader() {
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { products } = useCatalog();
   const { addToCart } = useShop();
   const [activeGroup, setActiveGroup] = useState<OrderGroup>("Waiting Payment");
   const [savedReviews, setSavedReviews] = useState<CustomerReview[]>([]);
@@ -177,7 +179,7 @@ export default function OrdersPage() {
 
               <div className="space-y-3">
                 {order.items.map((item, index) => {
-                  const product = productById(item.productId);
+                  const product = products.find((candidate) => candidate.id === item.productId);
                   if (!product) return null;
                   const savedReview = savedReviewFor(order.id, product.id);
                   const isCompleted = order.status === "Delivered";

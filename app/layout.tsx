@@ -1,11 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import Script from "next/script";
 import "./globals.css";
 import Providers from "./providers";
-import Header from "@/components/layout/Header";
-import NavigationEffects from "@/components/layout/NavigationEffects";
-import Footer from "@/components/layout/Footer";
+import StorefrontChrome from "@/components/layout/StorefrontChrome";
 import JsonLd from "@/components/JsonLd";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, organizationJsonLd } from "@/lib/seo";
 
@@ -67,17 +64,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={satoshi.variable}
     >
       <body>
-        {/* Applies the saved theme before first paint, including browser chrome colors. */}
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`try{const theme=localStorage.getItem("aurelle-theme")==="dark"?"dark":"light";const root=document.documentElement;root.classList.toggle("dark",theme==="dark");root.style.colorScheme=theme;document.querySelector('meta[name="theme-color"]')?.setAttribute("content",theme==="dark"?"#10100f":"#ffffff")}catch(e){}`}
-        </Script>
         <Providers>
-          <NavigationEffects />
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            {children}
-            <Footer />
-          </div>
+          <StorefrontChrome>{children}</StorefrontChrome>
         </Providers>
         <JsonLd data={organizationJsonLd()} />
       </body>

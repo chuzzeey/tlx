@@ -1,4 +1,4 @@
-import { categoryName, priceInNgn, type Product } from "@/data/catalog";
+import { categoryName, type Product } from "@/data/catalog";
 import type { Post } from "@/data/content";
 
 /** Set NEXT_PUBLIC_SITE_URL to the production origin before deployment. */
@@ -41,7 +41,6 @@ export function productJsonLd(p: Product) {
     name: p.name,
     description: p.description,
     image: abs(p.image),
-    sku: p.sku,
     category: categoryName(p.category),
     brand: { "@type": "Brand", name: SITE_NAME },
     url: abs(`/products/${p.id}`),
@@ -49,9 +48,9 @@ export function productJsonLd(p: Product) {
       "@type": "Offer",
       url: abs(`/products/${p.id}`),
       priceCurrency: "NGN",
-      price: priceInNgn(p.price),
+      price: p.price,
       availability:
-        p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        (p.inStock ?? p.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
     },
     aggregateRating: {

@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Search, SlidersHorizontal, Star } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cardReviewCount, categories, categoryName, formatPrice, products, type Product } from "@/data/catalog";
+import { cardReviewCount, categories, categoryName, formatPrice, type Product } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 import { EASE } from "@/components/motion/motion";
 import { Aster } from "@/components/Ornaments";
@@ -22,18 +24,22 @@ import { Slider } from "@/components/ui/slider";
 
 type Sort = "mixed" | "featured" | "price-asc" | "price-desc" | "rating" | "name";
 
-const MAX_PRICE = 1000;
+const MIN_PRICE_NGN = 40_621;
+const MAX_PRICE_NGN = 1_354_040;
+const PRICE_FILTER_STEP_NGN = 13_540;
 
 function Filters({
   selected,
   toggleCategory,
   priceCap,
   setPriceCap,
+  products,
 }: {
   selected: string[];
   toggleCategory: (slug: string) => void;
   priceCap: number;
   setPriceCap: (n: number) => void;
+  products: Product[];
 }) {
   return (
     <div className="space-y-10">
@@ -71,13 +77,13 @@ function Filters({
         <Slider
           value={[priceCap]}
           onValueChange={([v]) => setPriceCap(v)}
-          min={30}
-          max={MAX_PRICE}
-          step={10}
+          min={MIN_PRICE_NGN}
+          max={MAX_PRICE_NGN}
+          step={PRICE_FILTER_STEP_NGN}
         />
         <div className="mt-2 flex justify-between font-mono2 text-[10px] text-muted-foreground">
-          <span>{formatPrice(30)}</span>
-          <span>{formatPrice(MAX_PRICE)}</span>
+          <span>{formatPrice(MIN_PRICE_NGN)}</span>
+          <span>{formatPrice(MAX_PRICE_NGN)}</span>
         </div>
       </div>
       <div>
@@ -132,6 +138,7 @@ function StoreProductCard({ product, index }: { product: Product; index: number 
             {product.badge}
           </span>
         )}
+        <ProductAvailabilityBadge product={product} />
         <ProductFavoriteButton product={product} />
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
@@ -152,12 +159,13 @@ function StoreProductCard({ product, index }: { product: Product; index: number 
 }
 
 export default function Products() {
+  const { products, status, error } = useCatalog();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [sort, setSort] = useState<Sort>("mixed");
-  const [priceCap, setPriceCap] = useState(MAX_PRICE);
+  const [priceCap, setPriceCap] = useState(MAX_PRICE_NGN);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const mixedProducts = useMemo(() => interleaveByCategory(products), []);
+  const mixedProducts = useMemo(() => interleaveByCategory(products), [products]);
 
   const toggleCategory = (slug: string) =>
     setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
@@ -168,7 +176,7 @@ export default function Products() {
         p.price <= priceCap &&
         (selected.length === 0 || selected.includes(p.category)) &&
         (query.trim() === "" ||
-          (p.name + " " + p.description + " " + p.sku).toLowerCase().includes(query.toLowerCase()))
+          (p.name + " " + p.description).toLowerCase().includes(query.toLowerCase()))
     );
     switch (sort) {
       case "mixed": break;
@@ -184,7 +192,7 @@ export default function Products() {
   const clearFilters = () => {
     setQuery("");
     setSelected([]);
-    setPriceCap(MAX_PRICE);
+    setPriceCap(MAX_PRICE_NGN);
     setSort("mixed");
   };
 
@@ -220,6 +228,11 @@ export default function Products() {
       </section>
 
       <main className="container-x mx-auto max-w-[1600px] py-7 md:py-10">
+        {status === "error" && (
+          <p role="alert" className="mb-5 text-sm text-destructive">
+            The product catalog is unavailable: {error}
+          </p>
+        )}
         <div className="mb-5 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
           <button
             type="button"
@@ -274,7 +287,7 @@ export default function Products() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[320px] overflow-y-auto border-l border-border bg-background p-6">
               <p className="mb-6 font-display text-2xl font-light">Refine the edit</p>
-              <Filters selected={selected} toggleCategory={toggleCategory} priceCap={priceCap} setPriceCap={setPriceCap} />
+              <Filters selected={selected} toggleCategory={toggleCategory} priceCap={priceCap} setPriceCap={setPriceCap} products={products} />
             </SheetContent>
           </Sheet>
           <Select value={sort} onValueChange={(value) => setSort(value as Sort)}>

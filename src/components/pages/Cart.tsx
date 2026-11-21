@@ -5,8 +5,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Handbag, Minus, Plus } from "lucide-react";
-import { formatPrice, productById } from "@/data/catalog";
+import {
+  formatPrice,
+  FREE_SHIPPING_THRESHOLD_NGN,
+  STANDARD_SHIPPING_FEE_NGN,
+} from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import { PageSkeleton } from "@/components/ProductCard";
+import { isProductInStock } from "@/lib/product-availability";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,11 +29,13 @@ import { useShop, type CartLine } from "@/store/ShopContext";
 function QuantitySelector({
   name,
   qty,
+  canIncrease,
   onDecrease,
   onIncrease,
 }: {
   name: string;
   qty: number;
+  canIncrease: boolean;
   onDecrease: () => void;
   onIncrease: () => void;
 }) {
@@ -45,8 +53,9 @@ function QuantitySelector({
       <button
         type="button"
         onClick={onIncrease}
+        disabled={!canIncrease}
         aria-label={`Increase ${name} quantity`}
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300/70 transition-colors hover:border-neutral-400 hover:text-foreground dark:border-neutral-700/70 dark:hover:border-neutral-500"
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300/70 transition-colors hover:border-neutral-400 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700/70 dark:hover:border-neutral-500"
       >
         <Plus className="h-3.5 w-3.5" />
       </button>
@@ -112,6 +121,7 @@ function EmptyCart({ count }: { count: number }) {
 }
 
 export default function Cart() {
+  const { products } = useCatalog();
   const { cart, cartCount, setQty, removeFromCart, clearCart, subtotal, hydrated } = useShop();
   const [openLineId, setOpenLineId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -160,8 +170,14 @@ export default function Cart() {
     return <EmptyCart count={cartCount} />;
   }
 
-  const shipping = cart.length === 0 || subtotal >= 150 ? 0 : 9;
+  const shipping = cart.length === 0 || subtotal >= FREE_SHIPPING_THRESHOLD_NGN
+    ? 0
+    : STANDARD_SHIPPING_FEE_NGN;
   const total = subtotal + shipping;
+  const checkoutBlocked = cart.some((line) => {
+    const product = products.find((candidate) => candidate.id === line.productId);
+    return !product || !isProductInStock(product) || product.stock < line.qty;
+  });
 
   return (
     <div>
@@ -174,9 +190,29 @@ export default function Cart() {
           <div className="space-y-3">
             <AnimatePresence initial={false}>
               {cart.map((line) => {
-            const p = productById(line.productId);
-            if (!p) return null;
             const lineId = `${line.productId}:${line.color ?? ""}:${line.size ?? ""}`;
+            const p = products.find((product) => product.id === line.productId);
+            if (!p) {
+              return (
+                <motion.article
+                  key={lineId}
+                  layout
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-destructive/30 bg-destructive/5 p-4"
+                >
+                  <div>
+                    <p className="text-sm font-medium">This product is no longer available.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Remove it to continue to checkout.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeLine(line)}
+                    className="shrink-0 text-sm font-medium text-destructive underline underline-offset-4"
+                  >
+                    Remove
+                  </button>
+                </motion.article>
+              );
+            }
             const isOpen = openLineId === lineId;
 
             return (
@@ -242,10 +278,14 @@ export default function Cart() {
                             Color: {line.color}
                           </p>
                         )}
+                        {!isProductInStock(p) && (
+                          <p className="mt-1 text-xs font-medium text-destructive">Out of stock — remove to continue</p>
+                        )}
                       </div>
                       <QuantitySelector
                         name={p.name}
                         qty={line.qty}
+                        canIncrease={isProductInStock(p) && line.qty < p.stock}
                         onDecrease={() => decreaseLine(line)}
                         onIncrease={() => increaseLine(line, p.stock)}
                       />
@@ -321,9 +361,15 @@ export default function Cart() {
                 <dd className="font-mono2">{formatPrice(total)}</dd>
               </div>
             </dl>
-            <Link href="/checkout" className="btn-solid-invert mt-7 w-full rounded-[12px]">
-              Proceed to checkout <ArrowRight className="h-4 w-4" />
-            </Link>
+            {checkoutBlocked ? (
+              <p role="status" className="mt-7 rounded-xl bg-destructive/5 p-3 text-center text-sm text-destructive">
+                Update unavailable or out-of-stock items before checkout.
+              </p>
+            ) : (
+              <Link href="/checkout" className="btn-solid-invert mt-7 w-full rounded-[12px]">
+                Proceed to checkout <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
             <Link href="/categories" className="mt-4 block text-center font-mono2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground">
               Continue shopping
             </Link>

@@ -7,6 +7,7 @@ import { categoryName, formatPrice, type Product } from "@/data/catalog";
 import { EASE } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
 export function Stars({ rating, className = "" }: { rating: number; className?: string }) {
@@ -26,12 +27,10 @@ export default function ProductCard({
   product,
   index,
   showIndex = true,
-  showSku = true,
 }: {
   product: Product;
   index?: number;
   showIndex?: boolean;
-  showSku?: boolean;
 }) {
   return (
     <motion.div
@@ -40,20 +39,23 @@ export default function ProductCard({
       transition={{ duration: 0.45, ease: EASE }}
       className="hairline-cell group relative transition-colors duration-300 hover:bg-card"
     >
+      <Link
+        href={`/products/${encodeURIComponent(product.id)}`}
+        aria-label={`View ${product.name}`}
+        className="absolute inset-0 z-10 rounded-[inherit] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      />
       {/* The cell frame (borders) stays static — only the content inside animates */}
       <motion.div
         initial={{ opacity: 0, y: 22 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "0px 0px 80px 0px" }}
         transition={{ duration: 0.7, delay: Math.min((index ?? 0) * 0.045, 0.35), ease: EASE }}
-        className="flex h-full flex-col p-5"
+        className="pointer-events-none relative z-20 flex h-full flex-col p-5"
       >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="label-mono">{categoryName(product.category)}</p>
-          <Link href={`/products/${product.id}`} className="mt-1.5 block">
-            <span className="link-underline text-sm font-medium leading-snug">{product.name}</span>
-          </Link>
+          <span className="link-underline mt-1.5 block text-sm font-medium leading-snug">{product.name}</span>
         </div>
         {showIndex && typeof index === "number" && (
           <span className="font-mono2 text-[10px] text-muted-foreground">{String(index + 1).padStart(3, "0")}</span>
@@ -67,23 +69,16 @@ export default function ProductCard({
             <span className="ml-2 text-xs text-muted-foreground line-through">{formatPrice(product.compareAt)}</span>
           )}
         </span>
-        {showSku && (
-          <span className="font-mono2 text-[10px] uppercase tracking-wider text-muted-foreground">
-            {product.sku}
-          </span>
-        )}
       </div>
 
       <div className="relative mt-4 aspect-square overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">
-        <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
-          <FadeImage
-            src={product.image}
-            alt={product.name}
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
-            className="h-full w-full bg-transparent"
-            imgClassName="h-full w-full object-contain p-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
-          />
-        </Link>
+        <FadeImage
+          src={product.image}
+          alt={product.name}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
+          className="h-full w-full bg-transparent"
+          imgClassName="h-full w-full object-contain p-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
+        />
         {product.badge && (
           <span
             className={`absolute left-2 top-2 z-10 rounded-full px-2 py-1 font-mono2 text-[9px] uppercase tracking-[0.15em] ${
@@ -95,11 +90,12 @@ export default function ProductCard({
             {product.badge}
           </span>
         )}
+        <ProductAvailabilityBadge product={product} />
         <ProductFavoriteButton product={product} />
         <AddToCartButton
           product={product}
           label="Add to bag"
-          className="absolute bottom-2.5 left-3 right-3 z-10 rounded-full"
+          className="pointer-events-auto absolute bottom-2.5 left-3 right-3 z-10 rounded-full"
         />
       </div>
       </motion.div>

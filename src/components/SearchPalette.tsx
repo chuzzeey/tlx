@@ -7,14 +7,14 @@ import { Command } from "cmdk";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Clock3, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import Image from "next/image";
-import { cardReviewCount, formatPrice, products } from "@/data/catalog";
+import { cardReviewCount, formatPrice } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import { EASE } from "@/components/motion/motion";
 import { toast } from "sonner";
 
 type SearchItem = {
   id: string;
   name: string;
-  sku: string;
   category: string;
   image: string;
   href: string;
@@ -36,6 +36,7 @@ export default function SearchPalette({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
+  const { products } = useCatalog();
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [searchHistoryLoaded, setSearchHistoryLoaded] = useState(false);
@@ -105,7 +106,7 @@ export default function SearchPalette({
 
   const matchedProducts = query.trim()
     ? products.filter((product) =>
-        `${product.name} ${product.sku} ${product.category} ${product.description}`
+        `${product.name} ${product.category} ${product.description}`
           .toLowerCase()
           .includes(query.trim().toLowerCase())
       )
@@ -113,7 +114,6 @@ export default function SearchPalette({
   const displayedProducts: SearchItem[] = matchedProducts.map((product) => ({
     id: product.id,
     name: product.name,
-    sku: product.sku,
     category: product.category,
     image: product.image,
     href: `/products/${product.id}`,
@@ -308,7 +308,7 @@ export default function SearchPalette({
                   </div>
                 ) : (
                   <p className="py-16 text-center text-sm text-muted-foreground">
-                    {query.trim() ? "No products found. Try another search." : "Search by product name, category, or SKU."}
+                    {query.trim() ? "No products found. Try another search." : "Search by product name or category."}
                   </p>
                 )}
               </section>
@@ -356,14 +356,14 @@ export default function SearchPalette({
                 <Command.List className="max-h-[52vh] overflow-y-auto border-t border-border/70 px-1 pb-2">
                   <Command.Empty className="px-4 py-12 text-center">
                     <p className="text-sm text-muted-foreground">
-                      {query.trim() ? "No products found. Try another search." : "Search by product name, category, or SKU."}
+                      {query.trim() ? "No products found. Try another search." : "Search by product name or category."}
                     </p>
                   </Command.Empty>
 
                     {displayedProducts.map((item) => (
                       <Command.Item
                         key={item.id}
-                        value={`${item.name} ${item.sku} ${item.category}`}
+                        value={`${item.name} ${item.category}`}
                         onSelect={() => go(item.href)}
                         className={itemCls}
                       >

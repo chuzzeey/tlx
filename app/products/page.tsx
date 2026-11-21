@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Products from "@/components/pages/Products";
 import JsonLd from "@/components/JsonLd";
-import { products } from "@/data/catalog";
+import { getPublishedCatalog } from "@dashboard/lib/catalog-service";
 import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 const title = "Store";
@@ -15,7 +15,10 @@ export const metadata: Metadata = {
   openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/stussy-jacket.png"] },
 };
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  const products = await getPublishedCatalog();
   return (
     <>
       <JsonLd

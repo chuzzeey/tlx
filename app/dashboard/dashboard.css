@@ -1,0 +1,27 @@
+.dashboard-shell {
+  --radius: 0.625rem;
+  --radius-md: calc(var(--radius) - 2px);
+  --chart-1: 210 70% 18%;
+  --chart-2: 12 76% 61%;
+  --chart-3: 173 58% 39%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+}
+
+.dashboard-shell .field-sizing-content {
+  field-sizing: content;
+}
+
+.dark .dashboard-shell {
+  --chart-1: 210 30% 82%;
+  --chart-2: 12 70% 56%;
+  --chart-3: 173 52% 48%;
+  --chart-4: 43 72% 58%;
+  --chart-5: 27 80% 60%;
+}
+
+@media (max-width: 767px) {
+  body:has(.dashboard-shell) {
+    padding-bottom: 0;
+  }
+}

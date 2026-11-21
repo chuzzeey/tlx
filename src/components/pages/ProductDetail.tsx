@@ -9,17 +9,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   categoryBySlug,
   formatPrice,
-  productById,
-  products,
-  productsByCategory,
+  FREE_SHIPPING_THRESHOLD_NGN,
   reviewsFor,
   type Product,
 } from "@/data/catalog";
 import { readCustomerReviews, type CustomerReview } from "@/data/customerReviews";
 import ProductCard, { Stars } from "@/components/ProductCard";
 import { EASE, Reveal, Stagger, StaggerItem } from "@/components/motion/motion";
-import { Barcode, Footnote } from "@/components/Ornaments";
+import { Footnote } from "@/components/Ornaments";
+import { isProductInStock } from "@/lib/product-availability";
+import { defaultProductSize, productSizeOptions } from "@/lib/product-variants";
 import { useShop } from "@/store/ShopContext";
+import { useCatalog } from "@/store/CatalogContext";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -71,14 +72,28 @@ function ReviewVerification({
   );
 }
 
-export default function ProductDetail({ productId }: { productId: string }) {
+export default function ProductDetail({ productId, initialProduct }: { productId: string; initialProduct: Product }) {
   const router = useRouter();
-  const product = productById(productId);
+  const { products, status, error, source } = useCatalog();
+  const product = status === "loading"
+    ? initialProduct
+    : products.find((candidate) => candidate.id === productId);
   const { addToCart, cartCount, recordView, recent } = useShop();
   const [qty, setQty] = useState(1);
-  const [color, setColor] = useState<string | undefined>(undefined);
+  const [colorSelection, setColorSelection] = useState<{ productId: string; color?: string }>(() => ({
+    productId,
+  }));
+  const color = colorSelection.productId === productId ? colorSelection.color : undefined;
+  const setColor = (value: string | undefined) => setColorSelection({ productId, color: value });
   const [imgIdx, setImgIdx] = useState(0);
-  const [selectedSize, setSelectedSize] = useState("M");
+  const [sizeSelection, setSizeSelection] = useState<{ productId: string; size?: string }>(() => ({
+    productId,
+    size: defaultProductSize(initialProduct),
+  }));
+  const selectedSize = sizeSelection.productId === productId
+    ? sizeSelection.size
+    : defaultProductSize(initialProduct);
+  const setSelectedSize = (size: string) => setSizeSelection({ productId, size });
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const scrollToRelatedAfterCollapse = useRef(false);
@@ -91,16 +106,65 @@ export default function ProductDetail({ productId }: { productId: string }) {
   }, [product?.id]);
 
   useEffect(() => {
+    if (status !== "ready") return;
+    let active = true;
+
     try {
-      // Browser-only review data is loaded after hydration to keep server markup stable.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCustomerReviews(readCustomerReviews());
+      if (source !== "supabase") {
+        setCustomerReviews(readCustomerReviews());
+        return () => {
+          active = false;
+        };
+      }
+
+      void fetch(`/api/store/products/${encodeURIComponent(productId)}/reviews`, { cache: "no-store" })
+        .then(async (response) => {
+          const result = (await response.json()) as {
+            reviews?: Array<{
+              id: string;
+              author: string;
+              location: string;
+              rating: number;
+              title: string;
+              body: string;
+              is_verified: boolean;
+              created_at: string;
+            }>;
+            error?: string;
+          };
+          if (!response.ok || !Array.isArray(result.reviews)) {
+            throw new Error(result.error ?? "Approved reviews could not be loaded.");
+          }
+          if (!active) return;
+          setCustomerReviews(result.reviews.map((review) => ({
+            id: review.id,
+            productId,
+            orderId: "",
+            author: review.author,
+            location: review.location,
+            rating: review.rating,
+            title: review.title,
+            body: review.body,
+            verified: review.is_verified,
+            sample: false,
+            date: review.created_at,
+          })));
+        })
+        .catch((cause: unknown) => {
+          if (!active) return;
+          toast.error("Approved reviews couldn't be loaded.", {
+            description: cause instanceof Error ? cause.message : undefined,
+          });
+        });
     } catch (error) {
       toast.error("Saved reviews couldn't be loaded.", {
         description: error instanceof Error ? error.message : undefined,
       });
     }
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [productId, source, status]);
 
   useEffect(() => {
     if (showAllReviews || !scrollToRelatedAfterCollapse.current) return;
@@ -117,14 +181,16 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
   const gallery = useMemo(() => {
     if (!product) return [];
-    const siblings = productsByCategory(product.category).filter((p) => p.id !== product.id);
+    const siblings = products.filter((p) => p.category === product.category && p.id !== product.id);
     return [...new Set([product.image, ...(product.gallery ?? []), ...siblings.map((s) => s.image)])].slice(0, 3);
-  }, [product]);
+  }, [product, products]);
 
   if (!product) {
     return (
       <div className="container-x py-24 text-center">
-        <p className="font-display text-3xl font-light">This piece has sold out — completely.</p>
+        <p role={status === "error" ? "alert" : undefined} className="font-display text-3xl font-light">
+          {status === "error" ? `The catalog is unavailable: ${error}` : "This piece is no longer available."}
+        </p>
         <Link href="/products" className="btn-outline-invert mt-8">Back to the collection</Link>
       </div>
     );
@@ -132,19 +198,28 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
   const cat = categoryBySlug(product.category);
   const productCustomerReviews = customerReviews.filter((review) => review.productId === product.id);
-  const reviews = [...productCustomerReviews, ...reviewsFor(product.id)];
+  const reviews = source === "built-in"
+    ? [...productCustomerReviews, ...reviewsFor(product.id)]
+    : productCustomerReviews;
   const reviewsToShow = reviews.slice(0, showAllReviews ? 8 : 3);
   const hasMoreReviews = reviews.length > 3;
-  const reviewCount = product.reviewCount + productCustomerReviews.length;
-  const averageRating = (
-    (product.rating * product.reviewCount +
-      productCustomerReviews.reduce((sum, review) => sum + review.rating, 0)) /
-    reviewCount
+  const reviewCount = source === "built-in"
+    ? product.reviewCount + productCustomerReviews.length
+    : product.reviewCount;
+  const averageRating = source === "supabase"
+    ? product.rating
+    : reviewCount
+      ? (product.rating * product.reviewCount +
+          productCustomerReviews.reduce((sum, review) => sum + review.rating, 0)) /
+        reviewCount
+      : 0;
+  const related = products.filter((p) => p.category === product.category && p.id !== product.id);
+  const reviewRatingCounts = [5, 4, 3, 2, 1].map((rating) =>
+    reviews.filter((review) => review.rating === rating).length
   );
-  const related = productsByCategory(product.category).filter((p) => p.id !== product.id);
   const recentOthers = recent
     .filter((id) => id !== product.id)
-    .map((id) => productById(id))
+    .map((id) => products.find((candidate) => candidate.id === id))
     .filter(
       (p): p is Product =>
         p !== undefined && !related.some((relatedProduct) => relatedProduct.id === p.id)
@@ -157,8 +232,12 @@ export default function ProductDetail({ productId }: { productId: string }) {
     ...recentOthers,
     ...suggestionPool.filter((item) => !recentOthers.some((recentItem) => recentItem.id === item.id)),
   ].slice(0, 4);
-  const low = product.stock <= 8;
-  const hasSizes = product.category === "jackets" || product.category === "apparel";
+  const inStock = isProductInStock(product);
+  const low = inStock && product.stock <= 8;
+  const colors = product.colors ?? [];
+  const defaultColor = colors[0];
+  const sizeOptions = productSizeOptions(product);
+  const hasSizes = sizeOptions.length > 0;
   const collapseReviews = () => {
     scrollToRelatedAfterCollapse.current = true;
     setShowAllReviews(false);
@@ -280,7 +359,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
               <div className="mt-5">
                 <p className="mb-2 text-base font-medium">Size</p>
                 <div className="flex flex-wrap gap-2.5">
-                  {["S", "M", "L", "XL", "XXL"].map((size) => (
+                  {sizeOptions.map((size) => (
                     <button
                       key={size}
                       type="button"
@@ -338,7 +417,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
             <div className="mt-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl bg-neutral-100 dark:bg-muted">
               {[
-                { icon: Truck, label: `Free over ${formatPrice(150)}` },
+                { icon: Truck, label: `Free over ${formatPrice(FREE_SHIPPING_THRESHOLD_NGN)}` },
                 { icon: RotateCcw, label: "30-day returns" },
                 { icon: ShieldCheck, label: "5-year guarantee" },
               ].map(({ icon: Icon, label }) => (
@@ -392,10 +471,11 @@ export default function ProductDetail({ productId }: { productId: string }) {
               </div>
               <button
                 type="button"
+                disabled={!inStock}
                 onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
-                className="flex-1 rounded-full bg-foreground px-4 text-sm font-semibold text-background"
+                className="flex-1 rounded-full bg-foreground px-4 text-sm font-semibold text-background disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Add to cart — {formatPrice(product.price * qty)}
+                {!inStock ? "Out of stock" : `Add to cart — ${formatPrice(product.price * qty)}`}
               </button>
             </div>
 
@@ -485,7 +565,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
                   product={item}
                   index={index}
                   showIndex={false}
-                  showSku={false}
                 />
               ))}
             </div>
@@ -502,7 +581,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
                   product={item}
                   index={index}
                   showIndex={false}
-                  showSku={false}
                 />
               ))}
             </div>
@@ -603,7 +681,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
               {related.slice(0, 4).map((item, index) => (
-                <ProductCard key={item.id} product={item} index={index} showIndex={false} showSku={false} />
+                <ProductCard key={item.id} product={item} index={index} showIndex={false} />
               ))}
             </div>
           </div>
@@ -614,7 +692,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             <h2 className="mb-5 text-xl font-semibold">You may also like</h2>
             <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
               {youMayAlsoLike.map((item, index) => (
-                <ProductCard key={item.id} product={item} index={index} showIndex={false} showSku={false} />
+                <ProductCard key={item.id} product={item} index={index} showIndex={false} />
               ))}
             </div>
           </div>
@@ -631,7 +709,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
           <span>/</span>
           <Link href={`/categories/${product.category}`} className="hover:text-foreground">{cat?.name}</Link>
           <span>/</span>
-          <span className="text-foreground">{product.sku}</span>
         </div>
       </div>
 
@@ -687,7 +764,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
         {/* Info */}
         <Stagger inView={false}>
           <StaggerItem>
-          <p className="label-mono">{cat?.name} · {product.sku}</p>
+          <p className="label-mono">{cat?.name}</p>
           <h1 className="mt-3 font-display text-4xl font-light leading-[1.05] tracking-tight sm:text-5xl">
             {product.name}
           </h1>
@@ -708,20 +785,40 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
           <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-foreground/85">{product.description}</p>
 
-          <div className="mt-8 flex items-center gap-4 text-foreground/75">
-            <Barcode code={product.sku} className="h-6 w-32" />
-            <span className="font-mono2 text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
-              AUR·{product.sku}
-            </span>
-          </div>
           </StaggerItem>
 
-          {product.colors && (
+          {hasSizes && (
+            <StaggerItem>
+              <div className="mt-7">
+                <p className="label-mono mb-3">Size — {selectedSize ?? "Choose a size"}</p>
+                <div role="group" aria-label="Select size" className="flex flex-wrap gap-2">
+                  {sizeOptions.map((size) => (
+                    <motion.button
+                      key={size}
+                      type="button"
+                      onClick={() => setSelectedSize(size)}
+                      aria-pressed={selectedSize === size}
+                      whileTap={{ scale: 0.94 }}
+                      className={`min-h-10 min-w-12 border px-3 text-sm transition-colors ${
+                        selectedSize === size
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border bg-background text-muted-foreground hover:border-foreground"
+                      }`}
+                    >
+                      {size}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </StaggerItem>
+          )}
+
+          {defaultColor ? (
             <StaggerItem>
             <div className="mt-7">
-              <p className="label-mono mb-3">Finish — {color ?? product.colors[0].name}</p>
+              <p className="label-mono mb-3">Color — {color ?? defaultColor.name}</p>
               <div className="flex gap-2.5">
-                {product.colors.map((c) => (
+                {colors.map((c) => (
                   <motion.button
                     key={c.name}
                     onClick={() => setColor(c.name)}
@@ -729,7 +826,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                     title={c.name}
                     whileTap={{ scale: 0.85 }}
                     className={`h-8 w-8 border-2 transition-all ${
-                      (color ?? product.colors![0].name) === c.name
+                      (color ?? defaultColor.name) === c.name
                         ? "border-foreground"
                         : "border-transparent hover:border-border"
                     }`}
@@ -739,7 +836,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
               </div>
             </div>
             </StaggerItem>
-          )}
+          ) : null}
 
           {/* Qty + actions */}
           <StaggerItem>
@@ -767,24 +864,25 @@ export default function ProductDetail({ productId }: { productId: string }) {
               </button>
             </div>
             <motion.button
+              disabled={!inStock}
               whileTap={{ scale: 0.97 }}
               onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
-              className="btn-solid-invert flex-1 py-3.5"
+              className="btn-solid-invert flex-1 py-3.5 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add to cart — {formatPrice(product.price * qty)}
+              {!inStock ? "Out of stock" : `Add to cart — ${formatPrice(product.price * qty)}`}
             </motion.button>
           </div>
 
           <p className={`mt-4 flex items-center gap-2 font-mono2 text-[11px] uppercase tracking-[0.15em] ${low ? "text-destructive" : "text-muted-foreground"}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${low ? "bg-destructive" : "bg-green-600"}`} />
-            {low ? `Low stock — ${product.stock} remaining` : `In stock — ships within 48 hours`}
+            {!inStock ? "Out of stock" : low ? `Low stock — ${product.stock} remaining` : "In stock — ships within 48 hours"}
           </p>
           </StaggerItem>
 
           <StaggerItem>
           <div className="mt-8 grid grid-cols-3 divide-x divide-border border border-border">
             {[
-              { icon: Truck, t: `Free over ${formatPrice(150)}` },
+              { icon: Truck, t: `Free over ${formatPrice(FREE_SHIPPING_THRESHOLD_NGN)}` },
               { icon: RotateCcw, t: "30-day returns" },
               { icon: ShieldCheck, t: "5-year guarantee" },
             ].map((s) => (
@@ -881,7 +979,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
             <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-4">
               {related.slice(0, 4).map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} showIndex={false} showSku={false} />
+                <ProductCard key={p.id} product={p} index={i} showIndex={false} />
               ))}
             </div>
           </div>
@@ -896,7 +994,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
             <div className="hairline-grid sm:grid-cols-2 lg:grid-cols-4">
               {youMayAlsoLike.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} showIndex={false} showSku={false} />
+                <ProductCard key={p.id} product={p} index={i} showIndex={false} />
               ))}
             </div>
           </div>

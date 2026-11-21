@@ -1,0 +1,18 @@
+import PageContainer from '@dashboard/components/layout/page-container';
+import DemoForm from '@dashboard/components/forms/demo-form';
+
+export const metadata = {
+  title: 'Dashboard: Basic Form'
+};
+
+export default async function Page() {
+
+  return (
+    <PageContainer
+      pageTitle='Basic Form'
+      pageDescription='A comprehensive form demo with all field types.'
+    >
+      <DemoForm />
+    </PageContainer>
+  );
+}

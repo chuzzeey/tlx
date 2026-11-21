@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { categoryIndexCategories, productsByCategory } from "@/data/catalog";
+import { categoryIndexCategories } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import { CellIn } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import { Footnote } from "@/components/Ornaments";
 
 export default function Categories() {
+  const { products, status, error } = useCatalog();
   return (
     <main>
       <div className="sticky top-0 z-30 flex h-14 items-center justify-center border-b border-border bg-background md:hidden">
@@ -34,7 +36,7 @@ export default function Categories() {
       <div className="container-x mx-auto max-w-6xl pb-12 pt-6 md:pt-0">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {categoryIndexCategories.map((category, index) => {
-            const count = productsByCategory(category.slug).length;
+            const count = products.filter((product) => product.category === category.slug).length;
             return (
               <CellIn key={category.slug} index={index} className="h-full">
                 <Link
@@ -50,6 +52,11 @@ export default function Categories() {
                       {count} {count === 1 ? "Product" : "Products"}
                     </span>
                   </div>
+                  {status === "error" && (
+                    <p role="alert" className="mt-4 text-sm text-destructive">
+                      The product catalog is unavailable: {error}
+                    </p>
+                  )}
                   <FadeImage
                     src={category.image}
                     alt={category.name}

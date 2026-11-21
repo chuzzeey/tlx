@@ -6,7 +6,8 @@ import Image from "next/image";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { essayProducts, postBySlug, posts } from "@/data/content";
-import { productById, type Product } from "@/data/catalog";
+import type { Product } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import { EASE, Reveal } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import ProductCard from "@/components/ProductCard";
@@ -16,6 +17,7 @@ import { useImageLoaded } from "@/hooks/use-image-loaded";
 const MotionImage = motion.create(Image);
 
 export default function PostDetail({ postId }: { postId: string }) {
+  const { products } = useCatalog();
   const post = postBySlug(postId);
   const { loaded: heroLoaded, ref: heroRef, onLoad: heroOnLoad } = useImageLoaded();
 
@@ -31,7 +33,7 @@ export default function PostDetail({ postId }: { postId: string }) {
   const related = posts.filter((p) => p.slug !== post.slug && p.tag === post.tag).slice(0, 2);
   const more = related.length === 2 ? related : [...related, ...posts.filter((p) => p.slug !== post.slug && p.tag !== post.tag)].slice(0, 2);
   const pieces = (essayProducts[post.slug] ?? [])
-    .map((id) => productById(id))
+    .map((id) => products.find((product) => product.id === id))
     .filter((p): p is Product => Boolean(p))
     .slice(0, 3);
 

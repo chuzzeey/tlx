@@ -1,3 +1,8 @@
+import { formatPrice, legacyUsdPriceToNgn } from "@/lib/currency";
+import { catalogVariantDefaults } from "@/lib/product-variants";
+
+export { formatPrice };
+
 export interface Category {
   slug: string;
   name: string;
@@ -8,7 +13,6 @@ export interface Category {
 
 export interface Product {
   id: string;
-  sku: string;
   name: string;
   category: string;
   price: number;
@@ -23,8 +27,10 @@ export interface Product {
   dimensions: string;
   care: string;
   stock: number;
+  inStock?: boolean;
   badge?: "New" | "Bestseller" | "Low stock" | "Sale";
   colors?: { name: string; hex: string }[];
+  sizes?: string[];
   featured?: boolean;
 }
 
@@ -47,9 +53,9 @@ export const popularItems = [
   { name: "Men's Golf Cap", image: "/images/products/mens-golf-cap.png", href: "/products/mens-golf-cap" },
 ];
 
-const productCatalog: Product[] = [
+const legacyUsdProductCatalog: Product[] = [
   {
-    id: "terra-vessel-vase", sku: "CER-001", name: "Terra Vessel Vase", category: "ceramics",
+    id: "terra-vessel-vase", name: "Terra Vessel Vase", category: "ceramics",
     price: 86, rating: 4.8, reviewCount: 34, image: "/images/products/vase-01.webp",
     description: "A hand-thrown stoneware vase with a soft matte glaze in warm off-white. The gently asymmetric belly catches light the way only wheel-thrown forms can.",
     story: "Thrown in a Lisbon studio by a two-person team, each Terra vessel is fired twice and sanded by hand between glazes.",
@@ -58,7 +64,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Bone", hex: "#e9e4d8" }, { name: "Clay", hex: "#b98a68" }, { name: "Slate", hex: "#6d7178" }],
   },
   {
-    id: "kiln-speckle-mugs", sku: "CER-002", name: "Kiln Speckle Espresso Mugs, Pair", category: "ceramics",
+    id: "kiln-speckle-mugs", name: "Kiln Speckle Espresso Mugs, Pair", category: "ceramics",
     price: 48, rating: 4.9, reviewCount: 57, image: "/images/products/mugs.webp",
     description: "A pair of speckled stoneware espresso mugs in sand and clay. Small enough for a proper ristretto, sturdy enough for every single morning.",
     story: "The speckle comes from iron-bearing clay dug forty kilometres from the kiln — no two mugs pattern alike.",
@@ -67,7 +73,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Sand", hex: "#d6c3a5" }, { name: "Clay", hex: "#a9785b" }],
   },
   {
-    id: "kumo-lantern-lamp", sku: "LGT-001", name: "Kumo Paper Lantern Floor Lamp", category: "lighting",
+    id: "kumo-lantern-lamp", name: "Kumo Paper Lantern Floor Lamp", category: "lighting",
     price: 240, compareAt: 290, rating: 4.7, reviewCount: 21, image: "/images/products/lantern-lamp.webp",
     description: "A sculptural washi paper globe on a slender blackened-steel stand. Lit, it reads like a small moon parked in the corner of the room.",
     story: "The shade is stretched by hand over a bamboo rib, a technique unchanged for three centuries.",
@@ -75,7 +81,7 @@ const productCatalog: Product[] = [
     stock: 6, badge: "Sale", featured: true,
   },
   {
-    id: "dome-brass-lamp", sku: "LGT-002", name: "Dome Brass Table Lamp", category: "lighting",
+    id: "dome-brass-lamp", name: "Dome Brass Table Lamp", category: "lighting",
     price: 185, rating: 4.6, reviewCount: 18, image: "/images/products/brass-lamp.webp",
     description: "A mushroom-domed table lamp in brushed brass. The shade throws light downward in a warm pool — ideal on a sideboard or desk.",
     story: "Spun from a single disc of brass and left unlacquered, so it develops a living patina with touch and time.",
@@ -83,7 +89,7 @@ const productCatalog: Product[] = [
     stock: 11, badge: "New",
   },
   {
-    id: "oat-merino-throw", sku: "TEX-001", name: "Oat Merino Throw", category: "textiles",
+    id: "oat-merino-throw", name: "Oat Merino Throw", category: "textiles",
     price: 145, rating: 4.9, reviewCount: 63, image: "/images/products/wool-throw.webp",
     description: "A chunky hand-knit merino throw in undyed oatmeal. Heavy in the lap, light on the eye — the blanket that ends arguments over the sofa.",
     story: "Knitted from 100% undyed merino lambswool spun in a fourth-generation Yorkshire mill.",
@@ -92,7 +98,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Oat", hex: "#d9cbb2" }, { name: "Moss", hex: "#7c8262" }, { name: "Charcoal", hex: "#4a4a45" }],
   },
   {
-    id: "sage-linen-cushion", sku: "TEX-002", name: "Sage Stonewashed Linen Cushion", category: "textiles",
+    id: "sage-linen-cushion", name: "Sage Stonewashed Linen Cushion", category: "textiles",
     price: 58, rating: 4.5, reviewCount: 12, image: "/images/products/linen-cushion.webp",
     description: "Stonewashed European linen in a muted sage, filled with a plump feather insert. Arrives soft; only gets softer.",
     story: "The flax is grown in Normandy and stonewashed with pumice, which gives the cloth its broken-in hand.",
@@ -101,7 +107,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Sage", hex: "#9aa48a" }, { name: "Natural", hex: "#d8cfbc" }, { name: "Terracotta", hex: "#b7704f" }],
   },
   {
-    id: "walnut-serving-board", sku: "KIT-001", name: "Walnut Serving Board", category: "kitchen",
+    id: "walnut-serving-board", name: "Walnut Serving Board", category: "kitchen",
     price: 72, rating: 4.8, reviewCount: 41, image: "/images/products/walnut-board.webp",
     description: "A solid American walnut board with a rounded handle and leather strap. For cheese, bread, or simply leaning against the backsplash looking serious.",
     story: "Cut from a single plank — the grain runs uninterrupted from handle to tip.",
@@ -109,7 +115,7 @@ const productCatalog: Product[] = [
     stock: 17, featured: true,
   },
   {
-    id: "reactive-dinner-plates", sku: "KIT-002", name: "Reactive Glaze Dinner Plates, Set of 4", category: "kitchen",
+    id: "reactive-dinner-plates", name: "Reactive Glaze Dinner Plates, Set of 4", category: "kitchen",
     price: 120, rating: 4.7, reviewCount: 29, image: "/images/products/dinner-plates.webp",
     description: "Four dinner plates in layered reactive glazes — no two surfaces alike, each firing a small experiment in chemistry.",
     story: "Reactive glazes are mixed with metal oxides that bloom unpredictably in the kiln. The set is matched by tone, never by pattern.",
@@ -117,7 +123,7 @@ const productCatalog: Product[] = [
     stock: 13, badge: "New",
   },
   {
-    id: "glass-bedside-carafe", sku: "KIT-003", name: "Glass Bedside Carafe & Tumbler", category: "kitchen",
+    id: "glass-bedside-carafe", name: "Glass Bedside Carafe & Tumbler", category: "kitchen",
     price: 58, rating: 4.6, reviewCount: 15, image: "/images/products/carafe.webp",
     description: "A one-litre carafe whose tumbler doubles as its lid. Nightstand water, solved elegantly since 1903 — now in clearer glass.",
     story: "Mouth-blown from recycled glass; tiny seed bubbles in the wall are the mark of the furnace.",
@@ -125,7 +131,7 @@ const productCatalog: Product[] = [
     stock: 25,
   },
   {
-    id: "tripod-oak-side-table", sku: "FRN-001", name: "Tripod Oak Side Table", category: "furniture",
+    id: "tripod-oak-side-table", name: "Tripod Oak Side Table", category: "furniture",
     price: 310, rating: 4.8, reviewCount: 19, image: "/images/products/oak-side-table.webp",
     description: "A round-topped side table in solid white oak on three splayed legs. Holds a lamp, a book, a glass — asks for nothing else.",
     story: "Joined with wedged through-tenons you can see from below — the construction is the decoration.",
@@ -133,7 +139,7 @@ const productCatalog: Product[] = [
     stock: 7, badge: "Low stock", featured: true,
   },
   {
-    id: "boucle-lounge-chair", sku: "FRN-002", name: "Boucle Lounge Chair", category: "furniture",
+    id: "boucle-lounge-chair", name: "Boucle Lounge Chair", category: "furniture",
     price: 890, compareAt: 1050, rating: 4.9, reviewCount: 26, image: "/images/products/boucle-chair.webp",
     description: "A deep, curved lounge chair upholstered in cream boucle over solid beech legs. The kind of chair people photograph before they sit in.",
     story: "The boucle is woven in Belgium with a looped yarn that resists pilling; the frame is guaranteed for ten years.",
@@ -142,7 +148,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Cream", hex: "#ece5d8" }, { name: "Taupe", hex: "#a89a86" }],
   },
   {
-    id: "travertine-bookends", sku: "DEC-001", name: "Travertine Bookends, Pair", category: "decor",
+    id: "travertine-bookends", name: "Travertine Bookends, Pair", category: "decor",
     price: 95, rating: 4.7, reviewCount: 16, image: "/images/products/bookends.webp",
     description: "A pair of honed travertine bookends, each cut so the stone's ancient sediment lines run vertical — geology holding up literature.",
     story: "Quarried in Tivoli, outside Rome, from the same stone beds that built the Colosseum.",
@@ -150,7 +156,7 @@ const productCatalog: Product[] = [
     stock: 12, badge: "New",
   },
   {
-    id: "smoked-amber-vase", sku: "DEC-002", name: "Smoked Amber Glass Vase", category: "decor",
+    id: "smoked-amber-vase", name: "Smoked Amber Glass Vase", category: "decor",
     price: 110, rating: 4.6, reviewCount: 11, image: "/images/products/amber-vase.webp",
     description: "A mouth-blown vase in smoked amber with a gentle ribbed texture. Empty, it's sculpture; filled, it's a sunset.",
     story: "Blown into a ridged mould, then tooled by hand so the ribs wander slightly — deliberate imperfection.",
@@ -158,7 +164,7 @@ const productCatalog: Product[] = [
     stock: 8,
   },
   {
-    id: "hinoki-bath-stool", sku: "BTH-001", name: "Hinoki Bath Stool", category: "bath",
+    id: "hinoki-bath-stool", name: "Hinoki Bath Stool", category: "bath",
     price: 165, rating: 4.9, reviewCount: 22, image: "/images/products/bath-stool.webp",
     description: "A traditional hinoki cypress bath stool with a slatted top. It smells faintly of a forest after rain, because that's what hinoki does.",
     story: "Hinoki's natural oils resist water and mould — Japanese bathhouses have trusted it for a thousand years.",
@@ -166,7 +172,7 @@ const productCatalog: Product[] = [
     stock: 10, badge: "Bestseller",
   },
   {
-    id: "waffle-towel-set", sku: "BTH-002", name: "Waffle Weave Towels, Set of 3", category: "bath",
+    id: "waffle-towel-set", name: "Waffle Weave Towels, Set of 3", category: "bath",
     price: 78, rating: 4.7, reviewCount: 38, image: "/images/products/waffle-towels.webp",
     description: "Three organic-cotton waffle towels — bath, hand and face. The honeycomb weave dries fast and packs flat, like a towel designed by an engineer who naps.",
     story: "Woven on slow looms in Imabari, Japan's towel capital, then washed in soft mountain water.",
@@ -174,7 +180,7 @@ const productCatalog: Product[] = [
     stock: 19, featured: true,
   },
   {
-    id: "embers-cedar-candle", sku: "FRG-001", name: "Embers & Cedar Candle", category: "fragrance",
+    id: "embers-cedar-candle", name: "Embers & Cedar Candle", category: "fragrance",
     price: 52, rating: 4.8, reviewCount: 71, image: "/images/products/candle.webp",
     description: "Cedarwood, birch tar and a low note of ember — poured into a handmade ceramic vessel you'll keep long after the last burn.",
     story: "Sixty hours of burn time; the vessel is thrown by the same studio that makes our Terra vases.",
@@ -182,7 +188,7 @@ const productCatalog: Product[] = [
     stock: 28, badge: "Bestseller", featured: true,
   },
   {
-    id: "amber-reed-diffuser", sku: "FRG-002", name: "Amber Reed Diffuser", category: "fragrance",
+    id: "amber-reed-diffuser", name: "Amber Reed Diffuser", category: "fragrance",
     price: 64, rating: 4.5, reviewCount: 14, image: "/images/products/diffuser.webp",
     description: "Amber, labdanum and dried fig in an apothecary bottle with black rattan reeds. Three months of scent with zero flame.",
     story: "Blended in Grasse, France; the base is a sugar-derived carrier rather than alcohol, so the scent releases slowly.",
@@ -190,7 +196,7 @@ const productCatalog: Product[] = [
     stock: 16,
   },
   {
-    id: "linen-notebook-trio", sku: "STA-001", name: "Linen-Bound Notebooks, Set of 3", category: "stationery",
+    id: "linen-notebook-trio", name: "Linen-Bound Notebooks, Set of 3", category: "stationery",
     price: 36, rating: 4.6, reviewCount: 25, image: "/images/products/notebooks.webp",
     description: "Three pocket notebooks bound in book linen — clay, olive and sand. One for lists, one for ideas, one you'll refuse to write in.",
     story: "The paper is 100gsm, fountain-pen friendly, and milled from recycled cotton rags.",
@@ -198,7 +204,7 @@ const productCatalog: Product[] = [
     stock: 40,
   },
   {
-    id: "brass-pen-tray", sku: "STA-002", name: "Solid Brass Pen & Leather Tray", category: "stationery",
+    id: "brass-pen-tray", name: "Solid Brass Pen & Leather Tray", category: "stationery",
     price: 88, rating: 4.7, reviewCount: 9, image: "/images/products/brass-pen.webp",
     description: "A solid brass pen with real heft, resting on a vegetable-tanned leather tray. For signatures that deserve a small ceremony.",
     story: "The pen is lathe-turned from a brass bar and takes standard G2 refills — built to outlive its owner.",
@@ -206,7 +212,7 @@ const productCatalog: Product[] = [
     stock: 15, badge: "New",
   },
   {
-    id: "terracotta-planter-trio", sku: "GRD-001", name: "Terracotta Planter Trio", category: "garden",
+    id: "terracotta-planter-trio", name: "Terracotta Planter Trio", category: "garden",
     price: 54, rating: 4.6, reviewCount: 31, image: "/images/products/planters.webp",
     description: "Three graduated terracotta pots with drainage and saucers. The white mineral bloom they develop isn't a flaw — it's the pot breathing.",
     story: "Fired from Tuscan clay that's frost-resistant to -10°C, so they can live outside year-round.",
@@ -214,7 +220,7 @@ const productCatalog: Product[] = [
     stock: 21, badge: "Bestseller",
   },
   {
-    id: "steel-watering-can", sku: "GRD-002", name: "Steel Indoor Watering Can", category: "garden",
+    id: "steel-watering-can", name: "Steel Indoor Watering Can", category: "garden",
     price: 62, rating: 4.7, reviewCount: 18, image: "/images/products/watering-can.webp",
     description: "A brushed-steel can with a long slender spout that reaches the back row of a shelf without baptising the front row.",
     story: "The spout is hand-soldered at a 34° angle — measured, apparently, with a protractor and strong opinions.",
@@ -222,7 +228,7 @@ const productCatalog: Product[] = [
     stock: 13,
   },
   {
-    id: "seagrass-basket-pair", sku: "STR-001", name: "Seagrass Baskets, Set of 2", category: "storage",
+    id: "seagrass-basket-pair", name: "Seagrass Baskets, Set of 2", category: "storage",
     price: 70, rating: 4.5, reviewCount: 20, image: "/images/products/baskets.webp",
     description: "Two handwoven seagrass baskets with sturdy handles. Throws, toys, kindling, the general entropy of a household — all of it, suddenly charming.",
     story: "Woven by a women's cooperative in Vietnam; each basket takes a full day of weaving.",
@@ -230,7 +236,7 @@ const productCatalog: Product[] = [
     stock: 18,
   },
   {
-    id: "modular-oak-shelf", sku: "STR-002", name: "Modular Oak Wall Shelf", category: "storage",
+    id: "modular-oak-shelf", name: "Modular Oak Wall Shelf", category: "storage",
     price: 135, rating: 4.8, reviewCount: 13, image: "/images/products/wall-shelf.webp",
     description: "A single solid-oak shelf with hidden brass fixings. Buy one for a moment of display; buy three and you have a system.",
     story: "The bracket is machined brass rated to 25kg — engineered for books, not just succulents.",
@@ -238,7 +244,7 @@ const productCatalog: Product[] = [
     stock: 9, badge: "Low stock",
   },
   {
-    id: "matte-black-cutlery", sku: "TBW-001", name: "Matte Black Cutlery, 16 Pieces", category: "tableware",
+    id: "matte-black-cutlery", name: "Matte Black Cutlery, 16 Pieces", category: "tableware",
     price: 140, rating: 4.6, reviewCount: 24, image: "/images/products/cutlery.webp",
     description: "Sixteen pieces of matte-black 18/10 stainless cutlery — four knives, forks, tablespoons and teaspoons. Dinner, but make it cinema.",
     story: "The black finish is PVD-coated rather than painted, so it survives the dishwasher without flaking.",
@@ -246,7 +252,7 @@ const productCatalog: Product[] = [
     stock: 12, badge: "New", featured: true,
   },
   {
-    id: "mouthblown-wine-glasses", sku: "TBW-002", name: "Mouth-Blown Wine Glasses, Pair", category: "tableware",
+    id: "mouthblown-wine-glasses", name: "Mouth-Blown Wine Glasses, Pair", category: "tableware",
     price: 76, rating: 4.9, reviewCount: 33, image: "/images/products/wine-glasses.webp",
     description: "A pair of featherweight wine glasses with a slight organic waviness in the stem. Thin enough to make a Tuesday bottle taste like a decision.",
     story: "Each glass is pulled and shaped by a two-person team; the seam-free stem is the tell of hand work.",
@@ -254,7 +260,7 @@ const productCatalog: Product[] = [
     stock: 15, badge: "Bestseller",
   },
   {
-    id: "stussy-jacket", sku: "APP-001", name: "Stussy Jacket", category: "jackets",
+    id: "stussy-jacket", name: "Stussy Jacket", category: "jackets",
     price: 234, rating: 4.9, reviewCount: 5231, image: "/images/products/stussy-jacket.png",
     description: "The Stussy Jacket brings a relaxed varsity silhouette into an easy everyday layer. Its washed-blue finish and bold graphic details give it character without making it difficult to style. The cotton-blend shell has room for a tee or light knit, while the hip-length cut keeps proportions casual. Wear it over simple layers on mild days or when the evening cools.",
     story: "An easy everyday layer with a clean silhouette and unmistakable presence.",
@@ -263,7 +269,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Washed blue", hex: "#71879a" }],
   },
   {
-    id: "mwdbl-jacket", sku: "APP-002", name: "MWDBL Jacket", category: "jackets",
+    id: "mwdbl-jacket", name: "MWDBL Jacket", category: "jackets",
     price: 228, rating: 4.8, reviewCount: 4928, image: "/images/products/mwdbl-jacket.png",
     description: "The MWDBL Jacket pairs a deep green body with cream panels for a clear contrast that still feels easy to wear. Its regular, hip-length cut leaves room for a light layer without looking oversized, and the woven shell gives it a structured outline. Reach for it over a tee on the commute or a knit when the weather turns.",
     story: "A versatile layer designed to work over a tee or knit through changing seasons.",
@@ -272,7 +278,7 @@ const productCatalog: Product[] = [
     colors: [{ name: "Rust", hex: "#ad694f" }],
   },
   {
-    id: "chaotic-club", sku: "APP-003", name: "Chaotic Club", category: "apparel",
+    id: "chaotic-club", name: "Chaotic Club", category: "apparel",
     price: 88, rating: 4.8, reviewCount: 216, image: "/images/products/chaotic-club-spooky.png",
     gallery: ["/images/products/stussy-jacket.png", "/images/products/mwdbl-jacket.png"],
     description: "Chaotic Club is a relaxed graphic layer built around its standout number detail. The cotton-jersey blend feels soft against a tee or on its own, while the easy hip-length shape leaves room through the body without swallowing the silhouette. Pair it with denim for a low-effort outfit or let the graphic lead while the rest stays simple.",
@@ -281,25 +287,27 @@ const productCatalog: Product[] = [
     stock: 24, badge: "New",
   },
   {
-    id: "sneakers", sku: "SHO-001", name: "Sneakers", category: "shoes",
+    id: "sneakers", name: "Sneakers", category: "shoes",
     price: 120, rating: 4.7, reviewCount: 184, image: "/images/products/sneakers.png",
     gallery: ["/images/products/bucket-hat.jpg", "/images/products/chaotic-club-spooky.png"],
     description: "These low-top sneakers combine a layered blue-and-white mesh and synthetic leather upper with a cushioned rubber outsole for everyday walking. The colour adds interest without limiting the rest of an outfit, and the low profile works with denim, casual trousers, or shorts. Made for regular rotation rather than a special occasion, they are easy to reach for on commutes, errands, and relaxed weekends.",
     story: "A practical, versatile pair designed to bring a fresh color accent to daily outfits.",
     materials: "Mesh and synthetic leather upper, rubber outsole", dimensions: "Low-top profile", care: "Spot clean with a soft damp cloth. Air dry.",
+    ...catalogVariantDefaults.sneakers,
     stock: 32, badge: "Bestseller",
   },
   {
-    id: "seashell-bag", sku: "BAG-001", name: "Seashell Bag", category: "bags",
+    id: "seashell-bag", name: "Seashell Bag", category: "bags",
     price: 95, rating: 4.9, reviewCount: 93, image: "/images/products/pearl-seashell-bag.png",
     gallery: ["/images/products/baskets.webp", "/images/products/bucket-hat.jpg"],
     description: "The Seashell Bag keeps daily essentials close in a compact shoulder silhouette. Its softly curved shape and deep burgundy finish bring character without making the bag feel tied to one occasion. Textured synthetic leather and metal hardware give it a defined finish, while the practical scale works for a phone, cards, keys, and a few small extras.",
     story: "A distinctive everyday accessory with a sculptural shape that moves easily from day to evening.",
     materials: "Textured synthetic leather with metal hardware", dimensions: "Compact shoulder bag", care: "Wipe clean with a soft dry cloth. Store in a dust bag.",
+    ...catalogVariantDefaults["seashell-bag"],
     stock: 18, badge: "New",
   },
   {
-    id: "mens-golf-cap", sku: "ACC-001", name: "Men's Golf Cap", category: "accessories",
+    id: "mens-golf-cap", name: "Men's Golf Cap", category: "accessories",
     price: 48, rating: 4.6, reviewCount: 71, image: "/images/products/mens-golf-cap.png",
     gallery: ["/images/products/bucket-hat.jpg", "/images/products/mwdbl-jacket.png"],
     description: "The Men's Golf Cap uses a clean six-panel shape and curved brim for a familiar fit on and off the course. Cotton twill keeps the finish casual, while understated embroidery avoids a loud logo. Its adjustable one-size construction makes it easy to fine-tune, and the simple profile pairs naturally with sportswear, weekend layers, or an everyday tee.",
@@ -311,14 +319,13 @@ const productCatalog: Product[] = [
 
 type HomepagePreviewSpec = Pick<
   Product,
-  "id" | "sku" | "name" | "category" | "price" | "rating" | "reviewCount" | "image"
+  "id" | "name" | "category" | "price" | "rating" | "reviewCount" | "image"
 > & { sourceId: string };
 
-const homepagePreviewProducts: Product[] = ([
+const legacyUsdHomepagePreviewProducts: Product[] = ([
   {
     sourceId: "stussy-jacket",
     id: "layout-preview-jacket-01",
-    sku: "PRE-001",
     name: "Varsity Jacket",
     category: "jackets",
     price: 218,
@@ -329,7 +336,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "mwdbl-jacket",
     id: "layout-preview-jacket-02",
-    sku: "PRE-002",
     name: "Track Jacket",
     category: "jackets",
     price: 204,
@@ -340,7 +346,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "chaotic-club",
     id: "layout-preview-apparel-01",
-    sku: "PRE-003",
     name: "Graphic Tee",
     category: "apparel",
     price: 82,
@@ -351,7 +356,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "chaotic-club",
     id: "layout-preview-apparel-02",
-    sku: "PRE-004",
     name: "Studio T-Shirt",
     category: "apparel",
     price: 76,
@@ -362,7 +366,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "sneakers",
     id: "layout-preview-shoes-01",
-    sku: "PRE-005",
     name: "Court Sneakers",
     category: "shoes",
     price: 118,
@@ -373,7 +376,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "sneakers",
     id: "layout-preview-shoes-02",
-    sku: "PRE-006",
     name: "Everyday Runners",
     category: "shoes",
     price: 126,
@@ -384,7 +386,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "seashell-bag",
     id: "layout-preview-bag-01",
-    sku: "PRE-007",
     name: "Daily Crossbody",
     category: "bags",
     price: 88,
@@ -395,7 +396,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "seashell-bag",
     id: "layout-preview-bag-02",
-    sku: "PRE-008",
     name: "Mini Shoulder Bag",
     category: "bags",
     price: 92,
@@ -406,7 +406,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "mens-golf-cap",
     id: "layout-preview-accessory-01",
-    sku: "PRE-009",
     name: "Canvas Bucket Hat",
     category: "accessories",
     price: 38,
@@ -417,7 +416,6 @@ const homepagePreviewProducts: Product[] = ([
   {
     sourceId: "mens-golf-cap",
     id: "layout-preview-accessory-02",
-    sku: "PRE-010",
     name: "Classic Panel Cap",
     category: "accessories",
     price: 44,
@@ -426,7 +424,7 @@ const homepagePreviewProducts: Product[] = ([
     image: "/images/products/mens-golf-cap.png",
   },
  ] satisfies HomepagePreviewSpec[]).map(({ sourceId, ...preview }) => {
-  const source = productCatalog.find((product) => product.id === sourceId);
+  const source = legacyUsdProductCatalog.find((product) => product.id === sourceId);
   if (!source) throw new Error(`Missing homepage preview source product: ${sourceId}`);
 
   return {
@@ -447,10 +445,16 @@ const availableProductIds = new Set([
   "mens-golf-cap",
 ]);
 
-export const products = [
-  ...productCatalog.filter((product) => availableProductIds.has(product.id)),
-  ...(process.env.NODE_ENV === "development" ? homepagePreviewProducts : []),
+const legacyUsdProducts = [
+  ...legacyUsdProductCatalog.filter((product) => availableProductIds.has(product.id)),
+  ...(process.env.NODE_ENV === "development" ? legacyUsdHomepagePreviewProducts : []),
 ];
+
+export const products: Product[] = legacyUsdProducts.map((product) => ({
+  ...product,
+  price: legacyUsdPriceToNgn(product.price),
+  ...(product.compareAt == null ? {} : { compareAt: legacyUsdPriceToNgn(product.compareAt) }),
+}));
 
 export interface Review {
   id: string;
@@ -564,19 +568,7 @@ export function categoryName(slug: string): string {
   return categoryBySlug(slug)?.name ?? slug;
 }
 
-export const USD_TO_NGN_RATE = 1354.04;
-
-const ngnFormatter = new Intl.NumberFormat("en-NG", {
-  style: "currency",
-  currency: "NGN",
-  currencyDisplay: "narrowSymbol",
-  maximumFractionDigits: 0,
-});
-
-export function priceInNgn(amountInUsd: number): number {
-  return Math.round(amountInUsd * USD_TO_NGN_RATE);
-}
-
-export function formatPrice(amountInUsd: number): string {
-  return ngnFormatter.format(priceInNgn(amountInUsd));
-}
+export const FREE_SHIPPING_THRESHOLD_NGN = 203_106;
+export const STANDARD_SHIPPING_FEE_NGN = 12_186;
+export const EXPRESS_SHIPPING_FEE_NGN = 18_957;
+export const WHITE_GLOVE_SHIPPING_FEE_NGN = 66_348;

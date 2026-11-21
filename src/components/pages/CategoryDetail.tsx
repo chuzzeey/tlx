@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Handbag, Star } from "lucide-react";
-import { cardReviewCount, categoryBySlug, formatPrice, productsByCategory, type Product } from "@/data/catalog";
+import { cardReviewCount, categoryBySlug, formatPrice, type Product } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 import { useShop } from "@/store/ShopContext";
 import {
@@ -31,6 +33,7 @@ function MobileProductCard({ product }: { product: Product }) {
             className="object-contain p-2"
           />
         </Link>
+        <ProductAvailabilityBadge product={product} />
         <ProductFavoriteButton product={product} />
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
@@ -50,6 +53,7 @@ function MobileProductCard({ product }: { product: Product }) {
 }
 
 export default function CategoryDetail({ categoryId }: { categoryId: string }) {
+  const { products, status, error } = useCatalog();
   const category = categoryBySlug(categoryId);
   const { cartCount } = useShop();
   const [sort, setSort] = useState<Sort>("featured");
@@ -64,7 +68,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
     );
   }
 
-  let items = productsByCategory(category.slug);
+  let items = products.filter((product) => product.category === category.slug);
   if (sort === "price-asc") items = [...items].sort((a, b) => a.price - b.price);
   if (sort === "price-desc") items = [...items].sort((a, b) => b.price - a.price);
   if (sort === "rating") items = [...items].sort((a, b) => b.rating - a.rating);
@@ -166,7 +170,11 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
             </Select>
           </div>
 
-          {visibleItems.length ? (
+          {status === "error" ? (
+            <p role="alert" className="py-12 text-center text-sm text-destructive">
+              The product catalog is unavailable: {error}
+            </p>
+          ) : visibleItems.length ? (
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 pb-6 md:grid-cols-3 lg:grid-cols-4">
               {visibleItems.map((product) => (
                 <MobileProductCard key={product.id} product={product} />

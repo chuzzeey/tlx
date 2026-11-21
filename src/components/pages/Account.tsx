@@ -24,11 +24,12 @@ import {
   User,
 } from "lucide-react";
 import { accountProfile, addresses, orders, orderTotal } from "@/data/account";
-import { formatPrice, productById, type Product } from "@/data/catalog";
+import { formatPrice, type Product } from "@/data/catalog";
 import { PageHeader } from "@/components/ProductCard";
 import { Footnote } from "@/components/Ornaments";
 import { useTheme } from "@/store/ThemeContext";
 import { useShop } from "@/store/ShopContext";
+import { useCatalog } from "@/store/CatalogContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -40,7 +41,7 @@ const statusStyle: Record<string, string> = {
   Returned: "bg-muted text-muted-foreground",
 };
 
-function Orders() {
+function Orders({ products }: { products: Product[] }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <div className="divide-y divide-border border-y border-border">
@@ -64,7 +65,7 @@ function Orders() {
             <div className="border-t border-border bg-card/50 px-1 py-6 sm:px-5">
               <ul className="space-y-3">
                 {o.items.map((i) => {
-                  const p = productById(i.productId);
+                  const p = products.find((product) => product.id === i.productId);
                   if (!p) return null;
                   return (
                     <li key={i.productId} className="flex items-center gap-4">
@@ -230,13 +231,14 @@ function MobileAccountProfile({
 }
 
 export default function Account() {
+  const { products } = useCatalog();
   const router = useRouter();
   const { theme, toggle } = useTheme();
   const { recent } = useShop();
   const [profile, setProfile] = useState({ name: accountProfile.name, email: accountProfile.email, phone: accountProfile.phone });
   const [prefs, setPrefs] = useState({ newsletter: true, orderUpdates: true, earlyAccess: false });
   const recentProducts = recent
-    .map((id) => productById(id))
+    .map((id) => products.find((product) => product.id === id))
     .filter((p): p is Product => Boolean(p))
     .slice(0, 6);
   const signOut = () => {
@@ -307,7 +309,7 @@ export default function Account() {
                 Open order history <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <Orders />
+            <Orders products={products} />
             <Footnote className="mt-6">
               Order history is kept for seven years — for warranty and repairs, not for marketing.
             </Footnote>

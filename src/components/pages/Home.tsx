@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Star } from "lucide-react";
-import { cardReviewCount, formatPrice, popularItems, products, type Product } from "@/data/catalog";
+import { cardReviewCount, formatPrice, popularItems, type Product } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
 const filters = [
@@ -23,13 +25,6 @@ const popularImageBreaths = [
   { animationDuration: "4.7s", animationDelay: "-2.1s" },
   { animationDuration: "6.9s", animationDelay: "-5.6s" },
 ];
-
-const initialPopularProducts = popularItems.map((item) => {
-  const productId = item.href.slice(item.href.lastIndexOf("/") + 1);
-  const product = products.find((candidate) => candidate.id === productId);
-  if (!product) throw new Error(`Missing popular homepage product: ${productId}`);
-  return product;
-});
 
 function randomCardOrder(count: number) {
   const order = Array.from({ length: count }, (_, index) => index);
@@ -136,6 +131,7 @@ function JacketCard({
             className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
           />
         </Link>
+        <ProductAvailabilityBadge product={product} />
         <ProductFavoriteButton product={product} />
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
@@ -153,10 +149,21 @@ function JacketCard({
 }
 
 export default function Home() {
+  const { products, status, error } = useCatalog();
+  const initialPopularProducts = useMemo(
+    () =>
+      popularItems
+        .map((item) => {
+          const productId = item.href.slice(item.href.lastIndexOf("/") + 1);
+          return products.find((candidate) => candidate.id === productId);
+        })
+        .filter((product): product is Product => product !== undefined),
+    [products]
+  );
   const [activeFilter, setActiveFilter] = useState("all");
-  const [popularProducts, setPopularProducts] = useState(initialPopularProducts);
+  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   const [changingPopularIndex, setChangingPopularIndex] = useState<number | null>(null);
-  const popularProductsRef = useRef(initialPopularProducts);
+  const popularProductsRef = useRef<Product[]>([]);
   const popularRotationTimer = useRef<number | null>(null);
   const popularRotationOrder = useRef<number[]>([]);
   const nextRotationPosition = useRef(0);
@@ -172,7 +179,7 @@ export default function Home() {
     popularProductsRef.current = nextProducts;
     setPopularProducts(nextProducts);
     setChangingPopularIndex(index);
-  }, []);
+  }, [products]);
   const handlePopularTransitionComplete = useCallback(() => {
     setChangingPopularIndex(null);
     if (nextRotationPosition.current < popularRotationOrder.current.length) {
@@ -194,6 +201,11 @@ export default function Home() {
   }, [startPopularChange]);
 
   useEffect(() => {
+    setPopularProducts(initialPopularProducts);
+    popularProductsRef.current = initialPopularProducts;
+  }, [initialPopularProducts]);
+
+  useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     popularRotationOrder.current = randomCardOrder(initialPopularProducts.length);
@@ -205,7 +217,7 @@ export default function Home() {
     return () => {
       if (popularRotationTimer.current !== null) window.clearTimeout(popularRotationTimer.current);
     };
-  }, [startPopularChange]);
+  }, [initialPopularProducts.length, startPopularChange]);
 
   const visibleProducts =
     activeFilter === "all"
@@ -220,6 +232,11 @@ export default function Home() {
   return (
     <main className="home-page min-h-screen bg-background">
       <section className="container-x py-5 sm:py-10 md:py-12 lg:py-14" aria-labelledby="popular-products-title">
+        {status === "error" && (
+          <p role="alert" className="mb-4 text-sm text-destructive">
+            The product catalog is unavailable: {error}
+          </p>
+        )}
         <div className="mb-3 flex items-center justify-between gap-4">
           <h1 id="popular-products-title" className="text-base font-medium md:text-xl lg:text-2xl">Popular Product</h1>
           <Link

@@ -1,9 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { productById } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
+import type { Product } from "@/data/catalog";
+import { isProductInStock } from "@/lib/product-availability";
+import { defaultProductSize } from "@/lib/product-variants";
 import CartAddedFeedback, { type CartAddedFeedbackItem } from "@/components/CartAddedFeedback";
 import FavoriteAddedToast, { type FavoriteFeedbackItem } from "@/components/FavoriteAddedToast";
+import { toast } from "sonner";
 
 export interface CartLine {
   productId: string;
@@ -28,9 +32,9 @@ interface ShopCtx {
   subtotal: number;
 }
 
-function defaultSizeForProduct(productId: string): string | undefined {
-  const product = productById(productId);
-  return product?.category === "jackets" || product?.category === "apparel" ? "M" : undefined;
+function defaultSizeForProduct(productId: string, products: Product[]): string | undefined {
+  const product = products.find((candidate) => candidate.id === productId);
+  return product ? defaultProductSize(product) : undefined;
 }
 
 const Ctx = createContext<ShopCtx | null>(null);
@@ -45,6 +49,7 @@ function load<T>(key: string, fallback: T): T {
 }
 
 export function ShopProvider({ children }: { children: ReactNode }) {
+  const { products, aliases, status } = useCatalog();
   /* Start empty so server-rendered HTML and the first client render match;
      the persisted bag/wishlist/trail hydrate immediately after mount. */
   const [hydrated, setHydrated] = useState(false);
@@ -60,14 +65,31 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedCart = load<CartLine[]>("aurelle-cart", []);
-    setCart(savedCart.map((line) => ({
-      ...line,
-      size: line.size ?? defaultSizeForProduct(line.productId),
-    })));
+    setCart(savedCart);
     setWishlist(load("aurelle-wishlist", []));
     setRecent(load("aurelle-recent", []));
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    setCart((current) =>
+      current.map((line) =>
+        line.size ? line : { ...line, size: defaultSizeForProduct(line.productId, products) }
+      )
+    );
+  }, [hydrated, products]);
+
+  useEffect(() => {
+    if (!hydrated || status !== "ready") return;
+    const migrateId = (id: string) => aliases[id] ?? id;
+    setCart((current) => current.map((line) => {
+      const productId = migrateId(line.productId);
+      return productId === line.productId ? line : { ...line, productId };
+    }));
+    setWishlist((current) => [...new Set(current.map(migrateId))]);
+    setRecent((current) => [...new Set(current.map(migrateId))]);
+  }, [aliases, hydrated, status]);
 
   useEffect(() => {
     if (hydrated) window.localStorage.setItem("aurelle-cart", JSON.stringify(cart));
@@ -87,8 +109,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     setRecent((prev) => [productId, ...prev.filter((id) => id !== productId)].slice(0, 6));
 
   const addToCart: ShopCtx["addToCart"] = (productId, qty = 1, color, size) => {
-    const product = productById(productId);
-    const selectedSize = size ?? defaultSizeForProduct(productId);
+    const product = products.find((candidate) => candidate.id === productId);
+    if (product && !isProductInStock(product)) {
+      toast.error("This item is out of stock.", { description: product.name });
+      return;
+    }
+    const selectedSize = size ?? defaultSizeForProduct(productId, products);
     setCart((prev) => {
       const idx = prev.findIndex((l) => l.productId === productId && l.color === color && l.size === selectedSize);
       if (idx >= 0) {
@@ -101,7 +127,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     if (product) {
       if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
       feedbackId.current += 1;
-      setAddedFeedback({ id: feedbackId.current, product, size: selectedSize, quantity: qty });
+      setAddedFeedback({
+        id: feedbackId.current,
+        product,
+        size: selectedSize,
+        color: color ?? product.colors?.[0]?.name,
+        quantity: qty
+      });
       feedbackTimer.current = setTimeout(() => {
         setAddedFeedback(null);
         feedbackTimer.current = null;
@@ -123,7 +155,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const toggleWishlist: ShopCtx["toggleWishlist"] = (productId) => {
     const exists = wishlist.includes(productId);
-    const product = productById(productId);
+    const product = products.find((candidate) => candidate.id === productId);
     setWishlist((prev) =>
       exists ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
@@ -140,8 +172,8 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   const cartCount = useMemo(() => cart.reduce((s, l) => s + l.qty, 0), [cart]);
   const subtotal = useMemo(
-    () => cart.reduce((s, l) => s + (productById(l.productId)?.price ?? 0) * l.qty, 0),
-    [cart]
+    () => cart.reduce((s, l) => s + (products.find((product) => product.id === l.productId)?.price ?? 0) * l.qty, 0),
+    [cart, products]
   );
 
   return (

@@ -19,46 +19,46 @@ export const orders: Order[] = [
   {
     id: "AUR-1056", date: "2026-08-08", status: "Processing", shipping: 0,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
-    items: [{ productId: "mwdbl-jacket", qty: 2, price: 228, size: "M" }],
+    items: [{ productId: "mwdbl-jacket", qty: 2, price: 308721, size: "M" }],
   },
   {
     id: "AUR-1053", date: "2026-08-07", status: "Processing", shipping: 0,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
-    items: [{ productId: "mens-golf-cap", qty: 1, price: 48 }],
+    items: [{ productId: "mens-golf-cap", qty: 1, price: 64994 }],
   },
   {
-    id: "TLX-T1O42", date: "2026-08-06", status: "In transit", shipping: 34,
+    id: "TLX-T1O42", date: "2026-08-06", status: "In transit", shipping: 46037,
     address: "Lagos Mainland, Lagos, Nigeria",
     items: [
-      { productId: "seashell-bag", qty: 1, price: 95 },
-      { productId: "sneakers", qty: 1, price: 120 },
+      { productId: "seashell-bag", qty: 1, price: 128634 },
+      { productId: "sneakers", qty: 1, price: 162485 },
     ],
   },
   {
-    id: "AUR-1037", date: "2026-07-22", status: "Delivered", shipping: 9,
+    id: "AUR-1037", date: "2026-07-22", status: "Delivered", shipping: 12186,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
     items: [
-      { productId: "chaotic-club", qty: 1, price: 88 },
-      { productId: "mens-golf-cap", qty: 1, price: 48 },
+      { productId: "chaotic-club", qty: 1, price: 119156 },
+      { productId: "mens-golf-cap", qty: 1, price: 64994 },
     ],
   },
   {
-    id: "AUR-1028", date: "2026-06-14", status: "Delivered", shipping: 49,
+    id: "AUR-1028", date: "2026-06-14", status: "Delivered", shipping: 66348,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
-    items: [{ productId: "stussy-jacket", qty: 1, price: 234 }],
+    items: [{ productId: "stussy-jacket", qty: 1, price: 316845 }],
   },
   {
     id: "AUR-1011", date: "2026-05-02", status: "Delivered", shipping: 0,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
     items: [
-      { productId: "mwdbl-jacket", qty: 1, price: 228, size: "M" },
-      { productId: "seashell-bag", qty: 1, price: 95 },
+      { productId: "mwdbl-jacket", qty: 1, price: 308721, size: "M" },
+      { productId: "seashell-bag", qty: 1, price: 128634 },
     ],
   },
   {
-    id: "AUR-0993", date: "2026-03-18", status: "Returned", shipping: 9,
+    id: "AUR-0993", date: "2026-03-18", status: "Returned", shipping: 12186,
     address: "Vesterbrogade 44, 3tv, 1620 Copenhagen, Denmark",
-    items: [{ productId: "chaotic-club", qty: 2, price: 88 }],
+    items: [{ productId: "chaotic-club", qty: 2, price: 119156 }],
   },
 ];
 

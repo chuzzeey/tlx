@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryDetail from "@/components/pages/CategoryDetail";
 import JsonLd from "@/components/JsonLd";
-import { categories, categoryBySlug, productsByCategory } from "@/data/catalog";
+import { categories, categoryBySlug } from "@/data/catalog";
+import { getPublishedCatalog } from "@dashboard/lib/catalog-service";
 import { breadcrumbJsonLd, collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 type Params = Promise<{ categoryId: string }>;
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return categories.map((c) => ({ categoryId: c.slug }));
@@ -32,7 +35,8 @@ export default async function Page({ params }: { params: Params }) {
   const category = categoryBySlug(categoryId);
   if (!category) notFound();
 
-  const items = productsByCategory(category.slug);
+  const products = await getPublishedCatalog();
+  const items = products.filter((product) => product.category === category.slug);
   return (
     <>
       <JsonLd

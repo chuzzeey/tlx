@@ -3,3 +3,7 @@ node_modules
 next-env.d.ts
 dist
 *.log
+.env*
+!.env.example
+/dashboard/
+supabase/.temp/

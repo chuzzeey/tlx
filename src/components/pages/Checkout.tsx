@@ -6,8 +6,16 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, CreditCard, Handbag, Lock, PackageCheck, ShoppingCart } from "lucide-react";
 import { Barcode, Stamp } from "@/components/Ornaments";
 import { AnimatePresence, motion } from "framer-motion";
-import { formatPrice, productById } from "@/data/catalog";
+import {
+  EXPRESS_SHIPPING_FEE_NGN,
+  FREE_SHIPPING_THRESHOLD_NGN,
+  formatPrice,
+  STANDARD_SHIPPING_FEE_NGN,
+  WHITE_GLOVE_SHIPPING_FEE_NGN,
+} from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import { PageSkeleton } from "@/components/ProductCard";
+import { isProductInStock } from "@/lib/product-availability";
 import { EASE } from "@/components/motion/motion";
 import { useShop } from "@/store/ShopContext";
 import { toast } from "sonner";
@@ -25,8 +33,8 @@ const initial: Form = {
 
 const deliveryOptions = [
   { id: "standard", name: "Standard courier", eta: "3–5 business days", price: 0 },
-  { id: "express", name: "Express courier", eta: "1–2 business days", price: 14 },
-  { id: "whiteglove", name: "White-glove (furniture)", eta: "Scheduled with you", price: 49 },
+  { id: "express", name: "Express courier", eta: "1–2 business days", price: EXPRESS_SHIPPING_FEE_NGN },
+  { id: "whiteglove", name: "White-glove (furniture)", eta: "Scheduled with you", price: WHITE_GLOVE_SHIPPING_FEE_NGN },
 ];
 
 function CheckoutHeader({ count }: { count: number }) {
@@ -55,13 +63,19 @@ function CheckoutHeader({ count }: { count: number }) {
 }
 
 export default function Checkout() {
+  const { products } = useCatalog();
   const { cart, cartCount, subtotal, clearCart, hydrated } = useShop();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(initial);
   const [placed, setPlaced] = useState<string | null>(null);
 
   const delivery = deliveryOptions.find((d) => d.id === form.delivery)!;
-  const shipping = cart.length === 0 ? 0 : subtotal >= 150 && delivery.id !== "whiteglove" ? delivery.price : delivery.price + (subtotal >= 150 ? 0 : 9);
+  const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD_NGN;
+  const shipping = cart.length === 0
+    ? 0
+    : qualifiesForFreeShipping && delivery.id !== "whiteglove"
+      ? delivery.price
+      : delivery.price + (qualifiesForFreeShipping ? 0 : STANDARD_SHIPPING_FEE_NGN);
   const total = subtotal + shipping;
 
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -141,6 +155,22 @@ export default function Checkout() {
     );
   }
 
+  const unavailableItems = cart.filter((line) => {
+    const product = products.find((candidate) => candidate.id === line.productId);
+    return !product || !isProductInStock(product) || product.stock < line.qty;
+  });
+  if (unavailableItems.length > 0) {
+    return (
+      <div className="container-x flex min-h-[50vh] flex-col items-center justify-center py-16 text-center">
+        <h1 className="font-display text-3xl font-light">Your cart needs an update.</h1>
+        <p className="mt-4 max-w-md text-sm text-muted-foreground">
+          Some products are no longer available or have less stock than requested. Review your cart before continuing.
+        </p>
+        <Link href="/cart" className="btn-outline-invert mt-8">Review cart</Link>
+      </div>
+    );
+  }
+
   const placeOrder = () => {
     const id = `AUR-${Math.floor(1043 + Math.random() * 800)}`;
     clearCart();
@@ -170,7 +200,7 @@ export default function Checkout() {
               </div>
               <ul className="divide-y divide-neutral-200 px-5 dark:divide-border sm:px-7">
                 {cart.map((line) => {
-                  const p = productById(line.productId);
+                  const p = products.find((product) => product.id === line.productId);
                   if (!p) return null;
                   return (
                     <li key={line.productId + (line.color ?? "") + (line.size ?? "")} className="flex items-center gap-4 py-4">
@@ -257,7 +287,7 @@ export default function Checkout() {
                       <span className="block font-mono2 text-[11px] text-muted-foreground">{d.eta}</span>
                     </span>
                   </span>
-                  <span className="font-mono2 text-sm">{d.price === 0 ? (subtotal >= 150 ? "Free" : formatPrice(9)) : formatPrice(d.price)}</span>
+                  <span className="font-mono2 text-sm">{d.price === 0 ? (qualifiesForFreeShipping ? "Free" : formatPrice(STANDARD_SHIPPING_FEE_NGN)) : formatPrice(d.price)}</span>
                 </label>
               ))}
               <textarea

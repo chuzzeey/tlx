@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import ProductDetail from "@/components/pages/ProductDetail";
 import JsonLd from "@/components/JsonLd";
-import { categoryBySlug, productById, products } from "@/data/catalog";
+import { categoryBySlug } from "@/data/catalog";
+import { getPublishedProduct } from "@dashboard/lib/catalog-service";
 import { breadcrumbJsonLd, productJsonLd, SITE_NAME } from "@/lib/seo";
 
 type Params = Promise<{ productId: string }>;
 
-export function generateStaticParams() {
-  return products.map((p) => ({ productId: p.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { productId } = await params;
-  const product = productById(productId);
+  const product = await getPublishedProduct(productId);
   if (!product) return { title: "Piece Not Found" };
   return {
     title: product.name,
@@ -29,8 +28,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function Page({ params }: { params: Params }) {
   const { productId } = await params;
-  const product = productById(productId);
+  const product = await getPublishedProduct(productId);
   if (!product) notFound();
+  if (product.id !== productId) redirect(`/products/${product.id}`);
 
   const cat = categoryBySlug(product.category);
   return (
@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: Params }) {
           ]),
         ]}
       />
-      <ProductDetail productId={product.id} />
+      <ProductDetail productId={product.id} initialProduct={product} />
     </>
   );
 }
