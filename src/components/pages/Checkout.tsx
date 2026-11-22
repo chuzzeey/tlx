@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, CreditCard, Handbag, Lock, PackageCheck, ShoppingCart } from "lucide-react";
 import { Barcode, Stamp } from "@/components/Ornaments";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,6 +21,15 @@ import { useShop } from "@/store/ShopContext";
 import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { toast } from "sonner";
 import CountryRegionPicker from "@/components/checkout/CountryRegionPicker";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Form {
   email: string; name: string; phone: string; street: string; city: string; country: string; region: string;
@@ -63,12 +73,14 @@ function CheckoutHeader({ count }: { count: number }) {
 }
 
 export default function Checkout() {
+  const router = useRouter();
   const { products } = useCatalog();
   const { cart, cartCount, subtotal, clearCart, hydrated } = useShop();
   const { formatPrice } = useStorefrontCurrency();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(initial);
   const [placed, setPlaced] = useState<string | null>(null);
+  const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
 
   const delivery = deliveryOptions.find((d) => d.id === form.delivery)!;
   const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD_NGN;
@@ -353,7 +365,8 @@ export default function Checkout() {
           {step === 0 ? (
             <div className="mt-8 flex flex-col items-center gap-3">
               <button
-                onClick={() => setStep(1)}
+                type="button"
+                onClick={() => setPaymentNoticeOpen(true)}
                 className="btn-solid-invert h-10 w-full max-w-xs rounded-[10px] px-4 py-2 text-[11px]"
               >
                 <ShoppingCart className="h-4 w-4" /> Proceed with payment
@@ -384,6 +397,27 @@ export default function Checkout() {
           )}
         </div>
       </div>
+      <AlertDialog open={paymentNoticeOpen} onOpenChange={setPaymentNoticeOpen}>
+        <AlertDialogContent className="rounded-2xl border-0 bg-neutral-100 dark:bg-neutral-900">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-xl font-light">
+              Payment is under development
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Our technical team is still building the payment experience. Your order has not been submitted,
+              and you won&apos;t be asked for your address or country. Return to your cart to continue shopping.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => router.push("/cart")}
+              className="rounded-[10px]"
+            >
+              Return to cart
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
