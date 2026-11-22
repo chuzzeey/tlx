@@ -255,7 +255,7 @@ export default function Cart() {
                 >
                   <Link
                     href={`/products/${p.id}`}
-                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-neutral-100 dark:bg-neutral-800 md:h-32 md:w-32"
+                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-gray-100 md:h-32 md:w-32"
                   >
                     <Image
                       src={p.image}

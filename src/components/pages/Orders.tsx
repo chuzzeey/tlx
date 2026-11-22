@@ -189,7 +189,7 @@ export default function OrdersPage() {
                     <div key={`${item.productId}-${index}`} className="flex items-center gap-3 rounded-2xl bg-white p-2 dark:bg-background">
                       <Link
                         href={`/products/${product.id}`}
-                        className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[18px] bg-neutral-100"
+                        className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[18px] bg-gray-100"
                       >
                         <Image src={product.image} alt={product.name} fill sizes="88px" className="object-contain p-2" />
                       </Link>
@@ -277,7 +277,7 @@ export default function OrdersPage() {
           {reviewTarget && (
             <>
               <div className="flex items-center gap-3 rounded-2xl bg-neutral-100 p-2.5 dark:bg-muted">
-                <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-2xl bg-white dark:bg-background">
+                <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-2xl bg-gray-100">
                   <Image
                     src={reviewTarget.product.image}
                     alt={reviewTarget.product.name}

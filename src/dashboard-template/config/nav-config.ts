@@ -53,6 +53,13 @@ export const navGroups: NavGroup[] = [
     label: 'Storefront',
     items: [
       {
+        title: 'My Number',
+        url: '/dashboard/my-number',
+        icon: 'phone',
+        isActive: false,
+        items: []
+      },
+      {
         title: 'Preview storefront',
         url: '/dashboard/storefront-preview',
         icon: 'laptop',

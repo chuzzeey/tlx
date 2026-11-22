@@ -24,6 +24,7 @@ export interface Product {
   compareAt?: number;
   rating: number;
   reviewCount: number;
+  manualReviewCount?: number | null;
   image: string;
   gallery?: string[];
   description: string;
@@ -554,7 +555,7 @@ const cardReviewCountOverrides: Record<string, number> = {
 };
 
 export function cardReviewCount(product: Product): number {
-  return cardReviewCountOverrides[product.id] ?? product.reviewCount;
+  return product.manualReviewCount ?? cardReviewCountOverrides[product.id] ?? product.reviewCount;
 }
 
 export function productById(id: string): Product | undefined {

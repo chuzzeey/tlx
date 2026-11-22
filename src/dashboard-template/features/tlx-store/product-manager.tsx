@@ -1,11 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { AlertTriangle, Boxes, Check, ChevronDown, EyeOff, PackageCheck, PackagePlus, Trash2, Upload, X } from 'lucide-react';
+import { AlertTriangle, Boxes, Check, ChevronDown, EyeOff, PackageCheck, PackagePlus, Star, Trash2, Upload, X } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
 import { PRODUCT_IMAGE_BUCKET } from '@/lib/product-image-storage';
+import { formatManualReviewCount, parseManualReviewCountInput } from '@/lib/product-review-summary';
 import type { AdminCategory } from '@/data/catalog';
 import type { CatalogProduct } from '@dashboard/lib/catalog-service';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
@@ -40,6 +41,10 @@ const blankProduct: CatalogProduct = {
   price: 0,
   rating: 0,
   reviewCount: 0,
+  manualReviewCount: null,
+  manualRating: null,
+  actualRating: 0,
+  actualReviewCount: 0,
   image: '',
   gallery: [],
   galleryAlt: [],
@@ -119,6 +124,8 @@ function ProductEditor({
   const [values, setValues] = useState<CatalogProduct>(product);
   const [priceInput, setPriceInput] = useState(() => formatPriceInput(product.price));
   const priceInputRef = useRef<HTMLInputElement>(null);
+  const reviewCountInputRef = useRef<HTMLInputElement>(null);
+  const [reviewCountInput, setReviewCountInput] = useState(() => formatManualReviewCount(product.manualReviewCount ?? null));
   const imageInputRef = useRef<HTMLInputElement>(null);
   const imageUploadTargetRef = useRef<ImageUploadTarget>({ type: 'main' });
   const uploadedImageUrlsRef = useRef<string[]>([]);
@@ -126,6 +133,7 @@ function ProductEditor({
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [reviewCountInvalid, setReviewCountInvalid] = useState(false);
   const isNew = !product.id;
 
   const update = <K extends keyof CatalogProduct>(key: K, value: CatalogProduct[K]) => {
@@ -238,6 +246,10 @@ function ProductEditor({
       setError('Upload a main product image before saving.');
       return;
     }
+    if (reviewCountInvalid) {
+      setError('Review count must be a whole number between 0 and 2,147,483,647.');
+      return;
+    }
     setSaving(true);
     setError('');
 
@@ -249,6 +261,8 @@ function ProductEditor({
       category: values.category as ProductInput['category'],
       price: values.price,
       compareAt: values.compareAt != null && values.compareAt > values.price ? values.compareAt : null,
+      manualRating: values.manualRating ?? null,
+      manualReviewCount: values.manualReviewCount ?? null,
       image: values.image,
       gallery: values.gallery ?? [],
       galleryAlt: (values.gallery ?? []).map(
@@ -292,8 +306,12 @@ function ProductEditor({
         image: result.image ?? values.image,
         compareAt: input.compareAt ?? undefined,
         stock: values.inStock && product.stock === 0 ? 1 : product.stock,
-        rating: product.rating,
-        reviewCount: product.reviewCount,
+        rating: input.manualRating ?? product.actualRating,
+        reviewCount: input.manualReviewCount ?? product.actualReviewCount,
+        manualRating: input.manualRating,
+        manualReviewCount: input.manualReviewCount,
+        actualRating: product.actualRating,
+        actualReviewCount: product.actualReviewCount,
         gallery: values.gallery ?? [],
         galleryAlt: input.galleryAlt
       };
@@ -531,9 +549,96 @@ function ProductEditor({
             {uploading && <span role='status' className='text-xs text-muted-foreground'>Uploading image…</span>}
           </section>
 
+          <details className='dashboard-product-section group'>
+            <summary className='dashboard-product-section-heading cursor-pointer list-none'>
+              <span>03</span>
+              <div><h3>Review summary</h3><p>Set an optional storefront rating and review count</p></div>
+              <ChevronDown aria-hidden className='ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180' />
+            </summary>
+            <p className='dashboard-product-help'>Leave either field unset to keep using approved customer reviews.</p>
+            <div className='grid gap-4 sm:grid-cols-2'>
+              <div className='grid content-start gap-1.5 text-sm'>
+                <p id='product-manual-rating-label' className='font-medium'>Manual rating</p>
+                <div role='group' aria-labelledby='product-manual-rating-label' className='flex min-h-10 items-center gap-1'>
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <button
+                      key={rating}
+                      type='button'
+                      aria-label={`Set rating to ${rating} ${rating === 1 ? 'star' : 'stars'}`}
+                      aria-pressed={values.manualRating === rating}
+                      onClick={() => update('manualRating', rating)}
+                      className='grid size-9 place-items-center rounded-md text-amber-500 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    >
+                      <Star aria-hidden className={`size-5 ${values.manualRating != null && rating <= values.manualRating ? 'fill-current' : ''}`} />
+                    </button>
+                  ))}
+                  {values.manualRating != null && (
+                    <button
+                      type='button'
+                      onClick={() => update('manualRating', null)}
+                      className='ml-2 min-h-9 rounded-md px-2 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground'
+                    >
+                      Use live rating
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className='grid content-start gap-1.5 text-sm'>
+                <Field label='Manual review count'>
+                  <input
+                    ref={reviewCountInputRef}
+                    type='text'
+                    inputMode='numeric'
+                    className={inputClass}
+                    value={reviewCountInput}
+                    aria-invalid={reviewCountInvalid}
+                    onChange={(event) => {
+                      const rawValue = event.currentTarget.value;
+                      const cursor = event.currentTarget.selectionStart ?? rawValue.length;
+                      const parsed = parseManualReviewCountInput(rawValue);
+                      const formatted = parsed.formatted;
+                      const digitsBeforeCursor = rawValue.slice(0, cursor).replace(/\D/g, '').length;
+                      setReviewCountInput(formatted);
+                      setReviewCountInvalid(!parsed.valid);
+                      if (parsed.valid) update('manualReviewCount', parsed.count);
+                      requestAnimationFrame(() => {
+                        const input = reviewCountInputRef.current;
+                        if (!input) return;
+                        let position = 0;
+                        let characters = 0;
+                        while (position < formatted.length && characters < digitsBeforeCursor) {
+                          if (formatted[position] !== ',') characters += 1;
+                          position += 1;
+                        }
+                        input.setSelectionRange(position, position);
+                      });
+                    }}
+                  />
+                </Field>
+                {reviewCountInvalid && (
+                  <p role='alert' className='text-xs text-destructive'>
+                    Enter a whole number from 0 to 2,147,483,647.
+                  </p>
+                )}
+                {values.manualReviewCount != null && (
+                  <button
+                    type='button'
+                    onClick={() => {
+                      update('manualReviewCount', null);
+                      setReviewCountInput('');
+                    }}
+                    className='min-h-8 justify-self-start text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground'
+                  >
+                    Use live review count
+                  </button>
+                )}
+              </div>
+            </div>
+          </details>
+
           <section className='dashboard-product-section'>
             <header className='dashboard-product-section-heading'>
-              <span>03</span>
+              <span>04</span>
               <div><h3>Story and specifications</h3><p>Product copy, materials and sizing</p></div>
             </header>
             <div className='grid gap-4 sm:grid-cols-2'>
@@ -572,7 +677,7 @@ function ProductEditor({
 
           <section className='dashboard-product-section dashboard-product-publishing'>
             <header className='dashboard-product-section-heading'>
-              <span>04</span>
+              <span>05</span>
               <div><h3>Storefront placement</h3><p>Choose how this product appears to customers</p></div>
             </header>
             <div className='flex flex-wrap gap-5'>

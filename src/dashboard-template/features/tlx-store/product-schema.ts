@@ -34,6 +34,8 @@ export const productInputSchema = z.object({
   category: z.enum(['jackets', 'apparel', 'shoes', 'bags', 'accessories']),
   price: z.number().finite().min(0).max(99999999.99),
   compareAt: z.number().finite().min(0).max(99999999.99).nullable(),
+  manualRating: z.number().int().min(1).max(5).nullable().default(null),
+  manualReviewCount: z.number().int().min(0).max(2147483647).nullable().default(null),
   image: z.string().trim().min(1).max(2048),
   gallery: z.array(z.string().trim().min(1).max(2048)).max(12),
   galleryAlt: z.array(z.string().trim().max(250)).max(12),

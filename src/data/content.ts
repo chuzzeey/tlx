@@ -208,7 +208,7 @@ export const faqs: Faq[] = [
   { group: "Delivery & Returns", q: "How do I start a return?", a: "Message us on WhatsApp with your order number and checkout email to discuss a return." },
   { group: "Delivery & Returns", q: "What if an item arrives damaged or incorrect?", a: "Contact us on WhatsApp with your order number and a clear photo of the item so we can help." },
   { group: "Payments & Contact", q: "Which payment methods are available?", a: "The available payment options are shown during checkout before you confirm your order." },
-  { group: "Payments & Contact", q: "How do I contact TLX Originals?", a: "Call or WhatsApp us at +234 802 904 1081." },
+  { group: "Payments & Contact", q: "How do I contact TLX Originals?", a: "Call or WhatsApp us at {{whatsappNumber}}." },
 ];
 
 /** Products woven into each essay — powers the "Pieces from this essay" strip. */

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
+import { useStorefrontContact } from "@/store/useStorefrontContact";
 
 export default function Login() {
+  const { whatsappHref } = useStorefrontContact();
   const [mode, setMode] = useState<"sign-in" | "create-account">("sign-in");
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -131,7 +133,7 @@ export default function Login() {
             {!isCreatingAccount && (
               <div className="mt-4 flex justify-end">
                 <a
-                  href="https://wa.me/2348029041081"
+                  href={whatsappHref}
                   target="_blank"
                   rel="noreferrer"
                   className="text-sm font-medium"

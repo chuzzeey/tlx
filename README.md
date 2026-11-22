@@ -114,14 +114,22 @@ only changes storefront display. Conversion uses ExchangeRate-API's open endpoin
 daily; rates are informational display estimates, not real-time payment or transaction quotes.
 The storefront footer and currency preference include the provider attribution required by its terms.
 
+The admin sidebar's **My Number** page controls the store-wide WhatsApp contact number. Review and
+manually run
+[`supabase/migrations/20261129000000_tlx_storefront_whatsapp_number.sql`](./supabase/migrations/20261129000000_tlx_storefront_whatsapp_number.sql)
+in the Supabase SQL Editor before saving a number. The page supports searchable international
+calling codes, starts with Nigeria, and updates WhatsApp and telephone links and displayed contact
+text across the storefront. The number is stored in E.164 format in `public.storefront_settings`;
+updates are restricted to the existing allowlisted admin API.
+
 Seed built-in products with `npm run seed:catalog` (also requires the URL and service-role key). The
 seed uploads main images to deterministic storage paths and inserts only missing products; it does
-not overwrite existing catalog entries. Product ratings and counts in Supabase mode are calculated only from approved database
-reviews, and the dashboard provides review moderation. Existing sample reviews and browser-local
-reviews are not imported. Product listing, detail, category, search, cart, and sitemap reads use the
-published catalog. Orders are not persisted by the storefront, so revenue and order analytics remain
-unavailable until an order system is connected. Admin sign-up is disabled; only the configured admin
-email allowlist can use `/dashboard`.
+not overwrite existing catalog entries. Product ratings and counts default to approved database
+reviews, with optional per-product overrides managed in the dashboard. The dashboard also provides
+review moderation. Existing sample reviews and browser-local reviews are not imported. Product
+listing, detail, category, search, cart, and sitemap reads use the published catalog. Orders are not
+persisted by the storefront, so revenue and order analytics remain unavailable until an order system
+is connected. Admin sign-up is disabled; only the configured admin email allowlist can use `/dashboard`.
 
 ### Docker
 

@@ -75,7 +75,7 @@ export default function ProductCard({
         </span>
       </div>
 
-      <div className="relative mt-4 aspect-square overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900">
+      <div className="relative mt-4 aspect-square overflow-hidden rounded-xl bg-gray-100">
         <FadeImage
           src={product.image}
           alt={product.name}

@@ -281,7 +281,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-900 md:aspect-square">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -307,7 +307,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     onClick={() => setImgIdx(index)}
                     aria-label={`View product image ${index + 1}`}
                     aria-pressed={activeImageIndex === index}
-                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-background ${
+                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-gray-100 ${
                       activeImageIndex === index ? "border-foreground" : "border-transparent"
                     }`}
                   >
@@ -705,7 +705,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
         >
-          <div className="relative aspect-square overflow-hidden border border-border bg-neutral-100 dark:bg-neutral-900">
+          <div className="relative aspect-square overflow-hidden border border-border bg-gray-100">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -736,7 +736,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     width={400}
                     height={400}
                     sizes="(max-width: 767px) 48px, 16vw"
-                    className="aspect-square w-full bg-muted object-cover"
+                    className="aspect-square w-full bg-gray-100 object-cover"
                   />
                 </button>
               ))}
@@ -757,7 +757,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           <div className="mt-4 flex items-center gap-3">
             <Stars rating={product.rating} />
             <span className="font-mono2 text-xs text-muted-foreground">
-              {product.rating.toFixed(1)} · {product.reviewCount} reviews
+              {product.rating.toFixed(1)} · {product.reviewCount.toLocaleString()} reviews
             </span>
           </div>
           <p className="mt-6 font-mono2 text-3xl">
@@ -911,7 +911,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             <p className="label-mono">Reviews</p>
             <p className="mt-3 font-display text-6xl font-light">{averageRating.toFixed(1)}</p>
             <Stars rating={averageRating} className="mt-2" />
-            <p className="mt-2 font-mono2 text-[11px] text-muted-foreground">{reviewCount} reviews</p>
+            <p className="mt-2 font-mono2 text-[11px] text-muted-foreground">{reviewCount.toLocaleString()} reviews</p>
             <div className="mt-6 space-y-2">
               {[5, 4, 3, 2, 1].map((s) => {
                 const pct = s === 5 ? 72 : s === 4 ? 21 : s === 3 ? 5 : s === 2 ? 2 : 0;

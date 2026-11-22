@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MessageCircle, Phone, Search } from "lucide-react";
 import SupportTopBar from "@/components/pages/SupportTopBar";
 import { faqs, faqGroups } from "@/data/content";
+import { useStorefrontContact } from "@/store/useStorefrontContact";
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +15,7 @@ import {
 const allQuestions = "All questions";
 
 export default function Faq() {
+  const { displayPhone, whatsappHref, telephoneHref } = useStorefrontContact();
   const [query, setQuery] = useState("");
   const [activeGroup, setActiveGroup] = useState(allQuestions);
 
@@ -21,10 +23,11 @@ export default function Faq() {
     const search = query.trim().toLowerCase();
     return faqs.filter((faq) => {
       const matchesGroup = activeGroup === allQuestions || faq.group === activeGroup;
-      const matchesSearch = !search || `${faq.q} ${faq.a}`.toLowerCase().includes(search);
+      const answer = faq.a.replace("{{whatsappNumber}}", displayPhone);
+      const matchesSearch = !search || `${faq.q} ${answer}`.toLowerCase().includes(search);
       return matchesGroup && matchesSearch;
     });
-  }, [activeGroup, query]);
+  }, [activeGroup, displayPhone, query]);
 
   const visibleGroups = faqGroups.filter((group) =>
     filteredFaqs.some((faq) => faq.group === group)
@@ -113,7 +116,7 @@ export default function Faq() {
                           <span className="min-w-0">{faq.q}</span>
                         </AccordionTrigger>
                         <AccordionContent className="max-w-3xl pb-5 pl-9 text-sm leading-7 text-muted-foreground sm:pl-10">
-                          {faq.a}
+                          {faq.a.replace("{{whatsappNumber}}", displayPhone)}
                         </AccordionContent>
                       </AccordionItem>
                     ))}
@@ -130,11 +133,11 @@ export default function Faq() {
             <h2 className="mt-2 font-display text-2xl font-light tracking-tight">
               We’re one message away.
             </h2>
-            <p className="mt-2 text-sm text-muted-foreground">+234 802 904 1081</p>
+            <p className="mt-2 text-sm text-muted-foreground">{displayPhone}</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <a
-              href="https://wa.me/2348029041081"
+              href={whatsappHref}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-foreground px-5 py-3 text-xs font-medium transition-colors hover:bg-foreground hover:text-background"
@@ -143,7 +146,7 @@ export default function Faq() {
               WhatsApp
             </a>
             <a
-              href="tel:+2348029041081"
+              href={telephoneHref}
               className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-xs font-medium transition-colors hover:border-foreground"
             >
               <Phone className="h-4 w-4" />

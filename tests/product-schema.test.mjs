@@ -40,6 +40,18 @@ test('defaults product availability to in stock when omitted', () => {
   assert.equal(parsed.data.inStock, true);
 });
 
+test('accepts nullable manual review overrides and validates their ranges', () => {
+  const defaulted = productInputSchema.parse(validProduct);
+  assert.equal(defaulted.manualRating, null);
+  assert.equal(defaulted.manualReviewCount, null);
+
+  assert.equal(productInputSchema.safeParse({ ...validProduct, manualRating: 5, manualReviewCount: 45000 }).success, true);
+  assert.equal(productInputSchema.safeParse({ ...validProduct, manualRating: 0 }).success, false);
+  assert.equal(productInputSchema.safeParse({ ...validProduct, manualRating: 6 }).success, false);
+  assert.equal(productInputSchema.safeParse({ ...validProduct, manualReviewCount: -1 }).success, false);
+  assert.equal(productInputSchema.safeParse({ ...validProduct, manualReviewCount: 2_147_483_648 }).success, false);
+});
+
 test('rejects invalid prices, availability, legacy fields, and unmatched gallery alt text', () => {
   assert.equal(productInputSchema.safeParse({ ...validProduct, compareAt: 120 }).success, false);
   assert.equal(productInputSchema.safeParse({ ...validProduct, inStock: 'yes' }).success, false);

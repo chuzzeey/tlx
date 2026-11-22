@@ -98,6 +98,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     category: product.category,
     price: product.price,
     compare_at: product.compareAt,
+    manual_rating: product.manualRating,
+    manual_review_count: product.manualReviewCount,
     gallery: product.gallery,
     gallery_alt: product.galleryAlt,
     description: product.description,

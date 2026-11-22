@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Phone } from "lucide-react";
+import { useStorefrontContact } from "@/store/useStorefrontContact";
 
 const socialIconPaths = {
   tiktok:
@@ -45,6 +48,8 @@ const cols = [
 ];
 
 export default function Footer() {
+  const { displayPhone, whatsappHref, telephoneHref } = useStorefrontContact();
+
   return (
     <footer className="mt-auto border-t border-border">
       <div className="container-x grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
@@ -58,7 +63,7 @@ export default function Footer() {
           <p className="label-mono mt-6">Contact</p>
           <div className="mt-3 flex items-center gap-2">
             <a
-              href="https://wa.me/2348029041081"
+              href={whatsappHref}
               target="_blank"
               rel="noreferrer"
               aria-label="WhatsApp TLX Originals"
@@ -68,7 +73,7 @@ export default function Footer() {
               <SocialIcon name="whatsapp" className="h-4 w-4" />
             </a>
             <a
-              href="tel:+2348029041081"
+              href={telephoneHref}
               aria-label="Call TLX Originals"
               title="Phone"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-foreground/75 transition-colors hover:border-foreground hover:text-foreground"
@@ -88,12 +93,12 @@ export default function Footer() {
             ))}
           </div>
           <a
-            href="https://wa.me/2348029041081"
+            href={whatsappHref}
             target="_blank"
             rel="noreferrer"
             className="link-underline mt-3 inline-block text-sm text-foreground/80 hover:text-foreground"
           >
-            +234 802 904 1081
+            {displayPhone}
           </a>
           <p className="mt-1 font-mono2 text-[10px] text-muted-foreground">
             TikTok, Snapchat, and Facebook links coming soon

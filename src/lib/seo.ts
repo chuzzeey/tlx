@@ -19,11 +19,6 @@ export function organizationJsonLd() {
       name: SITE_NAME,
       url: SITE_URL,
       description: SITE_DESCRIPTION,
-      contactPoint: {
-        "@type": "ContactPoint",
-        telephone: "+234 802 904 1081",
-        contactType: "customer service",
-      },
     },
     {
       "@context": "https://schema.org",

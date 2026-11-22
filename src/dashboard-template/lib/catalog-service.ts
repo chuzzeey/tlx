@@ -15,6 +15,9 @@ export type CatalogProduct = Product & {
   sizes: string[];
   inStock: boolean;
   isPublished: boolean;
+  manualRating: number | null;
+  actualRating: number;
+  actualReviewCount: number;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -70,6 +73,10 @@ type CatalogRow = {
   is_published: boolean;
   rating?: number | string;
   review_count?: number;
+  manual_rating?: number | string | null;
+  manual_review_count?: number | null;
+  actual_rating?: number | string;
+  actual_review_count?: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -91,14 +98,22 @@ function mapCatalogRow(row: CatalogRow): CatalogProduct {
   }
 
   const defaults = catalogVariantDefaults[row.id];
+  const manualRating = row.manual_rating == null ? null : Number(row.manual_rating);
+  const manualReviewCount = row.manual_review_count == null ? null : Number(row.manual_review_count);
+  const actualRating = Number(row.actual_rating ?? row.rating ?? 0);
+  const actualReviewCount = Number(row.actual_review_count ?? row.review_count ?? 0);
   return {
     id: row.id,
     name: row.name,
     category: row.category,
     price: Number(row.price),
     ...(row.compare_at == null ? {} : { compareAt: Number(row.compare_at) }),
-    rating: Number(row.rating ?? 0),
-    reviewCount: Number(row.review_count ?? 0),
+    rating: Number(row.rating ?? manualRating ?? actualRating),
+    reviewCount: Number(row.review_count ?? manualReviewCount ?? actualReviewCount),
+    manualReviewCount,
+    manualRating,
+    actualRating,
+    actualReviewCount,
     image: productCatalogImageUrl(projectUrl, row.id, row.main_image_path, row.image),
     gallery: row.gallery ?? [],
     galleryAlt: row.gallery_alt ?? [],
@@ -278,10 +293,18 @@ export async function getAdminCatalog(): Promise<CatalogProduct[]> {
 
   return (products as CatalogRow[]).map((row) => {
     const stats = reviewStats.get(row.id);
+    const actualRating = stats ? Math.round((stats.total / stats.count) * 10) / 10 : 0;
+    const actualReviewCount = stats?.count ?? 0;
+    const manualRating = row.manual_rating == null ? null : Number(row.manual_rating);
+    const manualReviewCount = row.manual_review_count == null ? null : Number(row.manual_review_count);
     return mapCatalogRow({
       ...row,
-      rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 0,
-      review_count: stats?.count ?? 0
+      rating: manualRating ?? actualRating,
+      review_count: manualReviewCount ?? actualReviewCount,
+      manual_rating: manualRating,
+      manual_review_count: manualReviewCount,
+      actual_rating: actualRating,
+      actual_review_count: actualReviewCount
     });
   });
 }

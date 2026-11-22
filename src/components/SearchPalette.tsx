@@ -268,7 +268,7 @@ export default function SearchPalette({
                                 setQuery("");
                                 onOpenChange(false);
                               }}
-                              className="relative block aspect-square overflow-hidden rounded-2xl bg-neutral-100"
+                              className="relative block aspect-square overflow-hidden rounded-2xl bg-gray-100"
                             >
                               <Image
                                 src={item.image}
@@ -374,7 +374,7 @@ export default function SearchPalette({
                           alt=""
                           width={48}
                           height={60}
-                          className="h-[60px] w-12 shrink-0 rounded-lg object-cover"
+                          className="h-[60px] w-12 shrink-0 rounded-lg bg-gray-100 object-cover"
                         />
                         <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
                         {item.rating !== undefined && (

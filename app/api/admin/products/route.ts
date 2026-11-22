@@ -21,6 +21,8 @@ function databaseProduct(
     category: input.category,
     price: input.price,
     compare_at: input.compareAt,
+    manual_rating: input.manualRating,
+    manual_review_count: input.manualReviewCount,
     gallery: input.gallery,
     gallery_alt: input.galleryAlt,
     description: input.description,
