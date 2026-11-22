@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Eye, EyeOff, Pencil, Tags, Trash2, Upload } from 'lucide-react';
+import { Eye, EyeOff, Pencil, Plus, Tags, Trash2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { AdminCategory } from '@/data/catalog';
@@ -29,6 +29,16 @@ import {
 const inputClass =
   'min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
+const blankCategory: AdminCategory = {
+  slug: '',
+  name: '',
+  tagline: '',
+  description: '',
+  image: '',
+  isPublished: true,
+  productCount: 0
+};
+
 function CategoryEditor({
   category,
   onClose,
@@ -36,8 +46,9 @@ function CategoryEditor({
 }: {
   category: AdminCategory;
   onClose: () => void;
-  onSaved: (category: CategoryInput, warning?: string) => void;
+  onSaved: (category: AdminCategory, warning?: string) => void;
 }) {
+  const isNew = !category.slug;
   const [values, setValues] = useState<CategoryInput>({
     name: category.name,
     tagline: category.tagline,
@@ -124,22 +135,37 @@ function CategoryEditor({
     setError('');
 
     try {
-      const response = await fetch(`/api/admin/categories/${encodeURIComponent(category.slug)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values)
-      });
-      const result = (await response.json()) as { category?: CategoryInput; error?: string; warning?: string };
-      if (!response.ok || !result.category) {
+      if (isNew && !uploadedImageUrlsRef.current.includes(values.image)) {
+        throw new Error('Upload a category image before saving the new category.');
+      }
+
+      const response = await fetch(
+        isNew ? '/api/admin/categories' : `/api/admin/categories/${encodeURIComponent(category.slug)}`,
+        {
+          method: isNew ? 'POST' : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values)
+        }
+      );
+      const result = (await response.json()) as {
+        category?: CategoryInput & { slug: string; productCount?: number };
+        error?: string;
+        warning?: string;
+      };
+      if (!response.ok || !result.category?.slug) {
         throw new Error(result.error ?? 'Category could not be saved.');
       }
+      const savedCategory: AdminCategory = {
+        ...result.category,
+        productCount: result.category.productCount ?? category.productCount
+      };
       const oldAndUncommittedImages = [
         ...uploadedImageUrlsRef.current,
-        ...(category.image === values.image ? [] : [category.image])
+        ...(!isNew && category.image !== values.image ? [category.image] : [])
       ];
       uploadedImageUrlsRef.current = [];
-      onSaved(result.category, result.warning);
-      await removeUnusedImages(oldAndUncommittedImages, result.category.image);
+      onSaved(savedCategory, result.warning);
+      await removeUnusedImages(oldAndUncommittedImages, savedCategory.image);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Category could not be saved.');
     } finally {
@@ -152,9 +178,11 @@ function CategoryEditor({
       <DialogContent className='max-h-[90dvh] overflow-y-auto sm:max-w-xl'>
         <DialogHeader>
           <p className='font-mono text-xs uppercase tracking-widest text-muted-foreground'>Store catalog</p>
-          <DialogTitle className='text-xl'>Edit {category.name}</DialogTitle>
+          <DialogTitle className='text-xl'>{isNew ? 'Add new category' : `Edit ${category.name}`}</DialogTitle>
           <DialogDescription>
-            Change how this category appears in the storefront. Hiding it also hides its products.
+            {isNew
+              ? 'Add a category image and details to make a new collection available in the catalog.'
+              : 'Change how this category appears in the storefront. Hiding it also hides its products.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={save} className='grid gap-4'>
@@ -171,7 +199,9 @@ function CategoryEditor({
             <textarea rows={4} maxLength={1000} className={inputClass} value={values.description} onChange={(event) => setValues((current) => ({ ...current, description: event.target.value }))} />
           </label>
           <div className='grid gap-1.5 text-sm'>
-            <span className='font-medium'>Category image</span>
+            <span className='font-medium'>
+              Category image{isNew && <span className='ml-1 text-destructive'>*</span>}
+            </span>
             <input
               ref={imageInputRef}
               type='file'
@@ -240,10 +270,11 @@ export default function CategoryManager({
   const [deletingCategory, setDeletingCategory] = useState<AdminCategory | null>(null);
   const [deletePending, setDeletePending] = useState(false);
 
-  function onSaved(slug: string, values: CategoryInput, warning?: string) {
-    setCategories((current) => current.map((category) =>
-      category.slug === slug ? { ...category, ...values } : category
-    ));
+  function onSaved(category: AdminCategory, warning?: string) {
+    setCategories((current) => current.some((item) => item.slug === category.slug)
+      ? current.map((item) => item.slug === category.slug ? category : item)
+      : [...current, category]
+    );
     setVisibilityError(warning ?? '');
     setEditing(null);
   }
@@ -348,10 +379,21 @@ export default function CategoryManager({
 
   return (
     <main className='mx-auto w-full max-w-[1680px] space-y-6 p-4 sm:p-6 xl:p-8'>
-      <header>
-        <p className='font-mono text-xs uppercase tracking-widest text-muted-foreground'>TLX Originals · Store admin</p>
-        <h1 className='mt-2 text-3xl font-semibold tracking-tight'>Categories</h1>
-        <p className='mt-1 max-w-2xl text-sm text-muted-foreground'>Edit category details and control which categories and products are visible in the storefront.</p>
+      <header className='flex flex-wrap items-end justify-between gap-4'>
+        <div>
+          <p className='font-mono text-xs uppercase tracking-widest text-muted-foreground'>TLX Originals · Store admin</p>
+          <h1 className='mt-2 text-3xl font-semibold tracking-tight'>Categories</h1>
+          <p className='mt-1 max-w-2xl text-sm text-muted-foreground'>Add categories, edit details, and control which collections are visible in the storefront.</p>
+        </div>
+        <button
+          type='button'
+          disabled={Boolean(setupMessage || loadError)}
+          onClick={() => setEditing({ ...blankCategory })}
+          className='inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50'
+        >
+          <Plus aria-hidden className='size-4' />
+          Add category
+        </button>
       </header>
 
       {setupMessage && (
@@ -433,7 +475,7 @@ export default function CategoryManager({
           key={editing.slug}
           category={editing}
           onClose={() => setEditing(null)}
-          onSaved={(values, warning) => onSaved(editing.slug, values, warning)}
+          onSaved={onSaved}
         />
       )}
       <AlertDialog

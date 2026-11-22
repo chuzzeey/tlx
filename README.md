@@ -81,10 +81,11 @@ refresh. Draft products remain hidden until published.
 
 Finally, apply
 [`supabase/migrations/20261125000000_tlx_product_categories.sql`](./supabase/migrations/20261125000000_tlx_product_categories.sql).
-It seeds the existing categories and adds category editing and visibility controls at
-`/dashboard/categories`. Hiding a category removes its products from public listings, detail pages,
-and the sitemap without changing the products' individual publication status. Category visibility
-changes are sent to connected storefronts through Supabase Realtime.
+It seeds the existing categories and adds category creation, editing, and visibility controls at
+`/dashboard/categories`. New categories require an uploaded image and receive a unique URL from
+their name. Hiding a category removes its products from public listings, detail pages, and the sitemap
+without changing the products' individual publication status. Category changes are sent to connected
+storefronts through Supabase Realtime.
 
 For permanent category deletion, manually apply
 [`supabase/migrations/20261128000000_tlx_admin_category_delete.sql`](./supabase/migrations/20261128000000_tlx_admin_category_delete.sql)

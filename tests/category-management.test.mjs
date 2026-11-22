@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { categoryInputSchema } from '../src/dashboard-template/features/tlx-store/category-schema.ts';
+import {
+  categoryInputSchema,
+  makeUniqueCategorySlug
+} from '../src/dashboard-template/features/tlx-store/category-schema.ts';
 import { isStorefrontImage } from '../src/lib/product-image-storage.ts';
 
 const validCategory = {
@@ -25,6 +28,12 @@ test('rejects invalid category details and unsafe image paths', () => {
   assert.equal(isStorefrontImage('/images/products/sneakers.png'), true);
   assert.equal(isStorefrontImage('/images/products/../private.png'), false);
   assert.equal(isStorefrontImage('https://other.example/image.png', 'https://example.supabase.co'), false);
+});
+
+test('creates normalized unique category URLs', () => {
+  assert.equal(makeUniqueCategorySlug('Café Collection', []), 'cafe-collection');
+  assert.equal(makeUniqueCategorySlug('Café Collection', ['cafe-collection']), 'cafe-collection-2');
+  assert.equal(makeUniqueCategorySlug('東京', []), 'category');
 });
 
 test('allows uploaded images only from the configured Supabase product bucket', () => {
