@@ -39,13 +39,13 @@ import { Icons } from '../icons';
 // Nav styling lives here so ui/sidebar.tsx stays identical to upstream.
 // Active = soft pill + medium weight + primary-coloured icon; hover is a lighter pill.
 const itemClass =
-  'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground data-[active]:bg-sidebar-accent data-[active]:font-medium data-[active]:text-sidebar-accent-foreground data-[active]:hover:bg-sidebar-accent [&>svg]:text-sidebar-foreground/60 data-[active]:[&>svg:first-child]:text-sidebar-primary';
+  'dashboard-nav-item text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground data-[active]:bg-sidebar-accent data-[active]:font-medium data-[active]:text-sidebar-accent-foreground data-[active]:hover:bg-sidebar-accent [&>svg]:text-sidebar-foreground/60 data-[active]:[&>svg:first-child]:text-sidebar-primary';
 // A parent whose child is the current page gets weight + icon colour, but not the pill:
 // only the actual page is highlighted, so there's one pill per screen.
 const branchActiveClass =
   'font-medium text-sidebar-foreground [&>svg:first-child]:text-sidebar-primary';
 const subItemClass =
-  'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground data-[active]:bg-sidebar-accent data-[active]:font-medium data-[active]:text-sidebar-accent-foreground data-[active]:hover:bg-sidebar-accent';
+  'dashboard-nav-item text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground data-[active]:bg-sidebar-accent data-[active]:font-medium data-[active]:text-sidebar-accent-foreground data-[active]:hover:bg-sidebar-accent';
 // 4px horizontal padding on the icon rail lets 32px buttons fit the 2.375rem rail
 const railPadding = 'group-data-[collapsible=icon]:px-1';
 
@@ -55,7 +55,7 @@ export default function AppSidebar() {
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar collapsible='icon' variant='inset'>
+    <Sidebar collapsible='icon' variant='inset' className='dashboard-sidebar'>
       <SidebarHeader className={railPadding}>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -63,12 +63,13 @@ export default function AppSidebar() {
               size='lg'
               tooltip='Dashboard home'
               render={<Link href='/dashboard/overview' aria-label='TLX Originals dashboard home' />}
+              className='dashboard-sidebar-brand'
               onClick={() => setOpenMobile(false)}
             >
               <div className='bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg'>
                 <span className='text-[10px] font-semibold tracking-[0.12em]'>TLX</span>
               </div>
-              <div className='grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden'>
+              <div className='dashboard-sidebar-brand-copy grid flex-1 text-left text-sm leading-tight'>
                 <span className='truncate font-semibold'>TLX Originals</span>
                 <span className='text-muted-foreground truncate text-xs'>Store admin</span>
               </div>

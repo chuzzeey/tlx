@@ -16,6 +16,8 @@ export type CatalogProduct = Product & {
   sizes: string[];
   inStock: boolean;
   isPublished: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CatalogReview = {
@@ -30,6 +32,19 @@ export type CatalogReview = {
   verified: boolean;
   approved: boolean;
   createdAt: string;
+};
+
+export type DashboardProduct = {
+  id: string;
+  name: string;
+  category: string;
+  stock: number;
+  inStock: boolean;
+  isPublished: boolean;
+  rating: number;
+  reviewCount: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type CatalogRow = {
@@ -56,6 +71,8 @@ type CatalogRow = {
   is_published: boolean;
   rating?: number | string;
   review_count?: number;
+  created_at?: string;
+  updated_at?: string;
 };
 
 function mapCatalogRow(row: CatalogRow): CatalogProduct {
@@ -87,7 +104,9 @@ function mapCatalogRow(row: CatalogRow): CatalogProduct {
     colors: row.colors?.length ? row.colors : defaults?.colors ?? [],
     sizes: row.sizes?.length ? row.sizes : defaults?.sizes ?? [],
     featured: row.featured,
-    isPublished: row.is_published
+    isPublished: row.is_published,
+    ...(row.created_at ? { createdAt: row.created_at } : {}),
+    ...(row.updated_at ? { updatedAt: row.updated_at } : {})
   };
 }
 
@@ -204,6 +223,76 @@ export async function getAdminCatalog(): Promise<CatalogProduct[]> {
   });
 }
 
+export async function getAdminOverviewData(): Promise<{
+  products: DashboardProduct[];
+  reviews: CatalogReview[];
+}> {
+  if (!isSupabaseAdminConfigured) {
+    return { products: [], reviews: [] };
+  }
+
+  const client = createAdminSupabaseClient();
+  const [{ data: productRows, error: productsError }, { data: reviewRows, error: reviewsError }] =
+    await Promise.all([
+      client
+        .from('products')
+        .select('id,name,category,stock,is_in_stock,is_published,created_at,updated_at')
+        .order('created_at', { ascending: false }),
+      client
+        .from('reviews')
+        .select('id,product_id,author,location,rating,title,body,is_verified,is_approved,created_at')
+        .order('created_at', { ascending: false })
+    ]);
+
+  if (productsError) {
+    throw new Error(`Could not load products from Supabase: ${productsError.message}`);
+  }
+  if (reviewsError) {
+    throw new Error(`Could not load customer reviews: ${reviewsError.message}`);
+  }
+
+  const productNames = new Map(productRows.map((product) => [product.id, product.name]));
+  const approvedReviewStats = new Map<string, { count: number; total: number }>();
+  for (const review of reviewRows) {
+    if (!review.is_approved) continue;
+    const stats = approvedReviewStats.get(review.product_id) ?? { count: 0, total: 0 };
+    stats.count += 1;
+    stats.total += review.rating;
+    approvedReviewStats.set(review.product_id, stats);
+  }
+
+  const products: DashboardProduct[] = productRows.map((row) => {
+    const stats = approvedReviewStats.get(row.id);
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      stock: row.stock,
+      inStock: row.is_in_stock,
+      isPublished: row.is_published,
+      rating: stats ? Math.round((stats.total / stats.count) * 10) / 10 : 0,
+      reviewCount: stats?.count ?? 0,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
+    };
+  });
+  const reviews: CatalogReview[] = reviewRows.map((review) => ({
+    id: review.id,
+    productId: review.product_id,
+    productName: productNames.get(review.product_id) ?? 'Archived product',
+    author: review.author,
+    location: review.location,
+    rating: review.rating,
+    title: review.title,
+    body: review.body,
+    verified: review.is_verified,
+    approved: review.is_approved,
+    createdAt: review.created_at
+  }));
+
+  return { products, reviews };
+}
+
 export async function getAdminReviews(): Promise<CatalogReview[]> {
   const client = createAdminSupabaseClient();
   const [{ data: reviews, error: reviewsError }, { data: products, error: productsError }] =
@@ -238,19 +327,26 @@ export async function getAdminReviews(): Promise<CatalogReview[]> {
   }));
 }
 
-export async function getStoreMetrics() {
-  const products = await getAdminCatalog();
-  const published = products.filter((product) => product.isPublished);
-  const reviewsCount = products.reduce((sum, product) => sum + product.reviewCount, 0);
-  const weightedRating = products.reduce(
+type StoreMetricProduct = Pick<
+  CatalogProduct,
+  'isPublished' | 'inStock' | 'stock' | 'rating' | 'reviewCount'
+>;
+
+export async function getStoreMetrics(products?: readonly StoreMetricProduct[]) {
+  const catalog: readonly StoreMetricProduct[] = products ?? (await getAdminCatalog());
+  const published = catalog.filter((product) => product.isPublished);
+  const reviewsCount = catalog.reduce((sum, product) => sum + product.reviewCount, 0);
+  const weightedRating = catalog.reduce(
     (sum, product) => sum + product.rating * product.reviewCount,
     0
   );
 
   return {
-    totalProducts: products.length,
+    totalProducts: catalog.length,
     publishedProducts: published.length,
-    lowStockProducts: published.filter((product) => product.inStock && product.stock <= 5).length,
+    lowStockProducts: published.filter(
+      (product) => product.inStock && product.stock > 0 && product.stock <= 5
+    ).length,
     outOfStockProducts: published.filter((product) => !product.inStock).length,
     reviewsCount,
     averageRating: reviewsCount ? Math.round((weightedRating / reviewsCount) * 10) / 10 : null

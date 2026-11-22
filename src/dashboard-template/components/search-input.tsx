@@ -18,7 +18,7 @@ export default function SearchInput() {
       <button
         type='button'
         onClick={query.toggle}
-        className='border-input bg-card text-muted-foreground hover:border-foreground/20 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 mr-1 hidden h-8 w-44 items-center gap-2 rounded-lg border px-2.5 text-sm transition-[color,background-color,border-color,box-shadow] outline-none focus-visible:ring-[3px] sm:flex md:w-56 lg:w-72'
+        className='dashboard-search-trigger border-input bg-card text-muted-foreground hover:border-foreground/20 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 mr-1 hidden h-8 w-44 items-center gap-2 rounded-lg border px-2.5 text-sm transition-[color,background-color,border-color,box-shadow] outline-none focus-visible:ring-[3px] sm:flex md:w-56 lg:w-72'
       >
         <Icons.search className='size-4 shrink-0' />
         <span className='flex-1 truncate text-left'>Search...</span>
@@ -27,7 +27,7 @@ export default function SearchInput() {
       <Button
         variant='ghost'
         size='icon'
-        className='sm:hidden'
+        className='dashboard-search-mobile sm:hidden'
         aria-label='Search'
         onClick={query.toggle}
       >

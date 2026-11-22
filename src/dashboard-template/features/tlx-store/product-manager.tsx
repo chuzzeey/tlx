@@ -8,6 +8,23 @@ import { formatPrice } from '@/lib/currency';
 import { PRODUCT_IMAGE_BUCKET } from '@/lib/product-image-storage';
 import type { CatalogProduct } from '@dashboard/lib/catalog-service';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@dashboard/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@dashboard/components/ui/dialog';
 import { makeUniqueProductSlug, type ProductInput } from './product-schema';
 
 const categories = [
@@ -290,27 +307,38 @@ function ProductEditor({
   const lines = (value: string) => value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 
   return (
-    <div className='fixed inset-0 z-[100] overflow-y-auto bg-black/50 p-3 sm:p-6' role='presentation'>
-      <section
-        role='dialog'
-        aria-modal='true'
-        aria-labelledby='product-editor-title'
-        className='mx-auto my-2 max-w-4xl rounded-xl border border-border bg-background p-4 text-foreground shadow-xl sm:my-8 sm:p-6'
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !uploading && !saving) void closeWithoutSaving();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        className='dashboard-product-dialog'
       >
-        <div className='mb-5 flex items-start justify-between gap-4'>
+        <DialogHeader className='dashboard-product-header'>
           <div>
             <p className='font-mono text-xs uppercase tracking-widest text-muted-foreground'>TLX Originals · Catalog</p>
-            <h2 id='product-editor-title' className='mt-2 text-xl font-semibold'>
+            <DialogTitle id='product-editor-title' className='mt-2 text-2xl font-semibold'>
               {isNew ? 'Add product' : 'Edit product'}
-            </h2>
+            </DialogTitle>
+            <DialogDescription className='mt-2'>
+              Manage the catalog details, imagery and storefront availability for this product.
+            </DialogDescription>
           </div>
           <button type='button' disabled={uploading || saving} onClick={() => void closeWithoutSaving()} className='rounded-md border px-3 py-2 text-sm hover:bg-muted disabled:opacity-50'>
             Close
           </button>
-        </div>
+        </DialogHeader>
 
-        <form onSubmit={save} className='grid gap-5'>
-          <div className='grid gap-4 sm:grid-cols-2'>
+        <form onSubmit={save} className='dashboard-product-form'>
+          <section className='dashboard-product-section'>
+            <header className='dashboard-product-section-heading'>
+              <span>01</span>
+              <div><h3>Product details</h3><p>Identity, pricing and availability</p></div>
+            </header>
+            <div className='grid gap-4 sm:grid-cols-2'>
             <Field label='Product name'>
               <input required maxLength={120} className={inputClass} value={values.name} onChange={(event) => update('name', event.target.value)} />
             </Field>
@@ -397,13 +425,15 @@ function ProductEditor({
                 })}
               </div>
             </div>
-          </div>
-
-          <div className='grid gap-2'>
-            <div>
-              <p className='text-sm font-medium'>Product images</p>
-              <p className='mt-0.5 text-xs text-muted-foreground'>Main image plus up to four gallery images. Uploads go directly to Supabase Storage. JPEG, PNG, WebP or AVIF · max 8 MB each.</p>
             </div>
+          </section>
+
+          <section className='dashboard-product-section'>
+            <header className='dashboard-product-section-heading'>
+              <span>02</span>
+              <div><h3>Product imagery</h3><p>Main image and up to four gallery images</p></div>
+            </header>
+            <p className='dashboard-product-help'>Uploads go directly to Supabase Storage. JPEG, PNG, WebP or AVIF · max 8 MB each.</p>
             <input
               ref={imageInputRef}
               type='file'
@@ -492,8 +522,14 @@ function ProductEditor({
               })}
             </div>
             {uploading && <span role='status' className='text-xs text-muted-foreground'>Uploading image…</span>}
-          </div>
-          <div className='grid gap-4 sm:grid-cols-2'>
+          </section>
+
+          <section className='dashboard-product-section'>
+            <header className='dashboard-product-section-heading'>
+              <span>03</span>
+              <div><h3>Story and specifications</h3><p>Product copy, materials and sizing</p></div>
+            </header>
+            <div className='grid gap-4 sm:grid-cols-2'>
             <Field label='Description'>
               <textarea rows={4} maxLength={4000} className={inputClass} value={values.description} onChange={(event) => update('description', event.target.value)} />
             </Field>
@@ -524,27 +560,35 @@ function ProductEditor({
                 placeholder='Washed blue | #71879A'
               />
             </Field>
-          </div>
-          <div className='flex flex-wrap gap-5'>
-            <label className='inline-flex items-center gap-2 text-sm'>
-              <input type='checkbox' checked={values.featured ?? false} onChange={(event) => update('featured', event.target.checked)} />
-              Feature on storefront
-            </label>
-            <label className='inline-flex items-center gap-2 text-sm'>
-              <input type='checkbox' checked={values.isPublished} onChange={(event) => update('isPublished', event.target.checked)} />
-              Published on storefront
-            </label>
-          </div>
+            </div>
+          </section>
+
+          <section className='dashboard-product-section dashboard-product-publishing'>
+            <header className='dashboard-product-section-heading'>
+              <span>04</span>
+              <div><h3>Storefront placement</h3><p>Choose how this product appears to customers</p></div>
+            </header>
+            <div className='flex flex-wrap gap-5'>
+              <label className='inline-flex items-center gap-2 text-sm'>
+                <input type='checkbox' checked={values.featured ?? false} onChange={(event) => update('featured', event.target.checked)} />
+                Feature on storefront
+              </label>
+              <label className='inline-flex items-center gap-2 text-sm'>
+                <input type='checkbox' checked={values.isPublished} onChange={(event) => update('isPublished', event.target.checked)} />
+                Published on storefront
+              </label>
+            </div>
+          </section>
           {error && <p role='alert' className='rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive'>{error}</p>}
-          <div className='flex flex-col-reverse justify-end gap-2 border-t pt-4 sm:flex-row'>
+          <div className='dashboard-product-actions'>
             <button type='button' disabled={uploading || saving} onClick={() => void closeWithoutSaving()} className='min-h-10 rounded-md border px-4 text-sm hover:bg-muted disabled:opacity-50'>Cancel</button>
             <button type='submit' disabled={saving || uploading} className='min-h-10 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-50'>
               {saving ? 'Saving…' : isNew ? 'Create product' : 'Save changes'}
             </button>
           </div>
         </form>
-      </section>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -565,6 +609,8 @@ export default function ProductManager({
   const [sort, setSort] = useState('name');
   const [page, setPage] = useState(1);
   const [actionError, setActionError] = useState('');
+  const [archiving, setArchiving] = useState<CatalogProduct | null>(null);
+  const [archivePending, setArchivePending] = useState(false);
 
   const filtered = useMemo(() => products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(search.trim().toLowerCase());
@@ -592,8 +638,8 @@ export default function ProductManager({
   ).length;
 
   async function archive(product: CatalogProduct) {
-    if (!window.confirm(`Unpublish “${product.name}” from the storefront?`)) return;
     setActionError('');
+    setArchivePending(true);
     try {
       const response = await fetch(`/api/admin/products/${encodeURIComponent(product.id)}`, { method: 'DELETE' });
       const result = (await response.json()) as { error?: string };
@@ -604,6 +650,9 @@ export default function ProductManager({
       setProducts((current) => current.map((item) => item.id === product.id ? { ...item, isPublished: false } : item));
     } catch (cause) {
       setActionError(cause instanceof Error ? cause.message : 'Product could not be unpublished.');
+    } finally {
+      setArchivePending(false);
+      setArchiving(null);
     }
   }
 
@@ -746,7 +795,7 @@ export default function ProductManager({
                         type='button'
                         aria-label={`Unpublish ${product.name}`}
                         title={`Unpublish ${product.name}`}
-                        onClick={() => void archive(product)}
+                        onClick={() => setArchiving(product)}
                         className='grid size-9 shrink-0 place-items-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                       >
                         <EyeOff aria-hidden className='size-4' />
@@ -794,7 +843,7 @@ export default function ProductManager({
                           <td className='px-4 py-3'>
                             <div className='flex items-center gap-2'>
                               <button type='button' onClick={() => setEditing(product)} className='rounded-md border px-2.5 py-1.5 text-xs hover:bg-muted'>Edit</button>
-                              {product.isPublished && <button type='button' onClick={() => void archive(product)} className='rounded-md border border-destructive/30 px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/5'>Unpublish</button>}
+                              {product.isPublished && <button type='button' onClick={() => setArchiving(product)} className='rounded-md border border-destructive/30 px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/5'>Unpublish</button>}
                             </div>
                           </td>
                         </tr>
@@ -836,6 +885,33 @@ export default function ProductManager({
         </>
       )}
       {editing && <ProductEditor product={editing} existingProducts={products} onClose={() => setEditing(null)} onSaved={(saved, oldUrls, previousId) => void onSaved(saved, oldUrls, previousId)} />}
+      <AlertDialog
+        open={Boolean(archiving)}
+        onOpenChange={(open) => {
+          if (!open && !archivePending) setArchiving(null);
+        }}
+      >
+        {archiving && (
+          <AlertDialogContent className='dashboard-unpublish-dialog'>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Unpublish this product?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {archiving.name} will be removed from the storefront. Its catalog record will remain available to edit.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={archivePending}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={archivePending}
+                onClick={() => void archive(archiving)}
+                className='dashboard-unpublish-action'
+              >
+                {archivePending ? 'Unpublishing…' : 'Unpublish product'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </div>
   );
 }

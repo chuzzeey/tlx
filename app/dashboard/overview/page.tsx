@@ -1,226 +1,377 @@
 import Link from 'next/link';
+import { ArrowUpRight, Check, Clock3, PackageCheck, Star } from 'lucide-react';
 import {
-  ArrowUpRight,
-  Boxes,
-  CircleAlert,
-  PackageCheck,
-  Star,
-  Warehouse
-} from 'lucide-react';
-import { catalogSetupMessage, getAdminCatalog, getStoreMetrics } from '@dashboard/lib/catalog-service';
+  catalogSetupMessage,
+  getAdminOverviewData,
+  getStoreMetrics,
+  type DashboardProduct,
+  type CatalogReview
+} from '@dashboard/lib/catalog-service';
+import {
+  DashboardCharts,
+  type CategoryMixPoint,
+  type InventoryBandPoint,
+  type ProductActivityPoint,
+  type RatingPoint
+} from '@dashboard/features/tlx-store/dashboard-charts';
 
 export const metadata = { title: 'Dashboard · TLX Originals Admin' };
 
-function MetricCard({
-  label,
-  value,
-  hint,
-  icon: Icon,
-  tone
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  icon: typeof Boxes;
-  tone: 'blue' | 'green' | 'amber' | 'gold';
-}) {
-  const toneClass = {
-    blue: 'bg-primary/10 text-primary',
-    green: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-    amber: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
-    gold: 'bg-secondary text-secondary-foreground'
-  }[tone];
+function getActivitySeries(products: DashboardProduct[], now = new Date()): ProductActivityPoint[] {
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5 + index, 1));
+    const monthKey = date.toISOString().slice(0, 7);
+    return {
+      month: new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' }).format(date),
+      products: products.filter((product) => {
+        if (!product.createdAt) return false;
+        const timestamp = Date.parse(product.createdAt);
+        return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 7) === monthKey;
+      }).length
+    };
+  });
+}
 
-  return (
-    <article className='rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5'>
-      <div className='flex items-start justify-between gap-3'>
-        <p className='text-sm font-medium text-muted-foreground'>{label}</p>
-        <span className={`grid size-10 shrink-0 place-items-center rounded-lg ${toneClass}`}>
-          <Icon aria-hidden className='size-5' />
-        </span>
-      </div>
-      <p className='mt-3 text-3xl font-semibold tracking-tight tabular-nums'>{value}</p>
-      <p className='mt-1 text-xs leading-5 text-muted-foreground'>{hint}</p>
-    </article>
-  );
+function formatCategoryName(category: string) {
+  const labels: Record<string, string> = {
+    apparel: 'T-shirts',
+    jackets: 'Jackets',
+    shoes: 'Shoes',
+    bags: 'Bags',
+    accessories: 'Accessories'
+  };
+  return labels[category] ?? category.replaceAll('-', ' ');
+}
+
+function getCategoryMix(products: DashboardProduct[]): CategoryMixPoint[] {
+  const categories = new Map<string, CategoryMixPoint>();
+  for (const product of products) {
+    const category = product.category;
+    const count = categories.get(category) ?? { category, published: 0, drafts: 0, total: 0 };
+    count.total += 1;
+    if (product.isPublished) count.published += 1;
+    else count.drafts += 1;
+    categories.set(category, count);
+  }
+  return [...categories.values()]
+    .map((category) => ({ ...category, category: formatCategoryName(category.category) }))
+    .sort((a, b) => b.total - a.total || a.category.localeCompare(b.category));
+}
+
+function getInventoryDistribution(products: DashboardProduct[]): InventoryBandPoint[] {
+  const bands: InventoryBandPoint[] = [
+    { band: '0 units', products: 0, units: 0 },
+    { band: '1–5 units', products: 0, units: 0 },
+    { band: '6+ units', products: 0, units: 0 }
+  ];
+
+  for (const product of products) {
+    const units = Math.max(0, product.stock);
+    const band = units === 0 ? bands[0] : units <= 5 ? bands[1] : bands[2];
+    band.products += 1;
+    band.units += units;
+  }
+
+  return bands;
+}
+
+function getRatingDistribution(reviews: CatalogReview[]): RatingPoint[] {
+  const approved = reviews.filter((review) => review.approved);
+  return [5, 4, 3, 2, 1].map((rating) => ({
+    rating: `${rating} stars`,
+    reviews: approved.filter((review) => review.rating === rating).length
+  }));
+}
+
+function formatActivityDate(value: string) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return 'Date unavailable';
+  return new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+}
+
+type StoreActivity = {
+  id: string;
+  date: string;
+  title: string;
+  detail: string;
+  kind: 'product' | 'review';
+};
+
+function getRecentActivity(products: DashboardProduct[], reviews: CatalogReview[]): StoreActivity[] {
+  const productActivity = products.flatMap((product) => {
+    const date = product.updatedAt || product.createdAt;
+    if (!date) return [];
+    const created = product.createdAt ? Date.parse(product.createdAt) : Number.NaN;
+    const updated = product.updatedAt ? Date.parse(product.updatedAt) : Number.NaN;
+    const changed = Number.isFinite(updated) && (!Number.isFinite(created) || updated > created);
+    return [{
+      id: `product-${product.id}`,
+      date,
+      title: product.name,
+      detail: changed ? 'Product updated' : 'Product added',
+      kind: 'product' as const
+    }];
+  });
+  const reviewActivity = reviews.map((review) => ({
+    id: `review-${review.id}`,
+    date: review.createdAt,
+    title: review.title,
+    detail: `Review from ${review.author} · ${review.approved ? 'approved' : 'awaiting review'}`,
+    kind: 'review' as const
+  }));
+
+  return [...productActivity, ...reviewActivity]
+    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+    .slice(0, 6);
 }
 
 export default async function DashboardOverview() {
   const setupMessage = catalogSetupMessage();
-  let metrics: Awaited<ReturnType<typeof getStoreMetrics>> | null = null;
-  let lowStock: Awaited<ReturnType<typeof getAdminCatalog>> = [];
-  let categoryMix: { name: string; count: number }[] = [];
+  let products: DashboardProduct[] = [];
+  let reviews: CatalogReview[] = [];
   let loadError: string | null = null;
 
   if (!setupMessage) {
     try {
-      const [storeMetrics, products] = await Promise.all([getStoreMetrics(), getAdminCatalog()]);
-      const published = products.filter((product) => product.isPublished);
-      metrics = storeMetrics;
-      lowStock = published
-        .filter((product) => product.inStock && product.stock <= 5)
-        .sort((a, b) => a.stock - b.stock)
-        .slice(0, 5);
-      const categories = new Map<string, number>();
-      for (const product of published) {
-        categories.set(product.category, (categories.get(product.category) ?? 0) + 1);
-      }
-      categoryMix = [...categories.entries()]
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+      const data = await getAdminOverviewData();
+      products = data.products;
+      reviews = data.reviews;
     } catch (error) {
-      loadError = error instanceof Error ? error.message : 'Store metrics could not be loaded.';
+      loadError = error instanceof Error ? error.message : 'Store intelligence could not be loaded.';
     }
   }
 
-  const maxCategoryCount = Math.max(1, ...categoryMix.map((category) => category.count));
+  const metrics = !setupMessage && !loadError ? await getStoreMetrics(products) : null;
+  const publishedProducts = products.filter((product) => product.isPublished);
+  const draftCount = products.length - publishedProducts.length;
+  const approvedReviews = reviews.filter((review) => review.approved);
+  const averageRating = approvedReviews.length
+    ? Math.round((approvedReviews.reduce((sum, review) => sum + review.rating, 0) / approvedReviews.length) * 10) / 10
+    : null;
+  const pendingReviews = reviews.length - approvedReviews.length;
+  const inventoryAttention = publishedProducts
+    .filter((product) => !product.inStock || (product.stock > 0 && product.stock <= 5))
+    .sort((a, b) => Number(a.inStock) - Number(b.inStock) || a.stock - b.stock || a.name.localeCompare(b.name))
+    .slice(0, 5);
+  const inventoryAttentionCount = metrics
+    ? metrics.lowStockProducts + metrics.outOfStockProducts
+    : 0;
+  const stockUnits = products.reduce((sum, product) => sum + Math.max(0, product.stock), 0);
+  const activity = getActivitySeries(products);
+  const categories = getCategoryMix(products);
+  const inventoryDistribution = getInventoryDistribution(products);
+  const ratingDistribution = getRatingDistribution(reviews);
+  const recentFeedback = approvedReviews.slice(0, 3);
+  const recentActivity = getRecentActivity(products, reviews);
 
   return (
-    <main className='mx-auto w-full max-w-[1680px] space-y-6 p-4 sm:p-6 xl:p-8'>
-      <header className='flex flex-wrap items-end justify-between gap-4'>
+    <div className='intel-overview'>
+      <header className='intel-header'>
         <div>
-          <p className='font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground'>
-            TLX Originals · Store operations
-          </p>
-          <h1 className='mt-2 text-3xl font-semibold tracking-tight'>Overview</h1>
-          <p className='mt-1 text-sm text-muted-foreground'>
-            Your live catalog, inventory, and customer feedback at a glance.
+          <p className='intel-eyebrow'><span aria-hidden='true' /> TLX Originals <i>/</i> Store intelligence</p>
+          <h1>Overview</h1>
+          <p className='intel-header-description'>
+            A live reading of your catalog, inventory and customer response.
           </p>
         </div>
-        <Link
-          href='/dashboard/product'
-          className='inline-flex min-h-10 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90'
-        >
+        <Link href='/dashboard/product' className='intel-primary-link'>
           Manage products
-          <ArrowUpRight aria-hidden className='size-4' />
+          <ArrowUpRight aria-hidden className='size-4' strokeWidth={1.7} />
         </Link>
       </header>
 
       {setupMessage && (
-        <section className='rounded-xl border border-amber-500/30 bg-amber-500/5 p-5' role='status'>
-          <h2 className='font-medium'>Connect the product database</h2>
-          <p className='mt-1 text-sm text-muted-foreground'>{setupMessage}</p>
-          <p className='mt-2 text-sm text-muted-foreground'>
+        <section className='intel-notice intel-glass' role='status'>
+          <p className='intel-kicker'>Store setup</p>
+          <h2>Connect the product database</h2>
+          <p>{setupMessage}</p>
+          <p>
             Apply the migration in <code>supabase/migrations</code>, then seed the existing
             storefront products with <code>npm run seed:catalog</code>.
           </p>
         </section>
       )}
-      {loadError && (
-        <p role='alert' className='rounded-md border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive'>
-          {loadError}
-        </p>
-      )}
+      {loadError && <p role='alert' className='intel-error'>{loadError}</p>}
 
       {metrics && (
         <>
-          <section aria-label='Store metrics' className='grid gap-3 sm:grid-cols-2 2xl:grid-cols-4'>
-            <MetricCard
-              label='Published products'
-              value={`${metrics.publishedProducts}`}
-              hint={`${metrics.totalProducts} products in the catalog`}
-              icon={Boxes}
-              tone='blue'
-            />
-            <MetricCard
-              label='Low stock'
-              value={`${metrics.lowStockProducts}`}
-              hint='Published products with 1–5 units remaining'
-              icon={Warehouse}
-              tone='amber'
-            />
-            <MetricCard
-              label='Out of stock'
-              value={`${metrics.outOfStockProducts}`}
-              hint='Published products currently unavailable'
-              icon={CircleAlert}
-              tone='gold'
-            />
-            <MetricCard
-              label='Customer reviews'
-              value={`${metrics.reviewsCount}`}
-              hint={metrics.averageRating === null ? 'No approved reviews yet' : `${metrics.averageRating.toFixed(1)} average rating`}
-              icon={Star}
-              tone='green'
-            />
+          <section aria-label='Store performance' className='intel-measures intel-glass'>
+            <article className='intel-measure intel-measure-lead'>
+              <span>Catalog products</span>
+              <strong>{metrics.totalProducts}</strong>
+              <small>Across every publication state</small>
+            </article>
+            <article className='intel-measure'>
+              <span>Published</span>
+              <strong>{metrics.publishedProducts}</strong>
+              <small>Visible in the storefront</small>
+            </article>
+            <article className='intel-measure'>
+              <span>Drafts</span>
+              <strong>{draftCount}</strong>
+              <small>Not yet published</small>
+            </article>
+            <article className='intel-measure'>
+              <span>Units on hand</span>
+              <strong>{stockUnits.toLocaleString()}</strong>
+              <small>Saved quantities · all products</small>
+            </article>
+            <article className='intel-measure'>
+              <span>Inventory watch</span>
+              <strong>{inventoryAttentionCount}</strong>
+              <small>Published products needing review</small>
+            </article>
+            <article className='intel-measure'>
+              <span>Review submissions</span>
+              <strong>{reviews.length}</strong>
+              <small>{approvedReviews.length} approved · {pendingReviews} pending</small>
+            </article>
           </section>
 
-          <div className='grid gap-4 2xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]'>
-            <section className='overflow-hidden rounded-xl border border-border bg-card shadow-sm'>
-              <div className='flex items-center justify-between gap-3 border-b border-border p-4 sm:p-5'>
+          <div className='intel-grid'>
+            <DashboardCharts
+              activity={activity}
+              categories={categories}
+              publishedProducts={metrics.publishedProducts}
+              draftProducts={draftCount}
+              inventory={inventoryDistribution}
+              ratingDistribution={ratingDistribution}
+            />
+
+            <section className='intel-panel intel-attention-panel' aria-labelledby='inventory-attention-title'>
+              <header className='intel-panel-heading'>
                 <div>
-                  <h2 className='font-semibold tracking-tight'>Inventory to check</h2>
-                  <p className='mt-1 text-xs text-muted-foreground'>Published products with five or fewer units</p>
+                  <p className='intel-kicker'>06 <span>/</span> Action required</p>
+                  <h2 id='inventory-attention-title'>Inventory to check</h2>
+                  <p>
+                    {inventoryAttentionCount > inventoryAttention.length
+                      ? `${inventoryAttentionCount} published products need attention · showing the five most urgent`
+                      : `${inventoryAttentionCount} published ${inventoryAttentionCount === 1 ? 'product needs' : 'products need'} attention`}
+                  </p>
                 </div>
-                <Link
-                  href='/dashboard/product'
-                  className='shrink-0 rounded-md px-2 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5'
-                >
-                  View catalog
+                <Link href='/dashboard/product' className='intel-inline-link'>
+                  Open catalog <ArrowUpRight aria-hidden className='size-4' />
                 </Link>
-              </div>
-              {lowStock.length ? (
-                <ul className='divide-y divide-border'>
-                  {lowStock.map((product) => (
-                    <li key={product.id} className='flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5'>
-                      <div className='min-w-0'>
-                        <p className='truncate text-sm font-medium'>{product.name}</p>
-                      </div>
-                      <span className='shrink-0 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300'>
-                        {product.stock} left
+              </header>
+              {inventoryAttention.length ? (
+                <ul className='intel-attention-list'>
+                  {inventoryAttention.map((product) => (
+                    <li key={product.id}>
+                      <span className='intel-attention-mark' aria-hidden='true'><PackageCheck /></span>
+                      <span className='intel-attention-product'>
+                        <strong>{product.name}</strong>
+                        <small>{formatCategoryName(product.category)}</small>
+                      </span>
+                      <span className='intel-attention-units'>{product.stock.toLocaleString()} <small>units</small></span>
+                      <span className={`intel-status ${product.inStock ? 'is-low' : 'is-out'}`}>
+                        {product.inStock ? 'Low stock' : product.stock > 0 ? 'Unavailable' : 'Out of stock'}
                       </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className='p-5 text-sm text-muted-foreground'>No published products need a stock check.</p>
+                <div className='intel-empty-state'>
+                  <span><Check aria-hidden /></span>
+                  <div>
+                    <strong>{inventoryAttentionCount ? 'All attention items shown' : 'No published stock alerts'}</strong>
+                    <p>{inventoryAttentionCount ? 'The highest-priority products are listed above.' : 'Draft quantities remain visible in the stock distribution.'}</p>
+                  </div>
+                </div>
               )}
             </section>
 
-            <div className='grid gap-4'>
-              <section className='rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5'>
-                <div className='flex items-center gap-2'>
-                  <PackageCheck aria-hidden className='size-4 text-primary' />
-                  <h2 className='font-semibold tracking-tight'>Catalog mix</h2>
+            <section className='intel-panel intel-feedback-panel' aria-labelledby='customer-feedback-title'>
+              <header className='intel-panel-heading'>
+                <div>
+                  <p className='intel-kicker'>07 <span>/</span> Customer voice</p>
+                  <h2 id='customer-feedback-title'>Recent feedback</h2>
+                  <p>
+                    {averageRating === null
+                      ? `${pendingReviews} awaiting review · no approved ratings yet`
+                      : `${averageRating.toFixed(1)} average from ${metrics.reviewsCount} approved reviews`}
+                  </p>
                 </div>
-                <p className='mt-1 text-xs text-muted-foreground'>Published products by category</p>
-                {categoryMix.length ? (
-                  <ul className='mt-5 space-y-4'>
-                    {categoryMix.map((category) => (
-                      <li key={category.name}>
-                        <div className='mb-1.5 flex items-center justify-between gap-3 text-sm'>
-                          <span className='capitalize'>{category.name}</span>
-                          <span className='tabular-nums text-muted-foreground'>{category.count}</span>
-                        </div>
-                        <div
-                          className='h-2 overflow-hidden rounded-full bg-muted'
-                          role='img'
-                          aria-label={`${category.name}: ${category.count} published products`}
-                        >
-                          <div
-                            className='h-full rounded-full bg-primary'
-                            style={{ width: `${(category.count / maxCategoryCount) * 100}%` }}
-                          />
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className='mt-4 text-sm text-muted-foreground'>Publish products to see the category mix.</p>
-                )}
-              </section>
+                <Link href='/dashboard/reviews' className='intel-inline-link'>
+                  Review inbox <ArrowUpRight aria-hidden className='size-4' />
+                </Link>
+              </header>
+              {recentFeedback.length ? (
+                <ul className='intel-feedback-list'>
+                  {recentFeedback.map((review) => (
+                    <li key={review.id}>
+                      <span className='intel-feedback-rating' aria-label={`${review.rating} out of 5 stars`}>
+                        <Star aria-hidden />
+                        {review.rating.toFixed(1)}
+                      </span>
+                      <div>
+                        <strong>{review.title}</strong>
+                        <p>{review.body}</p>
+                        <small>{review.author}{review.location ? ` · ${review.location}` : ''} · {formatActivityDate(review.createdAt)}</small>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className='intel-empty-state'>
+                  <span><Star aria-hidden /></span>
+                  <div>
+                    <strong>No approved feedback yet</strong>
+                    <p>{pendingReviews ? `${pendingReviews} submission${pendingReviews === 1 ? '' : 's'} await review.` : 'Approved customer reviews will appear here.'}</p>
+                  </div>
+                </div>
+              )}
+            </section>
 
-              <section className='rounded-xl border border-dashed border-border bg-muted/30 p-4 sm:p-5'>
-                <p className='text-sm font-medium'>Orders and revenue</p>
-                <p className='mt-1 text-sm leading-6 text-muted-foreground'>
-                  Not available yet: the storefront does not persist orders, so revenue and sales
-                  charts are intentionally not shown.
-                </p>
-              </section>
-            </div>
+            <section className='intel-panel intel-operations-panel' aria-labelledby='operations-activity-title'>
+              <header className='intel-panel-heading'>
+                <div>
+                  <p className='intel-kicker'>08 <span>/</span> Operations</p>
+                  <h2 id='operations-activity-title'>Recent product and review activity</h2>
+                  <p>Derived from product update and review submission records.</p>
+                </div>
+                <Clock3 aria-hidden className='intel-heading-icon' />
+              </header>
+              {recentActivity.length ? (
+                <ol className='intel-activity-list'>
+                  {recentActivity.map((item) => (
+                    <li key={item.id}>
+                      <span className={`intel-activity-mark ${item.kind}`} aria-hidden='true'>
+                        {item.kind === 'product' ? <PackageCheck /> : <Star />}
+                      </span>
+                      <span className='intel-activity-copy'>
+                        <strong>{item.title}</strong>
+                        <small>{item.detail}</small>
+                      </span>
+                      <time dateTime={item.date}>{formatActivityDate(item.date)}</time>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className='intel-empty-state'>
+                  <span><Clock3 aria-hidden /></span>
+                  <div>
+                    <strong>No recorded activity</strong>
+                    <p>Product and review events will appear here when available.</p>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className='intel-panel intel-commerce-panel' aria-labelledby='commerce-data-title'>
+              <p className='intel-kicker'>09 <span>/</span> Commerce data</p>
+              <div className='intel-commerce-title'>
+                <h2 id='commerce-data-title'>Sales and valuation</h2>
+                <span>Unavailable</span>
+              </div>
+              <p>
+                Order and payment records are not persisted, and products have no cost basis.
+                Revenue, sales trends and inventory valuation are omitted rather than estimated.
+              </p>
+              <span className='intel-commerce-rule' aria-hidden='true' />
+            </section>
           </div>
         </>
       )}
-    </main>
+    </div>
   );
 }

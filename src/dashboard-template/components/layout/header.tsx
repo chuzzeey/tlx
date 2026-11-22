@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 export default function Header() {
   return (
-    <header className='flex h-14 shrink-0 items-center gap-3 border-b px-3 md:px-4'>
+    <header className='dashboard-topbar flex h-14 shrink-0 items-center gap-3 border-b px-3 md:px-6'>
       <div className='flex min-w-0 flex-1 items-center'>
         <SidebarToggle />
         <Separator
@@ -24,7 +24,7 @@ export default function Header() {
           href='/dashboard/storefront-preview'
           title='Preview storefront'
           aria-label='Preview storefront'
-          className='inline-flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-9 sm:w-auto sm:gap-2 sm:px-3'
+          className='dashboard-preview-link inline-flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-9 sm:w-auto sm:gap-2 sm:px-3'
         >
           <Icons.laptop className='size-4' />
           <span className='hidden text-sm sm:inline'>Preview storefront</span>
