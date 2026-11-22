@@ -70,8 +70,8 @@ export default function AppSidebar() {
                 <span className='text-[10px] font-semibold tracking-[0.12em]'>TLX</span>
               </div>
               <div className='dashboard-sidebar-brand-copy grid flex-1 text-left text-sm leading-tight'>
-                <span className='truncate font-semibold'>TLX Originals</span>
-                <span className='text-sidebar-foreground truncate text-xs'>Store admin</span>
+                <span className='dashboard-sidebar-brand-name truncate font-semibold'>TLX Originals</span>
+                <span className='dashboard-sidebar-brand-admin truncate text-xs'>Store admin</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -270,8 +270,16 @@ function NavUser() {
               />
             }
           >
-            {user && <UserAvatarProfile className='size-8 rounded-lg' showInfo user={user} />}
-            <Icons.chevronsUpDown className='text-sidebar-foreground ml-auto size-4' />
+            {user && (
+              <UserAvatarProfile
+                className='size-8 rounded-lg'
+                showInfo={!railMenu}
+                user={user}
+              />
+            )}
+            {!railMenu && (
+              <Icons.chevronsUpDown className='text-sidebar-foreground ml-auto size-4' />
+            )}
           </DropdownMenuTrigger>
           {/* Desktop: opens to the right, bottom edge aligned with the content panel
               (alignOffset -8); 8px gap when expanded, 16px off the icon rail.

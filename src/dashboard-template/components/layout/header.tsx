@@ -24,10 +24,10 @@ export default function Header() {
           href='/dashboard/storefront-preview'
           title='Preview storefront'
           aria-label='Preview storefront'
-          className='dashboard-preview-link inline-flex size-8 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-9 sm:w-auto sm:gap-2 sm:px-3'
+          className='dashboard-preview-link inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:w-auto lg:gap-2 lg:px-3'
         >
-          <Icons.laptop className='size-4' />
-          <span className='hidden text-sm sm:inline'>Preview storefront</span>
+          <Icons.laptop className='size-4 shrink-0' />
+          <span className='hidden whitespace-nowrap text-sm lg:inline'>Preview storefront</span>
         </Link>
         <ThemeModeToggle />
       </div>
