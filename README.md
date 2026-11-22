@@ -120,7 +120,8 @@ manually run
 in the Supabase SQL Editor before saving a number. The page supports searchable international
 calling codes, starts with Nigeria, and updates WhatsApp and telephone links and displayed contact
 text across the storefront. The number is stored in E.164 format in `public.storefront_settings`;
-updates are restricted to the existing allowlisted admin API.
+updates are restricted to the existing allowlisted admin API. If the singleton settings row is
+missing, the storefront uses the Nigeria default and the next admin save recreates the row.
 
 Seed built-in products with `npm run seed:catalog` (also requires the URL and service-role key). The
 seed uploads main images to deterministic storage paths and inserts only missing products; it does

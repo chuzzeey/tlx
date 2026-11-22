@@ -3,6 +3,7 @@ import {
   DEFAULT_STOREFRONT_CONTACT,
   normalizeStorefrontContact,
   parseStorefrontContactPayload,
+  storefrontContactSettingsErrorMessage,
 } from "@/lib/storefront-contact";
 import { verifyStoreAdmin } from "@dashboard/lib/admin-auth";
 import {
@@ -13,21 +14,6 @@ import {
 } from "@dashboard/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
-
-function errorMessage(error: unknown) {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error.code === "PGRST204" ||
-      error.code === "PGRST205" ||
-      error.code === "42703" ||
-      error.code === "42P01")
-  ) {
-    return "WhatsApp contact settings are not installed. Apply the storefront WhatsApp number migration.";
-  }
-  return error instanceof Error ? error.message : "WhatsApp contact settings could not be loaded.";
-}
 
 export async function GET() {
   if (!isSupabaseCatalogConfigured) {
@@ -40,15 +26,21 @@ export async function GET() {
     .from("storefront_settings")
     .select("whatsapp_country, whatsapp_phone")
     .eq("id", 1)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    const message = errorMessage(error ?? new Error("Store contact settings were not found."));
+  if (error) {
+    const message = storefrontContactSettingsErrorMessage(error);
     console.error("Could not load storefront WhatsApp contact settings.", message);
     return NextResponse.json(
       { error: message },
       { status: 503, headers: { "Cache-Control": "no-store" } },
     );
+  }
+  if (!data) {
+    console.warn("Storefront WhatsApp contact row is missing; returning the configured default.");
+    return NextResponse.json(DEFAULT_STOREFRONT_CONTACT, {
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 
   try {
@@ -58,7 +50,7 @@ export async function GET() {
     });
     return NextResponse.json(settings, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    const message = errorMessage(error);
+    const message = storefrontContactSettingsErrorMessage(error);
     console.error("Storefront WhatsApp contact settings are invalid.", message);
     return NextResponse.json(
       { error: message },
@@ -113,16 +105,16 @@ export async function PATCH(request: Request) {
 
   const { data, error } = await createAdminSupabaseClient()
     .from("storefront_settings")
-    .update({
+    .upsert({
+      id: 1,
       whatsapp_country: settings.countryCode,
       whatsapp_phone: settings.phoneNumber,
-    })
-    .eq("id", 1)
+    }, { onConflict: "id" })
     .select("whatsapp_country, whatsapp_phone")
     .single();
 
   if (error || !data) {
-    const message = errorMessage(error ?? new Error("Store contact settings were not found."));
+    const message = storefrontContactSettingsErrorMessage(error ?? new Error("Store contact settings were not found."));
     console.error("Could not save storefront WhatsApp contact settings.", message);
     return NextResponse.json({ error: message }, { status: 503 });
   }
@@ -134,7 +126,7 @@ export async function PATCH(request: Request) {
     });
     return NextResponse.json(savedSettings, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    const message = errorMessage(error);
+    const message = storefrontContactSettingsErrorMessage(error);
     console.error("Saved storefront WhatsApp contact settings are invalid.", message);
     return NextResponse.json({ error: message }, { status: 503 });
   }

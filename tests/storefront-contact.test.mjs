@@ -9,6 +9,7 @@ import {
   getWhatsAppHref,
   normalizeStorefrontContact,
   parseStorefrontContactPayload,
+  storefrontContactSettingsErrorMessage,
 } from "../src/lib/storefront-contact.ts";
 
 test("provides searchable dialing information for a broad set of countries with Nigeria first", () => {
@@ -46,5 +47,20 @@ test("validates public contact settings before use", () => {
   assert.throws(
     () => parseStorefrontContactPayload({ countryCode: "NG", phoneNumber: "bad" }),
     /valid phone number/i,
+  );
+});
+
+test("preserves Supabase contact errors and explains missing settings", () => {
+  assert.equal(
+    storefrontContactSettingsErrorMessage({ code: "XX001", message: "Database unavailable." }),
+    "Database unavailable.",
+  );
+  assert.match(
+    storefrontContactSettingsErrorMessage({ code: "PGRST116", message: "No rows returned." }),
+    /row is missing/i,
+  );
+  assert.match(
+    storefrontContactSettingsErrorMessage({ code: "PGRST205", message: "Table missing." }),
+    /apply the storefront WhatsApp number migration/i,
   );
 });

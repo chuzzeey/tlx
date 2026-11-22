@@ -34,6 +34,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+export function storefrontContactSettingsErrorMessage(error: unknown) {
+  const code = isRecord(error) && typeof error.code === "string" ? error.code : null;
+  const message = isRecord(error) && typeof error.message === "string" ? error.message : null;
+
+  if (code === "PGRST204" || code === "PGRST205" || code === "42703" || code === "42P01") {
+    return "WhatsApp contact settings are not installed. Apply the storefront WhatsApp number migration.";
+  }
+  if (code === "PGRST116") {
+    return "The WhatsApp contact settings row is missing. The storefront default is being used; saving the number will recreate it.";
+  }
+  return message ?? "WhatsApp contact settings could not be loaded.";
+}
+
 export function isPhoneCountryCode(value: unknown): value is CountryCode {
   return typeof value === "string" && supportedCountryCodes.has(value);
 }
