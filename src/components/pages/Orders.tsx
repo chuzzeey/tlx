@@ -6,11 +6,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, CreditCard, Package, Star, Truck } from "lucide-react";
 import { toast } from "sonner";
-import { formatPrice, type Product } from "@/data/catalog";
+import { type Product } from "@/data/catalog";
 import { orders, orderTotal, type Order, type OrderItem } from "@/data/account";
 import { readCustomerReviews, saveCustomerReview, type CustomerReview } from "@/data/customerReviews";
 import { useShop } from "@/store/ShopContext";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import {
   Sheet,
   SheetContent,
@@ -50,6 +51,7 @@ function OrderHeader() {
 export default function OrdersPage() {
   const router = useRouter();
   const { products } = useCatalog();
+  const { formatPrice } = useStorefrontCurrency();
   const { addToCart } = useShop();
   const [activeGroup, setActiveGroup] = useState<OrderGroup>("Waiting Payment");
   const [savedReviews, setSavedReviews] = useState<CustomerReview[]>([]);

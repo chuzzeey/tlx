@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getPublishedCatalog, getPublishedCategories, getPublishedProductAliases } from '@dashboard/lib/catalog-service';
-import { isSupabaseCatalogConfigured } from '@dashboard/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +11,7 @@ export async function GET() {
       getPublishedProductAliases()
     ]);
     return NextResponse.json(
-      { products, categories, aliases, source: isSupabaseCatalogConfigured ? 'supabase' : 'built-in' },
+      { products, categories, aliases, source: 'supabase' },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );
   } catch (error) {

@@ -20,7 +20,12 @@ function applyDocumentTheme(theme: Theme) {
   document.documentElement.style.colorScheme = theme;
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", isDark ? "#10100f" : "#ffffff");
+    ?.setAttribute(
+      "content",
+      window.location.pathname === "/auth/sign-in"
+        ? isDark ? "#14231f" : "#f3f1e9"
+        : isDark ? "#10100f" : "#ffffff"
+    );
 }
 
 function isTheme(value: unknown): value is Theme {

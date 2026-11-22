@@ -49,6 +49,17 @@ test('rejects invalid prices, availability, legacy fields, and unmatched gallery
   assert.equal(productInputSchema.safeParse({ ...validProduct, galleryAlt: [] }).success, false);
 });
 
+test('rejects reusing the same image in multiple product image slots', () => {
+  assert.equal(
+    productInputSchema.safeParse({
+      ...validProduct,
+      gallery: [validProduct.image],
+      galleryAlt: ['Another view']
+    }).success,
+    false
+  );
+});
+
 test('creates a normalized unique product slug when the editor creates a product', () => {
   assert.equal(makeUniqueProductSlug('Café Track Jacket', []), 'cafe-track-jacket');
   assert.equal(makeUniqueProductSlug('Café Track Jacket', ['cafe-track-jacket']), 'cafe-track-jacket-2');

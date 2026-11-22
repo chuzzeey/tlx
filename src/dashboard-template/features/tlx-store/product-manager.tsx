@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { AlertTriangle, Boxes, Check, ChevronDown, EyeOff, PackageCheck, PackagePlus, Upload, X } from 'lucide-react';
+import { AlertTriangle, Boxes, Check, ChevronDown, EyeOff, PackageCheck, PackagePlus, Trash2, Upload, X } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
@@ -620,6 +620,8 @@ export default function ProductManager({
   const [actionError, setActionError] = useState('');
   const [archiving, setArchiving] = useState<CatalogProduct | null>(null);
   const [archivePending, setArchivePending] = useState(false);
+  const [deletingProduct, setDeletingProduct] = useState<CatalogProduct | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
 
   const filtered = useMemo(() => products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(search.trim().toLowerCase());
@@ -650,7 +652,7 @@ export default function ProductManager({
     setActionError('');
     setArchivePending(true);
     try {
-      const response = await fetch(`/api/admin/products/${encodeURIComponent(product.id)}`, { method: 'DELETE' });
+      const response = await fetch(`/api/admin/products/${encodeURIComponent(product.id)}`, { method: 'PATCH' });
       const result = (await response.json()) as { error?: string };
       if (!response.ok) {
         setActionError(result.error ?? 'Product could not be unpublished.');
@@ -662,6 +664,54 @@ export default function ProductManager({
     } finally {
       setArchivePending(false);
       setArchiving(null);
+    }
+  }
+
+  async function deleteProduct(product: CatalogProduct) {
+    setActionError('');
+    setDeletePending(true);
+
+    try {
+      const response = await fetch(`/api/admin/products/${encodeURIComponent(product.id)}`, { method: 'DELETE' });
+      const result = (await response.json()) as { deleted?: boolean; imageUrls?: string[]; error?: string };
+      if (!response.ok || !result.deleted || !Array.isArray(result.imageUrls)) {
+        throw new Error(result.error ?? 'Product could not be deleted.');
+      }
+
+      setProducts((current) => current.filter((item) => item.id !== product.id));
+      setDeletingProduct(null);
+
+      const cleanupErrors = await Promise.all(
+        [...new Set(result.imageUrls)].map(async (url) => {
+          try {
+            const cleanup = await fetch('/api/admin/product-images', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url })
+            });
+            if (cleanup.ok) return null;
+            const cleanupResult = (await cleanup.json()) as { error?: string };
+            return cleanupResult.error ?? 'A product image could not be removed from storage.';
+          } catch (cause) {
+            return cause instanceof Error ? cause.message : 'A product image could not be removed from storage.';
+          }
+        })
+      );
+      const cleanupError = cleanupErrors.find(Boolean);
+      if (cleanupError) {
+        const message = `Product was deleted from the database, but image cleanup was incomplete: ${cleanupError}`;
+        setActionError(message);
+        toast.error('Database record deleted; image cleanup needs attention.', { description: cleanupError });
+        return;
+      }
+
+      toast.success(`${product.name} and its reviews were permanently deleted.`);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Product could not be deleted.';
+      setActionError(message);
+      toast.error('Product could not be deleted.', { description: message });
+    } finally {
+      setDeletePending(false);
     }
   }
 
@@ -810,6 +860,16 @@ export default function ProductManager({
                         <EyeOff aria-hidden className='size-4' />
                       </button>
                     )}
+                    <button
+                      type='button'
+                      aria-label={`Delete ${product.name}`}
+                      title={`Delete ${product.name}`}
+                      disabled={deletePending}
+                      onClick={() => setDeletingProduct(product)}
+                      className='grid size-9 shrink-0 place-items-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
+                    >
+                      <Trash2 aria-hidden className='size-4' />
+                    </button>
                   </article>
                 ))}
               </div>
@@ -853,6 +913,10 @@ export default function ProductManager({
                             <div className='flex items-center gap-2'>
                               <button type='button' onClick={() => setEditing(product)} className='rounded-md border px-2.5 py-1.5 text-xs hover:bg-muted'>Edit</button>
                               {product.isPublished && <button type='button' onClick={() => setArchiving(product)} className='rounded-md border border-destructive/30 px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/5'>Unpublish</button>}
+                              <button type='button' aria-label={`Delete ${product.name}`} disabled={deletePending} onClick={() => setDeletingProduct(product)} className='inline-flex items-center gap-1.5 rounded-md border border-destructive/30 px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/5 disabled:opacity-50'>
+                                <Trash2 aria-hidden className='size-3.5' />
+                                Delete
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -916,6 +980,36 @@ export default function ProductManager({
                 className='dashboard-unpublish-action'
               >
                 {archivePending ? 'Unpublishing…' : 'Unpublish product'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
+      <AlertDialog
+        open={Boolean(deletingProduct)}
+        onOpenChange={(open) => {
+          if (!open && !deletePending) setDeletingProduct(null);
+        }}
+      >
+        {deletingProduct && (
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete {deletingProduct.name} permanently?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This irreversible action permanently deletes the product, its reviews, and its product URL redirects. Unused product images will also be removed from storage.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deletePending}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deletePending}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void deleteProduct(deletingProduct);
+                }}
+                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              >
+                {deletePending ? 'Deleting…' : 'Delete product'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

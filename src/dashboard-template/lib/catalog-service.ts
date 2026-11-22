@@ -1,9 +1,8 @@
 import 'server-only';
 
-import { categories as builtInCategories, type AdminCategory, type Category, type Product } from '@/data/catalog';
-import { isProductInStock } from '@/lib/product-availability';
+import { type AdminCategory, type Category, type Product } from '@/data/catalog';
 import { catalogVariantDefaults } from '@/lib/product-variants';
-import { productImageUrl, productMainImagePath } from '@/lib/product-image-storage';
+import { productCatalogImageUrl } from '@/lib/product-image-storage';
 import {
   createAdminSupabaseClient,
   createPublicSupabaseClient,
@@ -100,7 +99,7 @@ function mapCatalogRow(row: CatalogRow): CatalogProduct {
     ...(row.compare_at == null ? {} : { compareAt: Number(row.compare_at) }),
     rating: Number(row.rating ?? 0),
     reviewCount: Number(row.review_count ?? 0),
-    image: row.image?.trim() || productImageUrl(projectUrl, row.main_image_path || productMainImagePath(row.id)),
+    image: productCatalogImageUrl(projectUrl, row.id, row.main_image_path, row.image),
     gallery: row.gallery ?? [],
     galleryAlt: row.gallery_alt ?? [],
     description: row.description,
@@ -120,17 +119,14 @@ function mapCatalogRow(row: CatalogRow): CatalogProduct {
   };
 }
 
-export async function getPublishedCatalog(): Promise<CatalogProduct[]> {
+function requireSupabaseCatalog() {
   if (!isSupabaseCatalogConfigured) {
-    const { products } = await import('@/data/catalog');
-    return products.map((product) => ({
-      ...product,
-      galleryAlt: product.gallery?.map(() => product.name) ?? [],
-      sizes: [],
-      inStock: isProductInStock(product),
-      isPublished: true
-    }));
+    throw new Error('Supabase must be configured to load the storefront catalog.');
   }
+}
+
+export async function getPublishedCatalog(): Promise<CatalogProduct[]> {
+  requireSupabaseCatalog();
 
   const { data, error } = await createPublicSupabaseClient()
     .from('store_products')
@@ -145,9 +141,7 @@ export async function getPublishedCatalog(): Promise<CatalogProduct[]> {
 }
 
 export async function getPublishedCategories(): Promise<Category[]> {
-  if (!isSupabaseCatalogConfigured) {
-    return builtInCategories.map((category) => ({ ...category }));
-  }
+  requireSupabaseCatalog();
 
   const { data, error } = await createPublicSupabaseClient()
     .from('product_categories')
@@ -207,7 +201,7 @@ export async function getAdminCategories(): Promise<AdminCategory[]> {
 }
 
 export async function getPublishedProductAliases(): Promise<Record<string, string>> {
-  if (!isSupabaseCatalogConfigured) return {};
+  requireSupabaseCatalog();
 
   const { data, error } = await createPublicSupabaseClient()
     .from('product_slug_redirects')
@@ -221,10 +215,7 @@ export async function getPublishedProductAliases(): Promise<Record<string, strin
 }
 
 export async function getPublishedProduct(id: string): Promise<CatalogProduct | undefined> {
-  if (!isSupabaseCatalogConfigured) {
-    const products = await getPublishedCatalog();
-    return products.find((product) => product.id === id);
-  }
+  requireSupabaseCatalog();
 
   const client = createPublicSupabaseClient();
   const { data: product, error: productError } = await client

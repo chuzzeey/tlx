@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Eye, EyeOff, Pencil, Tags, Upload } from 'lucide-react';
+import { Eye, EyeOff, Pencil, Tags, Trash2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { AdminCategory } from '@/data/catalog';
@@ -15,6 +15,16 @@ import {
   DialogHeader,
   DialogTitle
 } from '@dashboard/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@dashboard/components/ui/alert-dialog';
 
 const inputClass =
   'min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -227,6 +237,8 @@ export default function CategoryManager({
   const [editing, setEditing] = useState<AdminCategory | null>(null);
   const [visibilitySavingSlug, setVisibilitySavingSlug] = useState<string | null>(null);
   const [visibilityError, setVisibilityError] = useState('');
+  const [deletingCategory, setDeletingCategory] = useState<AdminCategory | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
 
   function onSaved(slug: string, values: CategoryInput, warning?: string) {
     setCategories((current) => current.map((category) =>
@@ -266,6 +278,71 @@ export default function CategoryManager({
       setVisibilityError(cause instanceof Error ? cause.message : 'Category visibility could not be updated.');
     } finally {
       setVisibilitySavingSlug(null);
+    }
+  }
+
+  async function deleteCategory(category: AdminCategory) {
+    setDeletePending(true);
+    setVisibilityError('');
+
+    try {
+      const response = await fetch(`/api/admin/categories/${encodeURIComponent(category.slug)}`, {
+        method: 'DELETE'
+      });
+      const result = (await response.json()) as {
+        deleted?: boolean;
+        imageUrls?: string[];
+        productCount?: number;
+        warning?: string;
+        error?: string;
+      };
+      if (!response.ok || !result.deleted || !Array.isArray(result.imageUrls)) {
+        throw new Error(result.error ?? 'Category could not be deleted.');
+      }
+
+      setCategories((current) => current.filter((item) => item.slug !== category.slug));
+      setDeletingCategory(null);
+
+      const cleanupErrors = await Promise.all(
+        [...new Set(result.imageUrls)].map(async (url) => {
+          try {
+            const cleanup = await fetch('/api/admin/product-images', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url })
+            });
+            if (cleanup.ok) return null;
+            const cleanupResult = (await cleanup.json()) as { error?: string };
+            return cleanupResult.error ?? 'An image could not be removed from storage.';
+          } catch (cause) {
+            return cause instanceof Error ? cause.message : 'An image could not be removed from storage.';
+          }
+        })
+      );
+      const cleanupError = cleanupErrors.find(Boolean);
+      if (cleanupError) {
+        const message = `Category and products were deleted from the database, but image cleanup was incomplete: ${cleanupError}`;
+        setVisibilityError(message);
+        toast.error('Database records deleted; image cleanup needs attention.', { description: cleanupError });
+        return;
+      }
+
+      if (result.warning) {
+        setVisibilityError(result.warning);
+        toast.warning('Category deleted, but the storefront may take a moment to refresh.', {
+          description: result.warning
+        });
+      } else {
+        toast.success(
+          `Deleted ${category.name} and ${result.productCount ?? 0} ${result.productCount === 1 ? 'product' : 'products'}.`
+        );
+      }
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : 'Category could not be deleted.';
+      setVisibilityError(message);
+      toast.error('Category could not be deleted.', { description: message });
+    } finally {
+      setDeletePending(false);
     }
   }
 
@@ -331,6 +408,16 @@ export default function CategoryManager({
                     <Pencil aria-hidden className='size-3.5' />
                     Edit
                   </button>
+                  <button
+                    type='button'
+                    aria-label={`Delete ${category.name}`}
+                    disabled={deletePending || visibilitySavingSlug !== null}
+                    onClick={() => setDeletingCategory(category)}
+                    className='inline-flex min-h-9 items-center gap-2 rounded-md border border-destructive/30 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5 disabled:cursor-not-allowed disabled:opacity-50'
+                  >
+                    <Trash2 aria-hidden className='size-3.5' />
+                    Delete
+                  </button>
                 </div>
               </div>
             </article>
@@ -349,6 +436,36 @@ export default function CategoryManager({
           onSaved={(values, warning) => onSaved(editing.slug, values, warning)}
         />
       )}
+      <AlertDialog
+        open={Boolean(deletingCategory)}
+        onOpenChange={(open) => {
+          if (!open && !deletePending) setDeletingCategory(null);
+        }}
+      >
+        {deletingCategory && (
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete {deletingCategory.name} permanently?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This irreversible action permanently deletes the category, every product assigned to it, and those products’ reviews and URL redirects. Uploaded images will be removed from storage only if no remaining record uses them.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deletePending}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={deletePending}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void deleteCategory(deletingCategory);
+                }}
+                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              >
+                {deletePending ? 'Deleting…' : 'Delete category and products'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </main>
   );
 }

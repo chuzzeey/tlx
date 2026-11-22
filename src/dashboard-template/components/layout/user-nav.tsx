@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger
 } from '@dashboard/components/ui/dropdown-menu';
 import { UserAvatarProfile } from '@dashboard/components/user-avatar-profile';
-import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
+import AdminSignOut from '@dashboard/features/auth/components/admin-sign-out';
 import { useSupabaseAuthUser } from '@dashboard/lib/supabase-auth-user';
 import { useRouter } from 'next/navigation';
 export function UserNav() {
@@ -46,18 +46,11 @@ export function UserNav() {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem
-              onClick={async () => {
-                const { error } = await createSupabaseAuthBrowserClient().auth.signOut();
-                if (error) {
-                  console.error('Supabase sign-out failed.', error.message);
-                  return;
-                }
-                window.location.assign('/auth/sign-in');
-              }}
-            >
-              Sign out
-            </DropdownMenuItem>
+            <AdminSignOut
+              renderTrigger={(onClick) => (
+                <DropdownMenuItem onClick={onClick}>Sign out</DropdownMenuItem>
+              )}
+            />
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

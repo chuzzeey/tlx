@@ -2,28 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { verifyStoreAdmin } from '@dashboard/lib/admin-auth';
 import { getAdminCatalog } from '@dashboard/lib/catalog-service';
+import { findProductImageConflict } from '@dashboard/lib/product-image-ownership';
 import { persistProductMainImage, rollbackProductMainImage } from '@dashboard/lib/product-main-image';
 import { createAdminSupabaseClient, isSupabaseAdminConfigured } from '@dashboard/lib/supabase-server';
 import { productInputSchema, type ProductInput } from '@dashboard/features/tlx-store/product-schema';
-import { isLocalProductImagePath, productStoragePathFromUrl } from '@/lib/product-image-storage';
-
-function isAllowedProductImage(value: string) {
-  if (value.startsWith('/images/')) return true;
-
-  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!projectUrl) return false;
-  try {
-    const imageUrl = new URL(value);
-    const configuredHost = new URL(projectUrl).hostname;
-    return (
-      imageUrl.protocol === 'https:' &&
-      imageUrl.hostname === configuredHost &&
-      imageUrl.pathname.includes('/storage/v1/object/public/tlx-products/')
-    );
-  } catch {
-    return false;
-  }
-}
+import { productStoragePathFromUrl } from '@/lib/product-image-storage';
 
 function databaseProduct(
   input: ProductInput,
@@ -109,13 +92,45 @@ export async function POST(request: NextRequest) {
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (
     !projectUrl ||
-    (!productStoragePathFromUrl(product.image, projectUrl) && !isLocalProductImagePath(product.image)) ||
-    !product.gallery.every(isAllowedProductImage)
+    !productStoragePathFromUrl(product.image, projectUrl) ||
+    !product.gallery.every((image) => productStoragePathFromUrl(image, projectUrl))
   ) {
-    return NextResponse.json({ error: 'Use storefront images or upload images to the TLX product bucket.' }, { status: 400 });
+    return NextResponse.json({ error: 'Upload every product image to the TLX product bucket.' }, { status: 400 });
   }
 
   const client = createAdminSupabaseClient();
+  const { data: redirect, error: redirectError } = await client
+    .from('product_slug_redirects')
+    .select('old_slug')
+    .eq('old_slug', product.id)
+    .maybeSingle();
+  if (redirectError) {
+    return NextResponse.json({ error: `Could not validate the product URL: ${redirectError.message}` }, { status: 500 });
+  }
+  if (redirect) {
+    return NextResponse.json(
+      { error: 'That product URL is reserved by an earlier product URL. Choose a different product name.' },
+      { status: 409 }
+    );
+  }
+
+  let imageConflict: string | null;
+  try {
+    imageConflict = await findProductImageConflict(
+      client,
+      projectUrl,
+      null,
+      product.image,
+      product.gallery
+    );
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Product image ownership could not be verified.';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+  if (imageConflict) {
+    return NextResponse.json({ error: imageConflict }, { status: 409 });
+  }
+
   let mainImage: Awaited<ReturnType<typeof persistProductMainImage>>;
   try {
     mainImage = await persistProductMainImage(client, projectUrl, product.id, product.image);
@@ -145,7 +160,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       error: rollbackError
         ? `${error.message} The previous product image could not be restored: ${rollbackError}`
-        : error.message
+        : error.code === '23505'
+          ? 'A product already uses that URL. Choose a different product name.'
+          : error.message
     }, { status });
   }
   if (!data) {

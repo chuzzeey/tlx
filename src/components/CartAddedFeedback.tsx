@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { formatPrice, type Product } from "@/data/catalog";
+import { type Product } from "@/data/catalog";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 
 export interface CartAddedFeedbackItem {
   id: number;
@@ -38,6 +39,7 @@ function getFunnelPaths(target: CartTarget): [string, string] {
 }
 
 function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
+  const { formatPrice } = useStorefrontCurrency();
   const [phase, setPhase] = useState<"arrival" | "flight">("arrival");
   const [target, setTarget] = useState<CartTarget | null>(null);
 

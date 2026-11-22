@@ -3,9 +3,19 @@ import { revalidatePath } from 'next/cache';
 import { verifyStoreAdmin } from '@dashboard/lib/admin-auth';
 import { isSupabaseAdminConfigured, createAdminSupabaseClient } from '@dashboard/lib/supabase-server';
 import { categoryInputSchema } from '@dashboard/features/tlx-store/category-schema';
-import { isStorefrontImage } from '@/lib/product-image-storage';
+import {
+  productImageUrl,
+  productMainImagePath,
+  productStoragePathFromUrl,
+  isStorefrontImage
+} from '@/lib/product-image-storage';
 
 type RouteParams = { params: Promise<{ slug: string }> };
+type DeletedProduct = {
+  id: string;
+  main_image_path: string | null;
+  gallery: string[] | null;
+};
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   const access = await verifyStoreAdmin();
@@ -82,5 +92,96 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   return NextResponse.json({
     category: { slug: data.slug, ...parsed.data },
     ...(realtimeWarning ? { warning: realtimeWarning } : {})
+  });
+}
+
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+  const access = await verifyStoreAdmin();
+  if (!access.authorized) {
+    return NextResponse.json({ error: 'Admin access required.' }, { status: access.status });
+  }
+  if (!isSupabaseAdminConfigured) {
+    return NextResponse.json({ error: 'Supabase admin access is not configured.' }, { status: 503 });
+  }
+
+  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!projectUrl) {
+    return NextResponse.json({ error: 'Supabase project URL is not configured.' }, { status: 503 });
+  }
+
+  const { slug } = await params;
+  const client = createAdminSupabaseClient();
+  const { data, error } = await client.rpc('delete_product_category', { target_slug: slug });
+  if (error) {
+    return NextResponse.json({ error: `Category could not be deleted: ${error.message}` }, { status: 500 });
+  }
+  if (data === null) {
+    return NextResponse.json({ error: 'Category not found.' }, { status: 404 });
+  }
+  if (typeof data !== 'object' || !('category_image' in data) || !('products' in data)) {
+    return NextResponse.json({ error: 'Category deletion returned an invalid result.' }, { status: 500 });
+  }
+
+  const result = data as { category_image: unknown; products: unknown };
+  if (typeof result.category_image !== 'string' || !Array.isArray(result.products)) {
+    return NextResponse.json({ error: 'Category deletion returned an invalid result.' }, { status: 500 });
+  }
+
+  const products = result.products.filter((product): product is DeletedProduct => (
+    typeof product === 'object' &&
+    product !== null &&
+    'id' in product &&
+    typeof product.id === 'string' &&
+    'main_image_path' in product &&
+    (typeof product.main_image_path === 'string' || product.main_image_path === null) &&
+    'gallery' in product &&
+    (product.gallery === null || (
+      Array.isArray(product.gallery) &&
+      product.gallery.every((image: unknown) => typeof image === 'string')
+    ))
+  ));
+  if (products.length !== result.products.length) {
+    return NextResponse.json({ error: 'Category deletion returned invalid product image data.' }, { status: 500 });
+  }
+
+  const imageUrls = [...new Set([
+    result.category_image,
+    ...products.flatMap((product) => [
+      productImageUrl(
+        projectUrl,
+        product.main_image_path || productMainImagePath(product.id)
+      ),
+      ...(product.gallery ?? [])
+    ])
+  ])].filter((url) => productStoragePathFromUrl(url, projectUrl));
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/categories');
+  revalidatePath(`/categories/${slug}`);
+  revalidatePath('/products');
+  revalidatePath('/sitemap.xml');
+  revalidatePath('/api/store/products');
+  revalidatePath('/dashboard/categories');
+  revalidatePath('/dashboard/product');
+  revalidatePath('/dashboard/overview');
+
+  let warning: string | undefined;
+  try {
+    const broadcast = await client
+      .channel('storefront-products')
+      .httpSend('category-updated', { slug, deleted: true });
+    if (!broadcast.success) {
+      warning = `Category deleted, but the live storefront update could not be sent: ${broadcast.error}`;
+    }
+  } catch (cause) {
+    const detail = cause instanceof Error ? cause.message : 'Realtime broadcast failed.';
+    warning = `Category deleted, but the live storefront update could not be sent. ${detail}`;
+  }
+
+  return NextResponse.json({
+    deleted: true,
+    productCount: products.length,
+    imageUrls,
+    ...(warning ? { warning } : {})
   });
 }

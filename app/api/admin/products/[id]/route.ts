@@ -1,30 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { verifyStoreAdmin } from '@dashboard/lib/admin-auth';
+import { findProductImageConflict } from '@dashboard/lib/product-image-ownership';
 import { persistProductMainImage, rollbackProductMainImage } from '@dashboard/lib/product-main-image';
 import { createAdminSupabaseClient, isSupabaseAdminConfigured } from '@dashboard/lib/supabase-server';
 import { productInputSchema } from '@dashboard/features/tlx-store/product-schema';
-import { isLocalProductImagePath, productStoragePathFromUrl } from '@/lib/product-image-storage';
+import {
+  productImageUrl,
+  productMainImagePath,
+  productStoragePathFromUrl
+} from '@/lib/product-image-storage';
 
 type RouteParams = { params: Promise<{ id: string }> };
-
-function isAllowedProductImage(value: string) {
-  if (value.startsWith('/images/')) return true;
-
-  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!projectUrl) return false;
-  try {
-    const imageUrl = new URL(value);
-    const configuredHost = new URL(projectUrl).hostname;
-    return (
-      imageUrl.protocol === 'https:' &&
-      imageUrl.hostname === configuredHost &&
-      imageUrl.pathname.includes('/storage/v1/object/public/tlx-products/')
-    );
-  } catch {
-    return false;
-  }
-}
 
 function isLegacyImageColumnMissing(error: { code?: string; message: string } | null) {
   return error?.code === 'PGRST204' && /\bimage(?:_alt)?\b/.test(error.message);
@@ -51,16 +38,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Product details are invalid.', details: parsed.error.flatten() }, { status: 400 });
   }
   const product = parsed.data;
+  const { id: oldId } = await params;
+  if (product.id !== oldId) {
+    return NextResponse.json({ error: 'A product URL cannot be changed after creation.' }, { status: 400 });
+  }
+
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (
     !projectUrl ||
-    (!productStoragePathFromUrl(product.image, projectUrl) && !isLocalProductImagePath(product.image)) ||
-    !product.gallery.every(isAllowedProductImage)
+    !productStoragePathFromUrl(product.image, projectUrl) ||
+    !product.gallery.every((image) => productStoragePathFromUrl(image, projectUrl))
   ) {
-    return NextResponse.json({ error: 'Use storefront images or upload images to the TLX product bucket.' }, { status: 400 });
+    return NextResponse.json({ error: 'Upload every product image to the TLX product bucket.' }, { status: 400 });
   }
 
-  const { id: oldId } = await params;
   const client = createAdminSupabaseClient();
   const { data: existingProduct, error: lookupError } = await client
     .from('products')
@@ -73,6 +64,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
   if (!existingProduct) {
     return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
+  }
+
+  let imageConflict: string | null;
+  try {
+    imageConflict = await findProductImageConflict(
+      client,
+      projectUrl,
+      oldId,
+      product.image,
+      product.gallery
+    );
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Product image ownership could not be verified.';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+  if (imageConflict) {
+    return NextResponse.json({ error: imageConflict }, { status: 409 });
   }
 
   let mainImage: Awaited<ReturnType<typeof persistProductMainImage>>;
@@ -155,7 +163,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   });
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function PATCH(_request: NextRequest, { params }: RouteParams) {
   const access = await verifyStoreAdmin();
   if (!access.authorized) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: access.status });
@@ -186,5 +194,62 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   revalidatePath('/sitemap.xml');
   revalidatePath('/dashboard/product');
   revalidatePath('/dashboard/overview');
-  return NextResponse.json({ id, archived: true });
+  return NextResponse.json({ id: data.id, isPublished: false });
+}
+
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+  const access = await verifyStoreAdmin();
+  if (!access.authorized) {
+    return NextResponse.json({ error: 'Admin access required.' }, { status: access.status });
+  }
+  if (!isSupabaseAdminConfigured) {
+    return NextResponse.json({ error: 'Supabase admin access is not configured.' }, { status: 503 });
+  }
+
+  const { id } = await params;
+  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!projectUrl) {
+    return NextResponse.json({ error: 'Supabase project URL is not configured.' }, { status: 503 });
+  }
+
+  const client = createAdminSupabaseClient();
+  const { data: product, error: lookupError } = await client
+    .from('products')
+    .select('id,main_image_path,gallery')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (lookupError) {
+    return NextResponse.json({ error: lookupError.message }, { status: 500 });
+  }
+  if (!product) {
+    return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
+  }
+
+  const { data, error } = await client
+    .from('products')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  if (!data) {
+    return NextResponse.json({ error: 'Product not found.' }, { status: 404 });
+  }
+
+  const imageUrls = [...new Set([
+    productImageUrl(projectUrl, product.main_image_path || productMainImagePath(product.id)),
+    ...(product.gallery ?? [])
+  ])].filter((url) => productStoragePathFromUrl(url, projectUrl));
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/products');
+  revalidatePath('/categories');
+  revalidatePath(`/products/${id}`);
+  revalidatePath('/sitemap.xml');
+  revalidatePath('/dashboard/product');
+  revalidatePath('/dashboard/overview');
+  return NextResponse.json({ id, deleted: true, imageUrls });
 }

@@ -54,6 +54,9 @@ export const productInputSchema = z.object({
 }).refine((product) => product.gallery.length === product.galleryAlt.length, {
   path: ['galleryAlt'],
   message: 'Add one alt description for each gallery image.'
+}).refine((product) => new Set([product.image, ...product.gallery]).size === product.gallery.length + 1, {
+  path: ['gallery'],
+  message: 'Use a different image for each product image slot.'
 });
 
 export type ProductInput = z.infer<typeof productInputSchema>;

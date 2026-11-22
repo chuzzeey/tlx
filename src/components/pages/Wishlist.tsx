@@ -3,16 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, ShoppingBag, X } from "lucide-react";
-import { formatPrice } from "@/data/catalog";
 import { isProductInStock } from "@/lib/product-availability";
 import { EmptyState, PageHeader, PageSkeleton } from "@/components/ProductCard";
 import { Footnote } from "@/components/Ornaments";
 import { useShop } from "@/store/ShopContext";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { toast } from "sonner";
 
 export default function Wishlist() {
   const { products } = useCatalog();
+  const { formatPrice } = useStorefrontCurrency();
   const { wishlist, toggleWishlist, addToCart, hydrated } = useShop();
 
   if (!hydrated) return <PageSkeleton />;

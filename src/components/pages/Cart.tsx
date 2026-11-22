@@ -6,7 +6,6 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Handbag, Minus, Plus } from "lucide-react";
 import {
-  formatPrice,
   FREE_SHIPPING_THRESHOLD_NGN,
   STANDARD_SHIPPING_FEE_NGN,
 } from "@/data/catalog";
@@ -25,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useShop, type CartLine } from "@/store/ShopContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 
 function QuantitySelector({
   name,
@@ -123,6 +123,7 @@ function EmptyCart({ count }: { count: number }) {
 export default function Cart() {
   const { products } = useCatalog();
   const { cart, cartCount, setQty, removeFromCart, clearCart, subtotal, hydrated } = useShop();
+  const { formatPrice } = useStorefrontCurrency();
   const [openLineId, setOpenLineId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const touchStartX = useRef<number | null>(null);

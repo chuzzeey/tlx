@@ -24,12 +24,13 @@ import {
   User,
 } from "lucide-react";
 import { accountProfile, addresses, orders, orderTotal } from "@/data/account";
-import { formatPrice, type Product } from "@/data/catalog";
+import { type Product } from "@/data/catalog";
 import { PageHeader } from "@/components/ProductCard";
 import { Footnote } from "@/components/Ornaments";
 import { useTheme } from "@/store/ThemeContext";
 import { useShop } from "@/store/ShopContext";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ const statusStyle: Record<string, string> = {
 };
 
 function Orders({ products }: { products: Product[] }) {
+  const { formatPrice } = useStorefrontCurrency();
   const [open, setOpen] = useState<string | null>(null);
   return (
     <div className="divide-y divide-border border-y border-border">
@@ -231,6 +233,7 @@ function MobileAccountProfile({
 }
 
 export default function Account() {
+  const { formatPrice } = useStorefrontCurrency();
   const { products } = useCatalog();
   const router = useRouter();
   const { theme, toggle } = useTheme();

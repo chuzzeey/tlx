@@ -119,6 +119,14 @@ export default function Footer() {
           <p className="font-mono2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             © 2026 TLX Originals. All rights reserved.
           </p>
+          <a
+            href="https://www.exchangerate-api.com"
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono2 text-[10px] text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+          >
+            Rates by Exchange Rate API
+          </a>
         </div>
       </div>
       <div className="overflow-hidden border-t border-border py-4" aria-hidden>

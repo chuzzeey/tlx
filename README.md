@@ -29,7 +29,7 @@ A small ecommerce storefront for considered apparel and handcrafted home goods. 
 - **Framer Motion 13** for page transitions and scroll reveals
 - **next/image** for AVIF/WebP responsive images, **next/font** for Fraunces brand lettering, with system fonts throughout the interface
 - **Radix UI / shadcn-style** primitives, **sonner** toasts, **cmdk** command palette, **lucide-react** icons
-- The storefront starts from a built-in catalog. When Supabase is configured, its published products and approved reviews become the live storefront source; bag, wishlist, and recently-viewed data remain browser-local.
+- The storefront loads published products and approved reviews from Supabase; bag, wishlist, and recently-viewed data remain browser-local.
 
 ## Getting started
 
@@ -85,6 +85,33 @@ It seeds the existing categories and adds category editing and visibility contro
 `/dashboard/categories`. Hiding a category removes its products from public listings, detail pages,
 and the sitemap without changing the products' individual publication status. Category visibility
 changes are sent to connected storefronts through Supabase Realtime.
+
+For permanent category deletion, manually apply
+[`supabase/migrations/20261128000000_tlx_admin_category_delete.sql`](./supabase/migrations/20261128000000_tlx_admin_category_delete.sql)
+in the Supabase SQL Editor. Deleting a category then atomically deletes its products and their
+dependent reviews and product URL redirects. Product and category image objects are removed from
+Storage after the database records are deleted, unless another record still uses the image.
+
+The administrator profile at `/dashboard/profile` stores personal details and time-zone preferences
+in `public.admin_profiles` and profile photos in the private `tlx-admin-avatars` Supabase Storage bucket.
+Review and manually run
+[`supabase/migrations/20261126000000_tlx_admin_profiles.sql`](./supabase/migrations/20261126000000_tlx_admin_profiles.sql)
+in the Supabase SQL Editor before using profile editing or avatar uploads. It is not run by the
+application. Storage access is limited to the owning user and signed image URLs are time-limited.
+Avatar upload and cleanup also require the server-only `SUPABASE_SERVICE_ROLE_KEY`.
+
+The administrator can choose the store-wide display currency in `/dashboard/profile` → Preferences.
+Before using this setting, manually review and run
+[`supabase/migrations/20261127000000_tlx_storefront_currency.sql`](./supabase/migrations/20261127000000_tlx_storefront_currency.sql)
+in the Supabase SQL Editor. The application does not execute this migration. It creates a singleton
+`public.storefront_settings` row, permits public reads of the selected currency, and keeps writes
+behind the existing allowlisted admin API. No new environment variables are required; the existing
+Supabase URL, publishable key, `ADMIN_EMAILS`, and server-only service-role key are used.
+
+Product, shipping, cart, and order values remain stored and calculated in NGN; the selected currency
+only changes storefront display. Conversion uses ExchangeRate-API's open endpoint, which updates
+daily; rates are informational display estimates, not real-time payment or transaction quotes.
+The storefront footer and currency preference include the provider attribution required by its terms.
 
 Seed built-in products with `npm run seed:catalog` (also requires the URL and service-role key). The
 seed uploads main images to deterministic storage paths and inserts only missing products; it does

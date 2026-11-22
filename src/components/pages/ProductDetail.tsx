@@ -7,12 +7,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check, Handbag, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  formatPrice,
   FREE_SHIPPING_THRESHOLD_NGN,
-  reviewsFor,
   type Product,
 } from "@/data/catalog";
-import { readCustomerReviews, type CustomerReview } from "@/data/customerReviews";
+import type { CustomerReview } from "@/data/customerReviews";
 import ProductCard, { Stars } from "@/components/ProductCard";
 import { EASE, Reveal, Stagger, StaggerItem } from "@/components/motion/motion";
 import { Footnote } from "@/components/Ornaments";
@@ -20,6 +18,7 @@ import { isProductInStock } from "@/lib/product-availability";
 import { defaultProductSize, productSizeOptions } from "@/lib/product-variants";
 import { useShop } from "@/store/ShopContext";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { toast } from "sonner";
 import {
   Accordion,
@@ -74,7 +73,8 @@ function ReviewVerification({
 export default function ProductDetail({ productId, initialProduct }: { productId: string; initialProduct: Product }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { products, categories, status, error, source } = useCatalog();
+  const { products, categories, status, error } = useCatalog();
+  const { formatPrice } = useStorefrontCurrency();
   const product = status === "loading"
     ? initialProduct
     : products.find((candidate) => candidate.id === productId);
@@ -85,7 +85,9 @@ export default function ProductDetail({ productId, initialProduct }: { productId
   }));
   const color = colorSelection.productId === productId ? colorSelection.color : undefined;
   const setColor = (value: string | undefined) => setColorSelection({ productId, color: value });
-  const [imgIdx, setImgIdx] = useState(0);
+  const [imageSelection, setImageSelection] = useState({ productId, index: 0 });
+  const imgIdx = imageSelection.productId === productId ? imageSelection.index : 0;
+  const setImgIdx = (index: number) => setImageSelection({ productId, index });
   const [sizeSelection, setSizeSelection] = useState<{ productId: string; size?: string }>(() => ({
     productId,
     size: defaultProductSize(initialProduct),
@@ -110,13 +112,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     let active = true;
 
     try {
-      if (source !== "supabase") {
-        setCustomerReviews(readCustomerReviews());
-        return () => {
-          active = false;
-        };
-      }
-
       void fetch(`/api/store/products/${encodeURIComponent(productId)}/reviews`, { cache: "no-store" })
         .then(async (response) => {
           const result = (await response.json()) as {
@@ -164,7 +159,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     return () => {
       active = false;
     };
-  }, [productId, source, status]);
+  }, [productId, status]);
 
   useEffect(() => {
     if (showAllReviews || !scrollToRelatedAfterCollapse.current) return;
@@ -181,9 +176,9 @@ export default function ProductDetail({ productId, initialProduct }: { productId
 
   const gallery = useMemo(() => {
     if (!product) return [];
-    const siblings = products.filter((p) => p.category === product.category && p.id !== product.id);
-    return [...new Set([product.image, ...(product.gallery ?? []), ...siblings.map((s) => s.image)])].slice(0, 3);
-  }, [product, products]);
+    return [...new Set([product.image, ...(product.gallery ?? [])])];
+  }, [product]);
+  const activeImageIndex = Math.min(imgIdx, Math.max(gallery.length - 1, 0));
 
   if (!product) {
     return (
@@ -198,25 +193,12 @@ export default function ProductDetail({ productId, initialProduct }: { productId
 
   const cat = categories.find((category) => category.slug === product.category);
   const productCustomerReviews = customerReviews.filter((review) => review.productId === product.id);
-  const reviews = source === "built-in"
-    ? [...productCustomerReviews, ...reviewsFor(product.id)]
-    : productCustomerReviews;
+  const reviews = productCustomerReviews;
   const reviewsToShow = reviews.slice(0, showAllReviews ? 8 : 3);
   const hasMoreReviews = reviews.length > 3;
-  const reviewCount = source === "built-in"
-    ? product.reviewCount + productCustomerReviews.length
-    : product.reviewCount;
-  const averageRating = source === "supabase"
-    ? product.rating
-    : reviewCount
-      ? (product.rating * product.reviewCount +
-          productCustomerReviews.reduce((sum, review) => sum + review.rating, 0)) /
-        reviewCount
-      : 0;
+  const reviewCount = product.reviewCount;
+  const averageRating = product.rating;
   const related = products.filter((p) => p.category === product.category && p.id !== product.id);
-  const reviewRatingCounts = [5, 4, 3, 2, 1].map((rating) =>
-    reviews.filter((review) => review.rating === rating).length
-  );
   const recentOthers = recent
     .filter((id) => id !== product.id)
     .map((id) => products.find((candidate) => candidate.id === id))
@@ -302,8 +284,8 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-900 md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
-                key={gallery[imgIdx]}
-                src={gallery[imgIdx]}
+                key={gallery[activeImageIndex]}
+                src={gallery[activeImageIndex]}
                 alt={product.name}
                 fill
                 sizes="(max-width: 767px) 100vw, (max-width: 1400px) 50vw, 700px"
@@ -324,9 +306,9 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     type="button"
                     onClick={() => setImgIdx(index)}
                     aria-label={`View product image ${index + 1}`}
-                    aria-pressed={imgIdx === index}
+                    aria-pressed={activeImageIndex === index}
                     className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-background ${
-                      imgIdx === index ? "border-foreground" : "border-transparent"
+                      activeImageIndex === index ? "border-foreground" : "border-transparent"
                     }`}
                   >
                     <Image
@@ -726,8 +708,8 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           <div className="relative aspect-square overflow-hidden border border-border bg-neutral-100 dark:bg-neutral-900">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
-                key={gallery[imgIdx]}
-                src={gallery[imgIdx]}
+                key={gallery[activeImageIndex]}
+                src={gallery[activeImageIndex]}
                 alt={product.name}
                 fill
                 sizes="(max-width: 767px) 100vw, 50vw"
@@ -746,7 +728,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                 <button
                   key={g + i}
                   onClick={() => setImgIdx(i)}
-                  className={`border transition-colors ${i === imgIdx ? "border-foreground" : "border-border hover:border-foreground/50"}`}
+                  className={`border transition-colors ${i === activeImageIndex ? "border-foreground" : "border-border hover:border-foreground/50"}`}
                 >
                   <Image
                     src={g}
@@ -761,7 +743,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             </div>
           )}
           <p className="mt-3 font-mono2 text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
-            {imgIdx === 0 ? "Studio photograph" : "Shown alongside the collection"}
+            {activeImageIndex === 0 ? "Main product image" : `Product image ${activeImageIndex + 1}`}
           </p>
         </motion.div>
 

@@ -8,6 +8,19 @@ export function productMainImageUrl(supabaseUrl: string, productId: string) {
   return productImageUrl(supabaseUrl, productMainImagePath(productId));
 }
 
+export function productCatalogImageUrl(
+  supabaseUrl: string,
+  productId: string,
+  mainImagePath?: string | null,
+  legacyImageUrl?: string | null
+) {
+  const imagePath =
+    mainImagePath?.trim() ||
+    productStoragePathFromUrl(legacyImageUrl?.trim() ?? '', supabaseUrl) ||
+    productMainImagePath(productId);
+  return productImageUrl(supabaseUrl, imagePath);
+}
+
 export function productImageUrl(supabaseUrl: string, storagePath: string) {
   const baseUrl = supabaseUrl.replace(/\/+$/, '');
   const encodedPath = storagePath.split('/').map(encodeURIComponent).join('/');
@@ -24,6 +37,13 @@ export function isLocalProductImagePath(value: string) {
 export function isStorefrontImage(value: string, supabaseUrl?: string) {
   return isLocalProductImagePath(value) ||
     Boolean(supabaseUrl && productStoragePathFromUrl(value, supabaseUrl));
+}
+
+export function productImageIdentity(value: string, supabaseUrl: string) {
+  const storagePath = productStoragePathFromUrl(value, supabaseUrl);
+  if (storagePath) return `storage:${storagePath}`;
+  if (isLocalProductImagePath(value)) return `local:${value}`;
+  return null;
 }
 
 export function productStoragePathFromUrl(value: string, supabaseUrl: string) {

@@ -7,8 +7,9 @@ import { Command } from "cmdk";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Clock3, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import Image from "next/image";
-import { cardReviewCount, formatPrice } from "@/data/catalog";
+import { cardReviewCount } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { EASE } from "@/components/motion/motion";
 import { toast } from "sonner";
 
@@ -37,6 +38,7 @@ export default function SearchPalette({
 }) {
   const router = useRouter();
   const { products } = useCatalog();
+  const { formatPrice } = useStorefrontCurrency();
   const [query, setQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [searchHistoryLoaded, setSearchHistoryLoaded] = useState(false);

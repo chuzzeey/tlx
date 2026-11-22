@@ -9,7 +9,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   EXPRESS_SHIPPING_FEE_NGN,
   FREE_SHIPPING_THRESHOLD_NGN,
-  formatPrice,
   STANDARD_SHIPPING_FEE_NGN,
   WHITE_GLOVE_SHIPPING_FEE_NGN,
 } from "@/data/catalog";
@@ -18,6 +17,7 @@ import { PageSkeleton } from "@/components/ProductCard";
 import { isProductInStock } from "@/lib/product-availability";
 import { EASE } from "@/components/motion/motion";
 import { useShop } from "@/store/ShopContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { toast } from "sonner";
 import CountryRegionPicker from "@/components/checkout/CountryRegionPicker";
 
@@ -65,6 +65,7 @@ function CheckoutHeader({ count }: { count: number }) {
 export default function Checkout() {
   const { products } = useCatalog();
   const { cart, cartCount, subtotal, clearCart, hydrated } = useShop();
+  const { formatPrice } = useStorefrontCurrency();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(initial);
   const [placed, setPlaced] = useState<string | null>(null);

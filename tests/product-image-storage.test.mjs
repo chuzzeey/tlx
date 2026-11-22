@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   PRODUCT_IMAGE_BUCKET,
   isLocalProductImagePath,
+  productCatalogImageUrl,
+  productImageIdentity,
   productMainImagePath,
   productMainImageUrl,
   productImageUrl,
@@ -24,6 +26,34 @@ test('builds cache-safe public URLs for versioned product image paths', () => {
   assert.equal(
     productImageUrl(projectUrl, 'tlx-jacket/550e8400-e29b-41d4-a716-446655440000.webp'),
     `${projectUrl}/storage/v1/object/public/tlx-products/tlx-jacket/550e8400-e29b-41d4-a716-446655440000.webp`
+  );
+});
+
+test('prefers the database storage path over a legacy local image URL', () => {
+  assert.equal(
+    productCatalogImageUrl(
+      projectUrl,
+      'tlx-jacket',
+      'tlx-jacket/550e8400-e29b-41d4-a716-446655440000.webp',
+      '/images/products/old-jacket.webp'
+    ),
+    `${projectUrl}/storage/v1/object/public/tlx-products/tlx-jacket/550e8400-e29b-41d4-a716-446655440000.webp`
+  );
+});
+
+test('resolves legacy Supabase image URLs or the product-specific storage fallback', () => {
+  assert.equal(
+    productCatalogImageUrl(
+      projectUrl,
+      'tlx-jacket',
+      null,
+      `${projectUrl}/storage/v1/object/public/tlx-products/legacy/jacket.webp`
+    ),
+    `${projectUrl}/storage/v1/object/public/tlx-products/legacy/jacket.webp`
+  );
+  assert.equal(
+    productCatalogImageUrl(projectUrl, 'tlx-jacket', null, '/images/products/old-jacket.webp'),
+    `${projectUrl}/storage/v1/object/public/tlx-products/tlx-jacket/main`
   );
 });
 
@@ -62,4 +92,19 @@ test('accepts only safe URLs in the configured public product-image bucket', () 
     ),
     null
   );
+});
+
+test('normalizes image ownership keys for storage URLs and legacy local paths', () => {
+  assert.equal(
+    productImageIdentity(
+      `${projectUrl}/storage/v1/object/public/tlx-products/tlx-jacket/main.webp`,
+      projectUrl
+    ),
+    'storage:tlx-jacket/main.webp'
+  );
+  assert.equal(
+    productImageIdentity('/images/products/old-jacket.webp', projectUrl),
+    'local:/images/products/old-jacket.webp'
+  );
+  assert.equal(productImageIdentity('https://other.example/image.webp', projectUrl), null);
 });

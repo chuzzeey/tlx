@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Handbag, Star } from "lucide-react";
-import { cardReviewCount, formatPrice, type Product } from "@/data/catalog";
+import { cardReviewCount, type Product } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
@@ -21,6 +22,8 @@ import {
 type Sort = "featured" | "price-asc" | "price-desc" | "rating";
 
 function MobileProductCard({ product }: { product: Product }) {
+  const { formatPrice } = useStorefrontCurrency();
+
   return (
     <article className="min-w-0">
       <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-muted">
@@ -58,6 +61,22 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
   const { cartCount } = useShop();
   const [sort, setSort] = useState<Sort>("featured");
   const [selectedProductId, setSelectedProductId] = useState("all");
+
+  if (!category && status === "loading") {
+    return (
+      <p role="status" className="container-x py-24 text-center text-sm text-muted-foreground">
+        Loading category…
+      </p>
+    );
+  }
+
+  if (!category && status === "error") {
+    return (
+      <p role="alert" className="container-x py-24 text-center text-sm text-destructive">
+        The product catalog is unavailable: {error}
+      </p>
+    );
+  }
 
   if (!category) {
     return (

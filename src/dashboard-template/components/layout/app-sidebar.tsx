@@ -28,7 +28,7 @@ import {
 import { UserAvatarProfile } from '@dashboard/components/user-avatar-profile';
 import { navGroups } from '@dashboard/config/nav-config';
 import { useFilteredNavGroups } from '@dashboard/hooks/use-nav';
-import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
+import AdminSignOut from '@dashboard/features/auth/components/admin-sign-out';
 import { useSupabaseAuthUser } from '@dashboard/lib/supabase-auth-user';
 import { cn } from '@dashboard/lib/utils';
 import type { NavItem } from '@dashboard/types';
@@ -305,19 +305,14 @@ function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={async () => {
-                  const { error } = await createSupabaseAuthBrowserClient().auth.signOut();
-                  if (error) {
-                    console.error('Supabase sign-out failed.', error.message);
-                    return;
-                  }
-                  window.location.assign('/auth/sign-in');
-                }}
-              >
-                <Icons.logout aria-hidden />
-                Sign out
-              </DropdownMenuItem>
+              <AdminSignOut
+                renderTrigger={(onClick) => (
+                  <DropdownMenuItem onClick={onClick}>
+                    <Icons.logout aria-hidden />
+                    Sign out
+                  </DropdownMenuItem>
+                )}
+              />
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

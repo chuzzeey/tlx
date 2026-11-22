@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { formatPrice, type Product } from "@/data/catalog";
+import { type Product } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { EASE } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import AddToCartButton from "@/components/AddToCartButton";
@@ -34,6 +35,7 @@ export default function ProductCard({
   showIndex?: boolean;
 }) {
   const { categories } = useCatalog();
+  const { formatPrice } = useStorefrontCurrency();
   return (
     <motion.div
       layout

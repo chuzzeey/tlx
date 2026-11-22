@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Search, SlidersHorizontal, Star } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cardReviewCount, formatPrice, type Category, type Product } from "@/data/catalog";
+import { cardReviewCount, type Category, type Product } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
@@ -43,6 +44,8 @@ function Filters({
   products: Product[];
   categories: Category[];
 }) {
+  const { formatPrice } = useStorefrontCurrency();
+
   return (
     <div className="space-y-10">
       <div>
@@ -114,6 +117,8 @@ function interleaveByCategory(items: Product[]) {
 }
 
 function StoreProductCard({ product, index, categoryName }: { product: Product; index: number; categoryName: string }) {
+  const { formatPrice } = useStorefrontCurrency();
+
   return (
     <motion.article
       layout
@@ -312,7 +317,11 @@ export default function Products() {
         </div>
 
         <AnimatePresence mode="wait">
-          {filtered.length === 0 ? (
+          {status === "loading" ? (
+            <p role="status" className="py-12 text-center text-sm text-muted-foreground">
+              Loading products…
+            </p>
+          ) : status === "error" ? null : filtered.length === 0 ? (
             <motion.div
               key="empty"
               initial={{ opacity: 0, y: 16 }}

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
-import { categories as staticCategories, products as staticProducts, type Category, type Product } from '@/data/catalog';
+import type { Category, Product } from '@/data/catalog';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
 
 type CatalogStatus = 'loading' | 'ready' | 'error';
@@ -13,7 +13,7 @@ type CatalogContextValue = {
   categories: Category[];
   status: CatalogStatus;
   error: string | null;
-  source: 'built-in' | 'supabase' | null;
+  source: 'supabase' | null;
   aliases: Record<string, string>;
 };
 
@@ -21,8 +21,8 @@ const CatalogContext = createContext<CatalogContextValue | null>(null);
 
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [products, setProducts] = useState<Product[]>(staticProducts);
-  const [categories, setCategories] = useState<Category[]>(staticCategories);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [status, setStatus] = useState<CatalogStatus>('loading');
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<CatalogContextValue['source']>(null);
@@ -58,7 +58,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         )) {
           throw new Error('The store category response was invalid.');
         }
-        if (result.source !== 'built-in' && result.source !== 'supabase') {
+        if (result.source !== 'supabase') {
           throw new Error('The store catalog response was invalid.');
         }
         if (!result.aliases || typeof result.aliases !== 'object' || Array.isArray(result.aliases)) {

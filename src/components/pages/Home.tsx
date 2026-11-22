@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Star } from "lucide-react";
-import { cardReviewCount, formatPrice, popularItems, type Product } from "@/data/catalog";
+import { cardReviewCount, type Product } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
+import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
@@ -108,6 +109,8 @@ function JacketCard({
   product: Product;
   eager?: boolean;
 }) {
+  const { formatPrice } = useStorefrontCurrency();
+
   return (
     <article className="group relative min-w-0">
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#f5f5f5] dark:bg-[#242424]">
@@ -143,17 +146,20 @@ export default function Home() {
   const { products, categories, status, error } = useCatalog();
   const filters = [{ label: "All", category: "all" }, ...categories.map((item) => ({ label: item.name, category: item.slug }))];
   const initialPopularProducts = useMemo(
-    () =>
-      popularItems
-        .map((item) => {
-          const productId = item.href.slice(item.href.lastIndexOf("/") + 1);
-          return products.find((candidate) => candidate.id === productId);
-        })
-        .filter((product): product is Product => product !== undefined),
+    () => [
+      ...products.filter((product) => product.featured),
+      ...products.filter((product) => !product.featured),
+    ].slice(0, 4),
     [products]
   );
   const [activeFilter, setActiveFilter] = useState("all");
-  const [popularProducts, setPopularProducts] = useState<Product[]>([]);
+  const [popularSelection, setPopularSelection] = useState<{
+    catalog: Product[];
+    items: Product[];
+  } | null>(null);
+  const popularProducts = popularSelection?.catalog === products
+    ? popularSelection.items
+    : initialPopularProducts;
   const [changingPopularIndex, setChangingPopularIndex] = useState<number | null>(null);
   const popularProductsRef = useRef<Product[]>([]);
   const popularRotationTimer = useRef<number | null>(null);
@@ -169,7 +175,7 @@ export default function Home() {
       slot === index ? nextProduct : product
     );
     popularProductsRef.current = nextProducts;
-    setPopularProducts(nextProducts);
+    setPopularSelection({ catalog: products, items: nextProducts });
     setChangingPopularIndex(index);
   }, [products]);
   const handlePopularTransitionComplete = useCallback(() => {
@@ -190,12 +196,11 @@ export default function Home() {
       const firstIndex = order[0];
       if (firstIndex !== undefined) startPopularChange(firstIndex);
     }, 3000);
-  }, [startPopularChange]);
+  }, [initialPopularProducts.length, startPopularChange]);
 
   useEffect(() => {
-    setPopularProducts(initialPopularProducts);
-    popularProductsRef.current = initialPopularProducts;
-  }, [initialPopularProducts]);
+    popularProductsRef.current = popularProducts;
+  }, [popularProducts]);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -268,7 +273,11 @@ export default function Home() {
           ))}
         </div>
 
-        {visibleProducts.length > 0 ? (
+        {status === "loading" ? (
+          <p role="status" className="border-t border-border py-12 text-center text-sm text-muted-foreground">
+            Loading products…
+          </p>
+        ) : status === "error" ? null : visibleProducts.length > 0 ? (
           <div className="mx-auto grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4 md:grid-cols-3 md:gap-y-6 lg:max-w-5xl lg:gap-x-8">
             {displayedProducts.map((product, index) => (
               <JacketCard key={product.id} product={product} eager={index === 0} />
