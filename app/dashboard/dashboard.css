@@ -1049,6 +1049,13 @@
   box-shadow: 0 1px 0 hsl(var(--destructive));
 }
 
+@media (max-width: 767px) {
+  .dashboard-profile-form [data-slot='input'],
+  .dashboard-profile-form .dashboard-profile-select {
+    font-size: 16px;
+  }
+}
+
 .dashboard-profile-form-footer {
   display: flex;
   align-items: center;
