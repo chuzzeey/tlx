@@ -21,7 +21,7 @@
   --input: 207 18% 84%;
   --ring: 199 31% 36%;
   --sidebar-background: 211 27% 95%;
-  --sidebar-foreground: 211 22% 25%;
+  --sidebar-foreground: 210 24% 17%;
   --sidebar-primary: 199 31% 36%;
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 204 23% 89%;
@@ -63,7 +63,7 @@
   --input: 210 12% 29%;
   --ring: 198 30% 72%;
   --sidebar-background: 211 17% 14%;
-  --sidebar-foreground: 205 18% 88%;
+  --sidebar-foreground: 205 20% 92%;
   --sidebar-primary: 198 30% 72%;
   --sidebar-primary-foreground: 211 28% 15%;
   --sidebar-accent: 207 16% 22%;
@@ -115,7 +115,7 @@
 
 .dashboard-shell [data-slot='sidebar-group-label'] {
   padding-inline: 10px;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--sidebar-foreground));
   font-size: 10px;
   font-weight: 600;
   letter-spacing: .14em;
@@ -972,6 +972,14 @@
     transform .24s cubic-bezier(.22, 1, .36, 1),
     gap .3s ease,
     padding .3s ease;
+}
+
+.dashboard-shell .dashboard-nav-item:not([data-active]) {
+  color: hsl(var(--sidebar-foreground));
+}
+
+.dashboard-shell .dashboard-nav-item:not([data-active]) > svg {
+  color: hsl(var(--sidebar-foreground));
 }
 
 .dashboard-shell .dashboard-nav-item:hover {
