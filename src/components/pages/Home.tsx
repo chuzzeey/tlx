@@ -76,7 +76,7 @@ function PopularProductCard({
       className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-neutral-100 pl-3 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
     >
       <span
-        className="max-w-[78px] text-[15px] font-bold leading-tight text-foreground md:max-w-[110px] md:text-base"
+        className="max-w-[78px] text-xs font-semibold leading-tight text-foreground md:max-w-[110px] md:text-sm"
         style={{ WebkitTextStroke: "0.25px currentColor" }}
       >
         {visibleName}
