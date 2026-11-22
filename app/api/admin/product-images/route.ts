@@ -103,6 +103,19 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'This image is still used by a product.' }, { status: 409 });
   }
 
+  const { data: categories, error: categoriesError } = await client
+    .from('product_categories')
+    .select('slug,image');
+  if (categoriesError) {
+    return NextResponse.json(
+      { error: `Could not verify category image usage: ${categoriesError.message}` },
+      { status: 500 }
+    );
+  }
+  if (categories.some((category) => category.image === body.url)) {
+    return NextResponse.json({ error: 'This image is still used by a category.' }, { status: 409 });
+  }
+
   const { error } = await client.storage.from('tlx-products').remove([path]);
   if (error) {
     return NextResponse.json({ error: `Image removal failed: ${error.message}` }, { status: 500 });

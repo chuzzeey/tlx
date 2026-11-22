@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import ProductDetail from "@/components/pages/ProductDetail";
 import JsonLd from "@/components/JsonLd";
-import { categoryBySlug } from "@/data/catalog";
-import { getPublishedProduct } from "@dashboard/lib/catalog-service";
+import { getPublishedCategories, getPublishedProduct } from "@dashboard/lib/catalog-service";
 import { breadcrumbJsonLd, productJsonLd, SITE_NAME } from "@/lib/seo";
 
 type Params = Promise<{ productId: string }>;
@@ -32,12 +31,13 @@ export default async function Page({ params }: { params: Params }) {
   if (!product) notFound();
   if (product.id !== productId) redirect(`/products/${product.id}`);
 
-  const cat = categoryBySlug(product.category);
+  const categories = await getPublishedCategories();
+  const cat = categories.find((category) => category.slug === product.category);
   return (
     <>
       <JsonLd
         data={[
-          productJsonLd(product),
+          productJsonLd(product, cat?.name ?? product.category),
           breadcrumbJsonLd([
             { name: "Shop", path: "/products" },
             { name: cat?.name ?? product.category, path: `/categories/${product.category}` },

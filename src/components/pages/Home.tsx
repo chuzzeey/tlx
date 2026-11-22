@@ -10,15 +10,6 @@ import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
-const filters = [
-  { label: "All", category: "all" },
-  { label: "Jacket", category: "jackets" },
-  { label: "T-Shirts", category: "apparel" },
-  { label: "Shoes", category: "shoes" },
-  { label: "Bags", category: "bags" },
-  { label: "Accessories", category: "accessories" },
-];
-
 const popularImageBreaths = [
   { animationDuration: "5.2s", animationDelay: "-1.3s" },
   { animationDuration: "6.4s", animationDelay: "-4.8s" },
@@ -149,7 +140,8 @@ function JacketCard({
 }
 
 export default function Home() {
-  const { products, status, error } = useCatalog();
+  const { products, categories, status, error } = useCatalog();
+  const filters = [{ label: "All", category: "all" }, ...categories.map((item) => ({ label: item.name, category: item.slug }))];
   const initialPopularProducts = useMemo(
     () =>
       popularItems
@@ -221,9 +213,7 @@ export default function Home() {
 
   const visibleProducts =
     activeFilter === "all"
-      ? filters
-          .filter((filter) => filter.category !== "all")
-          .flatMap((filter) => products.filter((product) => product.category === filter.category))
+      ? categories.flatMap((category) => products.filter((product) => product.category === category.slug))
       : products.filter((product) => product.category === activeFilter);
   const displayedProducts = visibleProducts.slice(0, 12);
   const hasMoreProducts = visibleProducts.length > displayedProducts.length;

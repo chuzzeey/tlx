@@ -21,6 +21,11 @@ export function isLocalProductImagePath(value: string) {
   return !imagePath.split(/[\\/]/).some((part) => !part || part === '.' || part === '..');
 }
 
+export function isStorefrontImage(value: string, supabaseUrl?: string) {
+  return isLocalProductImagePath(value) ||
+    Boolean(supabaseUrl && productStoragePathFromUrl(value, supabaseUrl));
+}
+
 export function productStoragePathFromUrl(value: string, supabaseUrl: string) {
   try {
     const url = new URL(value);

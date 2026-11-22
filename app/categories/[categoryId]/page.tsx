@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryDetail from "@/components/pages/CategoryDetail";
 import JsonLd from "@/components/JsonLd";
-import { categories, categoryBySlug } from "@/data/catalog";
-import { getPublishedCatalog } from "@dashboard/lib/catalog-service";
+import { categories as builtInCategories } from "@/data/catalog";
+import { getPublishedCatalog, getPublishedCategories } from "@dashboard/lib/catalog-service";
 import { breadcrumbJsonLd, collectionJsonLd, SITE_NAME } from "@/lib/seo";
 
 type Params = Promise<{ categoryId: string }>;
@@ -11,12 +11,13 @@ type Params = Promise<{ categoryId: string }>;
 export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
-  return categories.map((c) => ({ categoryId: c.slug }));
+  return builtInCategories.map((c) => ({ categoryId: c.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { categoryId } = await params;
-  const category = categoryBySlug(categoryId);
+  const categories = await getPublishedCategories();
+  const category = categories.find((item) => item.slug === categoryId);
   if (!category) return { title: "Category Not Found" };
   return {
     title: category.name,
@@ -32,7 +33,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
 export default async function Page({ params }: { params: Params }) {
   const { categoryId } = await params;
-  const category = categoryBySlug(categoryId);
+  const categories = await getPublishedCategories();
+  const category = categories.find((item) => item.slug === categoryId);
   if (!category) notFound();
 
   const products = await getPublishedCatalog();

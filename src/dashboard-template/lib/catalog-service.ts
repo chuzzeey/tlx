@@ -1,6 +1,6 @@
 import 'server-only';
 
-import type { Product } from '@/data/catalog';
+import { categories as builtInCategories, type AdminCategory, type Category, type Product } from '@/data/catalog';
 import { isProductInStock } from '@/lib/product-availability';
 import { catalogVariantDefaults } from '@/lib/product-variants';
 import { productImageUrl, productMainImagePath } from '@/lib/product-image-storage';
@@ -75,6 +75,16 @@ type CatalogRow = {
   updated_at?: string;
 };
 
+type CategoryRow = {
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string;
+  image: string;
+  is_published: boolean;
+  position: number;
+};
+
 function mapCatalogRow(row: CatalogRow): CatalogProduct {
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!projectUrl) {
@@ -132,6 +142,68 @@ export async function getPublishedCatalog(): Promise<CatalogProduct[]> {
   }
 
   return (data as CatalogRow[]).map(mapCatalogRow);
+}
+
+export async function getPublishedCategories(): Promise<Category[]> {
+  if (!isSupabaseCatalogConfigured) {
+    return builtInCategories.map((category) => ({ ...category }));
+  }
+
+  const { data, error } = await createPublicSupabaseClient()
+    .from('product_categories')
+    .select('slug,name,tagline,description,image,is_published,position')
+    .eq('is_published', true)
+    .order('position')
+    .order('name');
+
+  if (error) {
+    throw new Error(`Could not load published categories: ${error.message}`);
+  }
+
+  return (data as CategoryRow[]).map(({ slug, name, tagline, description, image }) => ({
+    slug,
+    name,
+    tagline,
+    description,
+    image
+  }));
+}
+
+export async function getAdminCategories(): Promise<AdminCategory[]> {
+  if (!isSupabaseAdminConfigured) return [];
+
+  const client = createAdminSupabaseClient();
+  const [{ data: categoryRows, error: categoriesError }, { data: products, error: productsError }] =
+    await Promise.all([
+      client
+        .from('product_categories')
+        .select('slug,name,tagline,description,image,is_published,position')
+        .order('position')
+        .order('name'),
+      client.from('products').select('category')
+    ]);
+
+  if (categoriesError) {
+    throw new Error(`Could not load product categories: ${categoriesError.message}`);
+  }
+  if (productsError) {
+    throw new Error(`Could not load product category counts: ${productsError.message}`);
+  }
+
+  const productCounts = new Map<string, number>();
+  for (const product of products) {
+    productCounts.set(product.category, (productCounts.get(product.category) ?? 0) + 1);
+  }
+
+  return (categoryRows as CategoryRow[]).map((row) => ({
+    slug: row.slug,
+    name: row.name,
+    tagline: row.tagline,
+    description: row.description,
+    image: row.image,
+    isPublished: row.is_published,
+    productCount: productCounts.get(row.slug) ?? 0
+  }));
 }
 
 export async function getPublishedProductAliases(): Promise<Record<string, string>> {

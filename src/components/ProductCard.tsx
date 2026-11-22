@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import { categoryName, formatPrice, type Product } from "@/data/catalog";
+import { formatPrice, type Product } from "@/data/catalog";
+import { useCatalog } from "@/store/CatalogContext";
 import { EASE } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import AddToCartButton from "@/components/AddToCartButton";
@@ -32,6 +33,7 @@ export default function ProductCard({
   index?: number;
   showIndex?: boolean;
 }) {
+  const { categories } = useCatalog();
   return (
     <motion.div
       layout
@@ -54,7 +56,7 @@ export default function ProductCard({
       >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="label-mono">{categoryName(product.category)}</p>
+          <p className="label-mono">{categories.find((category) => category.slug === product.category)?.name ?? product.category}</p>
           <span className="link-underline mt-1.5 block text-sm font-medium leading-snug">{product.name}</span>
         </div>
         {showIndex && typeof index === "number" && (

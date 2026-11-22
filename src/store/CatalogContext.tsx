@@ -3,13 +3,14 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
-import { products as staticProducts, type Product } from '@/data/catalog';
+import { categories as staticCategories, products as staticProducts, type Category, type Product } from '@/data/catalog';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
 
 type CatalogStatus = 'loading' | 'ready' | 'error';
 
 type CatalogContextValue = {
   products: Product[];
+  categories: Category[];
   status: CatalogStatus;
   error: string | null;
   source: 'built-in' | 'supabase' | null;
@@ -21,6 +22,7 @@ const CatalogContext = createContext<CatalogContextValue | null>(null);
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [products, setProducts] = useState<Product[]>(staticProducts);
+  const [categories, setCategories] = useState<Category[]>(staticCategories);
   const [status, setStatus] = useState<CatalogStatus>('loading');
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<CatalogContextValue['source']>(null);
@@ -38,12 +40,23 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         const response = await fetch('/api/store/products', { cache: 'no-store' });
         const result = (await response.json()) as {
           products?: Product[];
+          categories?: Category[];
           source?: CatalogContextValue['source'];
           aliases?: Record<string, string>;
           error?: string;
         };
-        if (!response.ok || !Array.isArray(result.products)) {
+        if (!response.ok || !Array.isArray(result.products) || !Array.isArray(result.categories)) {
           throw new Error(result.error ?? 'The store catalog could not be loaded.');
+        }
+        if (!result.categories.every((category) =>
+          category &&
+          typeof category.slug === 'string' &&
+          typeof category.name === 'string' &&
+          typeof category.tagline === 'string' &&
+          typeof category.description === 'string' &&
+          typeof category.image === 'string'
+        )) {
+          throw new Error('The store category response was invalid.');
         }
         if (result.source !== 'built-in' && result.source !== 'supabase') {
           throw new Error('The store catalog response was invalid.');
@@ -53,6 +66,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         }
         if (!active || currentRequestId !== requestId) return;
         setProducts(result.products);
+        setCategories(result.categories);
         setSource(result.source);
         setAliases(result.aliases);
         setStatus('ready');
@@ -84,6 +98,16 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
             { event: '*', schema: 'public', table: 'products' },
             () => void loadCatalog()
           )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'product_category_visibility' },
+            () => void loadCatalog()
+          )
+          .on(
+            'broadcast',
+            { event: 'category-updated' },
+            () => void loadCatalog()
+          )
           .subscribe((subscriptionStatus) => {
             if (subscriptionStatus === 'SUBSCRIBED') {
               void loadCatalog();
@@ -108,8 +132,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const value = useMemo(
-    () => ({ products, status, error, source, aliases }),
-    [products, status, error, source, aliases]
+    () => ({ products, categories, status, error, source, aliases }),
+    [products, categories, status, error, source, aliases]
   );
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;
 }

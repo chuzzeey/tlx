@@ -1,13 +1,12 @@
 import type { MetadataRoute } from "next";
-import { categories } from "@/data/catalog";
-import { getPublishedCatalog } from "@dashboard/lib/catalog-service";
+import { getPublishedCatalog, getPublishedCategories } from "@dashboard/lib/catalog-service";
 import { posts } from "@/data/content";
 import { SITE_URL } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const products = await getPublishedCatalog();
+  const [products, categories] = await Promise.all([getPublishedCatalog(), getPublishedCategories()]);
   const staticRoutes: MetadataRoute.Sitemap = [
     { path: "", priority: 1 },
     { path: "/products", priority: 0.9 },

@@ -22,6 +22,13 @@ export const navGroups: NavGroup[] = [
         items: []
       },
       {
+        title: 'Categories',
+        url: '/dashboard/categories',
+        icon: 'categories',
+        isActive: false,
+        items: []
+      },
+      {
         title: 'Reviews',
         url: '/dashboard/reviews',
         icon: 'badgeCheck',

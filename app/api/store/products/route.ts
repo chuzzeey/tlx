@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getPublishedCatalog, getPublishedProductAliases } from '@dashboard/lib/catalog-service';
+import { getPublishedCatalog, getPublishedCategories, getPublishedProductAliases } from '@dashboard/lib/catalog-service';
 import { isSupabaseCatalogConfigured } from '@dashboard/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const [products, aliases] = await Promise.all([
+    const [products, categories, aliases] = await Promise.all([
       getPublishedCatalog(),
+      getPublishedCategories(),
       getPublishedProductAliases()
     ]);
     return NextResponse.json(
-      { products, aliases, source: isSupabaseCatalogConfigured ? 'supabase' : 'built-in' },
+      { products, categories, aliases, source: isSupabaseCatalogConfigured ? 'supabase' : 'built-in' },
       { headers: { 'Cache-Control': 'no-store, max-age=0' } }
     );
   } catch (error) {

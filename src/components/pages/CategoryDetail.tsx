@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Handbag, Star } from "lucide-react";
-import { cardReviewCount, categoryBySlug, formatPrice, type Product } from "@/data/catalog";
+import { cardReviewCount, formatPrice, type Product } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
@@ -53,8 +53,8 @@ function MobileProductCard({ product }: { product: Product }) {
 }
 
 export default function CategoryDetail({ categoryId }: { categoryId: string }) {
-  const { products, status, error } = useCatalog();
-  const category = categoryBySlug(categoryId);
+  const { products, categories, status, error } = useCatalog();
+  const category = categories.find((item) => item.slug === categoryId);
   const { cartCount } = useShop();
   const [sort, setSort] = useState<Sort>("featured");
   const [selectedProductId, setSelectedProductId] = useState("all");

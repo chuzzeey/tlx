@@ -156,7 +156,6 @@ export default async function DashboardOverview() {
   const inventoryAttentionCount = metrics
     ? metrics.lowStockProducts + metrics.outOfStockProducts
     : 0;
-  const stockUnits = products.reduce((sum, product) => sum + Math.max(0, product.stock), 0);
   const activity = getActivitySeries(products);
   const categories = getCategoryMix(products);
   const inventoryDistribution = getInventoryDistribution(products);
@@ -210,11 +209,6 @@ export default async function DashboardOverview() {
               <span>Drafts</span>
               <strong>{draftCount}</strong>
               <small>Not yet published</small>
-            </article>
-            <article className='intel-measure'>
-              <span>Units on hand</span>
-              <strong>{stockUnits.toLocaleString()}</strong>
-              <small>Saved quantities · all products</small>
             </article>
             <article className='intel-measure'>
               <span>Inventory watch</span>

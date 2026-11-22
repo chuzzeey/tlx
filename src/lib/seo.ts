@@ -34,14 +34,14 @@ export function organizationJsonLd() {
   ];
 }
 
-export function productJsonLd(p: Product) {
+export function productJsonLd(p: Product, category = categoryName(p.category)) {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.name,
     description: p.description,
     image: abs(p.image),
-    category: categoryName(p.category),
+    category,
     brand: { "@type": "Brand", name: SITE_NAME },
     url: abs(`/products/${p.id}`),
     offers: {

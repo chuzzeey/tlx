@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Check, Handbag, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  categoryBySlug,
   formatPrice,
   FREE_SHIPPING_THRESHOLD_NGN,
   reviewsFor,
@@ -75,7 +74,7 @@ function ReviewVerification({
 export default function ProductDetail({ productId, initialProduct }: { productId: string; initialProduct: Product }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { products, status, error, source } = useCatalog();
+  const { products, categories, status, error, source } = useCatalog();
   const product = status === "loading"
     ? initialProduct
     : products.find((candidate) => candidate.id === productId);
@@ -197,7 +196,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     );
   }
 
-  const cat = categoryBySlug(product.category);
+  const cat = categories.find((category) => category.slug === product.category);
   const productCustomerReviews = customerReviews.filter((review) => review.productId === product.id);
   const reviews = source === "built-in"
     ? [...productCustomerReviews, ...reviewsFor(product.id)]

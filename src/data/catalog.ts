@@ -11,6 +11,11 @@ export interface Category {
   image: string;
 }
 
+export type AdminCategory = Category & {
+  isPublished: boolean;
+  productCount: number;
+};
+
 export interface Product {
   id: string;
   name: string;

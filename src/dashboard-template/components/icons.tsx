@@ -191,6 +191,7 @@ export const Icons = {
   billing: IconCreditCard,
   creditCard: IconCreditCard,
   product: IconBox,
+  categories: IconStack2,
   pro: IconCrown,
   exclusive: IconStar,
   sparkles: IconSparkles,

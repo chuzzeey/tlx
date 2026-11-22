@@ -1,11 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { AlertTriangle, Boxes, Check, EyeOff, PackageCheck, PackagePlus, Upload, X } from 'lucide-react';
+import { AlertTriangle, Boxes, Check, ChevronDown, EyeOff, PackageCheck, PackagePlus, Upload, X } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
 import { PRODUCT_IMAGE_BUCKET } from '@/lib/product-image-storage';
+import type { AdminCategory } from '@/data/catalog';
 import type { CatalogProduct } from '@dashboard/lib/catalog-service';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
 import {
@@ -27,13 +28,6 @@ import {
 } from '@dashboard/components/ui/dialog';
 import { makeUniqueProductSlug, type ProductInput } from './product-schema';
 
-const categories = [
-  { slug: 'jackets', name: 'Jackets' },
-  { slug: 'apparel', name: 'T-Shirts' },
-  { slug: 'shoes', name: 'Shoes' },
-  { slug: 'bags', name: 'Bags' },
-  { slug: 'accessories', name: 'Accessories' }
-] as const;
 const pageSize = 10;
 const maxGalleryImages = 4;
 
@@ -98,14 +92,27 @@ function Field({
 const inputClass =
   'min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
+function FilterSelect({ children, className = '', ...props }: React.ComponentProps<'select'>) {
+  return (
+    <div className='relative w-full'>
+      <select {...props} className={`${inputClass} appearance-none pr-10 ${className}`}>
+        {children}
+      </select>
+      <ChevronDown aria-hidden className='pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground' />
+    </div>
+  );
+}
+
 function ProductEditor({
   product,
   existingProducts,
+  categories,
   onClose,
   onSaved
 }: {
   product: CatalogProduct;
   existingProducts: CatalogProduct[];
+  categories: AdminCategory[];
   onClose: () => void;
   onSaved: (product: CatalogProduct, oldImageUrls: string[], previousId?: string) => void;
 }) {
@@ -343,9 +350,9 @@ function ProductEditor({
               <input required maxLength={120} className={inputClass} value={values.name} onChange={(event) => update('name', event.target.value)} />
             </Field>
             <Field label='Category'>
-              <select className={inputClass} value={values.category} onChange={(event) => update('category', event.target.value as ProductInput['category'])}>
+              <FilterSelect value={values.category} onChange={(event) => update('category', event.target.value as ProductInput['category'])}>
                 {categories.map((category) => <option key={category.slug} value={category.slug}>{category.name}</option>)}
-              </select>
+              </FilterSelect>
             </Field>
             <Field label='Price (NGN)'>
               <input
@@ -390,13 +397,13 @@ function ProductEditor({
               />
             </Field>
             <Field label='Badge'>
-              <select className={inputClass} value={values.badge ?? ''} onChange={(event) => update('badge', (event.target.value || undefined) as CatalogProduct['badge'])}>
+              <FilterSelect value={values.badge ?? ''} onChange={(event) => update('badge', (event.target.value || undefined) as CatalogProduct['badge'])}>
                 <option value=''>None</option>
                 <option value='New'>New</option>
                 <option value='Bestseller'>Bestseller</option>
                 <option value='Low stock'>Low stock</option>
                 <option value='Sale'>Sale</option>
-              </select>
+              </FilterSelect>
             </Field>
             <div className='grid gap-1.5 sm:col-span-2'>
               <p id='product-availability-label' className='text-sm font-medium'>Availability</p>
@@ -594,10 +601,12 @@ function ProductEditor({
 
 export default function ProductManager({
   initialProducts,
+  categories,
   setupMessage,
   loadError
 }: {
   initialProducts: CatalogProduct[];
+  categories: AdminCategory[];
   setupMessage: string | null;
   loadError: string | null;
 }) {
@@ -739,21 +748,21 @@ export default function ProductManager({
         <>
           <div className='grid gap-3 rounded-xl border border-border bg-card p-4 shadow-sm sm:grid-cols-2 2xl:grid-cols-4'>
             <input aria-label='Search products' className={inputClass} value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder='Search products' />
-            <select aria-label='Filter by category' className={inputClass} value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }}>
+            <FilterSelect aria-label='Filter by category' value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }}>
               <option value='all'>All categories</option>
               {categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
-            </select>
-            <select aria-label='Filter by publication status' className={inputClass} value={visibility} onChange={(event) => { setVisibility(event.target.value); setPage(1); }}>
+            </FilterSelect>
+            <FilterSelect aria-label='Filter by publication status' value={visibility} onChange={(event) => { setVisibility(event.target.value); setPage(1); }}>
               <option value='all'>All statuses</option>
               <option value='published'>Published</option>
               <option value='draft'>Drafts</option>
-            </select>
-            <select aria-label='Sort products' className={inputClass} value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}>
+            </FilterSelect>
+            <FilterSelect aria-label='Sort products' value={sort} onChange={(event) => { setSort(event.target.value); setPage(1); }}>
               <option value='name'>Name: A to Z</option>
               <option value='price-asc'>Price: low to high</option>
               <option value='price-desc'>Price: high to low</option>
               <option value='availability'>Availability: in stock first</option>
-            </select>
+            </FilterSelect>
           </div>
 
           {filtered.length === 0 ? (
@@ -884,7 +893,7 @@ export default function ProductManager({
           )}
         </>
       )}
-      {editing && <ProductEditor product={editing} existingProducts={products} onClose={() => setEditing(null)} onSaved={(saved, oldUrls, previousId) => void onSaved(saved, oldUrls, previousId)} />}
+      {editing && <ProductEditor product={editing} existingProducts={products} categories={categories} onClose={() => setEditing(null)} onSaved={(saved, oldUrls, previousId) => void onSaved(saved, oldUrls, previousId)} />}
       <AlertDialog
         open={Boolean(archiving)}
         onOpenChange={(open) => {

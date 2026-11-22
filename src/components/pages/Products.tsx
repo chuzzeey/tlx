@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Search, SlidersHorizontal, Star } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cardReviewCount, categories, categoryName, formatPrice, type Product } from "@/data/catalog";
+import { cardReviewCount, formatPrice, type Category, type Product } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
@@ -34,12 +34,14 @@ function Filters({
   priceCap,
   setPriceCap,
   products,
+  categories,
 }: {
   selected: string[];
   toggleCategory: (slug: string) => void;
   priceCap: number;
   setPriceCap: (n: number) => void;
   products: Product[];
+  categories: Category[];
 }) {
   return (
     <div className="space-y-10">
@@ -111,7 +113,7 @@ function interleaveByCategory(items: Product[]) {
   return mixed;
 }
 
-function StoreProductCard({ product, index }: { product: Product; index: number }) {
+function StoreProductCard({ product, index, categoryName }: { product: Product; index: number; categoryName: string }) {
   return (
     <motion.article
       layout
@@ -143,7 +145,7 @@ function StoreProductCard({ product, index }: { product: Product; index: number 
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
       <div className="pt-3">
-        <p className="label-mono">{categoryName(product.category)}</p>
+        <p className="label-mono">{categoryName}</p>
         <Link href={`/products/${product.id}`} className="mt-1 block">
           <h2 className="min-h-6 truncate text-sm font-medium leading-6 sm:text-base">{product.name}</h2>
         </Link>
@@ -159,7 +161,7 @@ function StoreProductCard({ product, index }: { product: Product; index: number 
 }
 
 export default function Products() {
-  const { products, status, error } = useCatalog();
+  const { products, categories, status, error } = useCatalog();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [sort, setSort] = useState<Sort>("mixed");
@@ -287,7 +289,7 @@ export default function Products() {
             </SheetTrigger>
             <SheetContent side="right" className="w-[320px] overflow-y-auto border-l border-border bg-background p-6">
               <p className="mb-6 font-display text-2xl font-light">Refine the edit</p>
-              <Filters selected={selected} toggleCategory={toggleCategory} priceCap={priceCap} setPriceCap={setPriceCap} products={products} />
+              <Filters selected={selected} toggleCategory={toggleCategory} priceCap={priceCap} setPriceCap={setPriceCap} products={products} categories={categories} />
             </SheetContent>
           </Sheet>
           <Select value={sort} onValueChange={(value) => setSort(value as Sort)}>
@@ -334,7 +336,12 @@ export default function Products() {
               className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-5 md:grid-cols-3 md:gap-y-10 xl:grid-cols-4 xl:gap-x-8"
             >
               {filtered.map((product, index) => (
-                <StoreProductCard key={product.id} product={product} index={index} />
+                <StoreProductCard
+                  key={product.id}
+                  product={product}
+                  index={index}
+                  categoryName={categories.find((category) => category.slug === product.category)?.name ?? product.category}
+                />
               ))}
             </motion.div>
           )}

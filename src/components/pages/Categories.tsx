@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { categoryIndexCategories } from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
 import { CellIn } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
 import { Footnote } from "@/components/Ornaments";
 
 export default function Categories() {
-  const { products, status, error } = useCatalog();
+  const { products, categories, status, error } = useCatalog();
   return (
     <main>
       <div className="sticky top-0 z-30 flex h-14 items-center justify-center border-b border-border bg-background md:hidden">
@@ -25,7 +24,7 @@ export default function Categories() {
 
       <div className="container-x mx-auto hidden max-w-6xl items-end justify-between gap-8 py-10 md:flex">
         <div>
-          <p className="label-mono">{categoryIndexCategories.length} departments</p>
+          <p className="label-mono">{categories.length} departments</p>
           <h1 className="mt-2 text-3xl font-semibold">Category</h1>
         </div>
         <p className="max-w-md text-sm leading-6 text-muted-foreground">
@@ -35,7 +34,7 @@ export default function Categories() {
 
       <div className="container-x mx-auto max-w-6xl pb-12 pt-6 md:pt-0">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {categoryIndexCategories.map((category, index) => {
+          {categories.map((category, index) => {
             const count = products.filter((product) => product.category === category.slug).length;
             return (
               <CellIn key={category.slug} index={index} className="h-full">
