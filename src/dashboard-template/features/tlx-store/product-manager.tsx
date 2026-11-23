@@ -368,7 +368,7 @@ function ProductEditor({
               <input required maxLength={120} className={inputClass} value={values.name} onChange={(event) => update('name', event.target.value)} />
             </Field>
             <Field label='Category'>
-              <FilterSelect value={values.category} onChange={(event) => update('category', event.target.value as ProductInput['category'])}>
+              <FilterSelect value={values.category} onChange={(event) => update('category', event.target.value)}>
                 {categories.map((category) => <option key={category.slug} value={category.slug}>{category.name}</option>)}
               </FilterSelect>
             </Field>

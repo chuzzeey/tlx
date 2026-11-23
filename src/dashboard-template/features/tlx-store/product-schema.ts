@@ -31,7 +31,7 @@ const colorSchema = z.object({
 export const productInputSchema = z.object({
   id: z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   name: z.string().trim().min(2).max(120),
-  category: z.enum(['jackets', 'apparel', 'shoes', 'bags', 'accessories']),
+  category: z.string().trim().min(1).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   price: z.number().finite().min(0).max(99999999.99),
   compareAt: z.number().finite().min(0).max(99999999.99).nullable(),
   manualRating: z.number().int().min(1).max(5).nullable().default(null),

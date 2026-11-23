@@ -30,6 +30,8 @@ const validProduct = {
 test('accepts a complete catalog product', () => {
   assert.equal(productInputSchema.safeParse(validProduct).success, true);
   assert.equal(productInputSchema.safeParse({ ...validProduct, price: 1_205_096 }).success, true);
+  assert.equal(productInputSchema.safeParse({ ...validProduct, category: 'leather-jackets' }).success, true);
+  assert.equal(productInputSchema.safeParse({ ...validProduct, category: 'Leather Jackets' }).success, false);
 });
 
 test('defaults product availability to in stock when omitted', () => {
