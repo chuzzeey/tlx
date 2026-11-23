@@ -34,7 +34,6 @@ export function productJsonLd(p: Product, category = categoryName(p.category)) {
     "@context": "https://schema.org",
     "@type": "Product",
     name: p.name,
-    description: p.description,
     image: abs(p.image),
     category,
     brand: { "@type": "Brand", name: SITE_NAME },

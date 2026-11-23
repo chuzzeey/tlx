@@ -108,7 +108,7 @@ export default function SearchPalette({
 
   const matchedProducts = query.trim()
     ? products.filter((product) =>
-        `${product.name} ${product.category} ${product.description}`
+        `${product.name} ${product.category}`
           .toLowerCase()
           .includes(query.trim().toLowerCase())
       )

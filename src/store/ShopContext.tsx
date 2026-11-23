@@ -3,18 +3,14 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useCatalog } from "@/store/CatalogContext";
 import type { Product } from "@/data/catalog";
+import { migrateCartLines, type CartLine } from "@/lib/cart-lines";
 import { isProductInStock } from "@/lib/product-availability";
 import { defaultProductSize } from "@/lib/product-variants";
 import CartAddedFeedback, { type CartAddedFeedbackItem } from "@/components/CartAddedFeedback";
 import FavoriteAddedToast, { type FavoriteFeedbackItem } from "@/components/FavoriteAddedToast";
 import { toast } from "sonner";
 
-export interface CartLine {
-  productId: string;
-  qty: number;
-  color?: string;
-  size?: string;
-}
+export type { CartLine } from "@/lib/cart-lines";
 
 interface ShopCtx {
   cart: CartLine[];
@@ -22,9 +18,9 @@ interface ShopCtx {
   recent: string[];
   /** False during SSR/first paint; true once localStorage has been read. */
   hydrated: boolean;
-  addToCart: (productId: string, qty?: number, color?: string, size?: string) => void;
-  removeFromCart: (productId: string, color?: string, size?: string) => void;
-  setQty: (productId: string, qty: number, color?: string, size?: string) => void;
+  addToCart: (productId: string, qty?: number, size?: string) => void;
+  removeFromCart: (productId: string, size?: string) => void;
+  setQty: (productId: string, qty: number, size?: string) => void;
   clearCart: () => void;
   toggleWishlist: (productId: string) => void;
   recordView: (productId: string) => void;
@@ -65,7 +61,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedCart = load<CartLine[]>("aurelle-cart", []);
-    setCart(savedCart);
+    setCart(migrateCartLines(savedCart));
     setWishlist(load("aurelle-wishlist", []));
     setRecent(load("aurelle-recent", []));
     setHydrated(true);
@@ -108,7 +104,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   const recordView = (productId: string) =>
     setRecent((prev) => [productId, ...prev.filter((id) => id !== productId)].slice(0, 6));
 
-  const addToCart: ShopCtx["addToCart"] = (productId, qty = 1, color, size) => {
+  const addToCart: ShopCtx["addToCart"] = (productId, qty = 1, size) => {
     const product = products.find((candidate) => candidate.id === productId);
     if (product && !isProductInStock(product)) {
       toast.error("This item is out of stock.", { description: product.name });
@@ -116,13 +112,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }
     const selectedSize = size ?? defaultSizeForProduct(productId, products);
     setCart((prev) => {
-      const idx = prev.findIndex((l) => l.productId === productId && l.color === color && l.size === selectedSize);
+      const idx = prev.findIndex((l) => l.productId === productId && l.size === selectedSize);
       if (idx >= 0) {
         const next = [...prev];
         next[idx] = { ...next[idx], qty: Math.min(next[idx].qty + qty, 99) };
         return next;
       }
-      return [...prev, { productId, qty, color, size: selectedSize }];
+      return [...prev, { productId, qty, size: selectedSize }];
     });
     if (product) {
       if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
@@ -131,7 +127,6 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         id: feedbackId.current,
         product,
         size: selectedSize,
-        color: color ?? product.colors?.[0]?.name,
         quantity: qty
       });
       feedbackTimer.current = setTimeout(() => {
@@ -141,13 +136,13 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const removeFromCart: ShopCtx["removeFromCart"] = (productId, color, size) =>
-    setCart((prev) => prev.filter((l) => !(l.productId === productId && l.color === color && l.size === size)));
+  const removeFromCart: ShopCtx["removeFromCart"] = (productId, size) =>
+    setCart((prev) => prev.filter((l) => !(l.productId === productId && l.size === size)));
 
-  const setQty: ShopCtx["setQty"] = (productId, qty, color, size) => {
-    if (qty <= 0) return removeFromCart(productId, color, size);
+  const setQty: ShopCtx["setQty"] = (productId, qty, size) => {
+    if (qty <= 0) return removeFromCart(productId, size);
     setCart((prev) =>
-      prev.map((l) => (l.productId === productId && l.color === color && l.size === size ? { ...l, qty } : l))
+      prev.map((l) => (l.productId === productId && l.size === size ? { ...l, qty } : l))
     );
   };
 

@@ -23,11 +23,6 @@ export function makeUniqueProductSlug(name: string, existingSlugs: Iterable<stri
   return candidate;
 }
 
-const colorSchema = z.object({
-  name: z.string().trim().min(1).max(40),
-  hex: z.string().regex(/^#[0-9a-fA-F]{6}$/)
-});
-
 export const productInputSchema = z.object({
   id: z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   name: z.string().trim().min(2).max(120),
@@ -39,14 +34,8 @@ export const productInputSchema = z.object({
   image: z.string().trim().min(1).max(2048),
   gallery: z.array(z.string().trim().min(1).max(2048)).max(12),
   galleryAlt: z.array(z.string().trim().max(250)).max(12),
-  description: z.string().trim().max(4000),
-  story: z.string().trim().max(4000),
-  materials: z.string().trim().max(1000),
-  dimensions: z.string().trim().max(500),
-  care: z.string().trim().max(1000),
   inStock: z.boolean().default(true),
   badge: z.enum(['New', 'Bestseller', 'Low stock', 'Sale']).nullable(),
-  colors: z.array(colorSchema).max(20),
   sizes: z.array(z.string().trim().min(1).max(30)).max(50),
   featured: z.boolean(),
   isPublished: z.boolean()

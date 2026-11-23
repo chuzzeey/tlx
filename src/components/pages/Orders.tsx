@@ -95,7 +95,7 @@ export default function OrdersPage() {
   };
 
   const completePayment = (order: Order) => {
-    order.items.forEach((item) => addToCart(item.productId, item.qty, item.color, item.size));
+    order.items.forEach((item) => addToCart(item.productId, item.qty, item.size));
     toast.info("Order added to checkout", { description: "Confirm your details to complete payment." });
     router.push("/checkout");
   };
@@ -197,11 +197,9 @@ export default function OrdersPage() {
                         <Link href={`/products/${product.id}`} className="line-clamp-2 text-sm font-semibold leading-tight">
                           {product.name}
                         </Link>
-                        {(item.size || item.color) && (
+                        {item.size && (
                           <p className="mt-1 text-xs text-muted-foreground">
-                            {item.size ? `Size: ${item.size}` : ""}
-                            {item.size && item.color ? " · " : ""}
-                            {item.color ?? ""}
+                            Size: {item.size}
                           </p>
                         )}
                         <div className="mt-2 flex items-center justify-between gap-2">

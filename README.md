@@ -123,6 +123,14 @@ text across the storefront. The number is stored in E.164 format in `public.stor
 updates are restricted to the existing allowlisted admin API. If the singleton settings row is
 missing, the storefront uses the Nigeria default and the next admin save recreates the row.
 
+To remove product descriptions, stories, materials, dimensions, care, and colors from the catalog database,
+apply the catalog and category migrations above, then apply
+[`supabase/migrations/20261130000000_tlx_product_manual_review_summary.sql`](./supabase/migrations/20261130000000_tlx_product_manual_review_summary.sql),
+then manually review and run
+[`supabase/migrations/20261130000001_tlx_remove_product_detail_fields.sql`](./supabase/migrations/20261130000001_tlx_remove_product_detail_fields.sql)
+in the Supabase SQL Editor. This permanently drops those six product columns and rebuilds the public
+catalog view without them; saved sizes remain.
+
 Seed built-in products with `npm run seed:catalog` (also requires the URL and service-role key). The
 seed uploads main images to deterministic storage paths and inserts only missing products; it does
 not overwrite existing catalog entries. Product ratings and counts default to approved database

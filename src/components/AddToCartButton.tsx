@@ -23,7 +23,7 @@ export default function AddToCartButton({
     <motion.button
       type="button"
       disabled={!inStock}
-      onClick={() => addToCart(product.id, 1, product.colors?.[0]?.name)}
+      onClick={() => addToCart(product.id, 1)}
       animate={reduceMotion || !inStock ? undefined : { rotate: [0, -0.5, 0.5, 0] }}
       transition={reduceMotion ? undefined : { duration: 0.4, repeat: Infinity, repeatDelay: 4.5, ease: "easeInOut" }}
       whileTap={{ scale: 0.98 }}

@@ -18,16 +18,13 @@ import { Separator } from '@dashboard/components/ui/separator';
 const productFormSchema = z.object({
   name: z.string().min(2, 'Product name must be at least 2 characters'),
   category: z.string().min(1, 'Please select a category'),
-  price: z.number({ error: 'Price is required' }).min(0.01, 'Price must be greater than 0'),
-  description: z.string().min(10, 'Description must be at least 10 characters')
+  price: z.number({ error: 'Price is required' }).min(0.01, 'Price must be greater than 0')
 });
 
 const stepSchemas = [
   // Step 1: Basic Info
   productFormSchema.pick({ name: true, category: true, price: true }),
-  // Step 2: Details
-  productFormSchema.pick({ description: true }),
-  // Step 3: Review (no validation)
+  // Step 2: Review (no validation)
   z.object({})
 ];
 
@@ -47,7 +44,6 @@ function ReviewSummary({
     name: string;
     category: string;
     price?: number;
-    description: string;
   };
 }) {
   return (
@@ -66,10 +62,6 @@ function ReviewSummary({
           <p className='text-muted-foreground text-xs font-medium uppercase'>Price</p>
           <p className='text-sm'>{values.price != null ? `$${values.price}` : '—'}</p>
         </div>
-        <div>
-          <p className='text-muted-foreground text-xs font-medium uppercase'>Description</p>
-          <p className='text-sm'>{values.description || '—'}</p>
-        </div>
       </div>
     </div>
   );
@@ -81,7 +73,6 @@ type ProductFormValues = {
   name: string;
   category: string;
   price: number | undefined;
-  description: string;
 };
 
 export default function MultiStepProductForm() {
@@ -98,8 +89,7 @@ export default function MultiStepProductForm() {
     defaultValues: {
       name: '',
       category: '',
-      price: undefined,
-      description: ''
+      price: undefined
     } as ProductFormValues,
     validationLogic: revalidateLogic(),
     validators: {
@@ -118,7 +108,7 @@ export default function MultiStepProductForm() {
     await handleNextStepOrSubmit(form);
   };
 
-  const totalSteps = 3;
+  const totalSteps = 2;
 
   return (
     /* Every submit (Enter key, the review step's submit button) routes
@@ -195,26 +185,6 @@ export default function MultiStepProductForm() {
             )}
 
             {currentStep === 2 && (
-              <FieldGroup className='space-y-4'>
-                <h3 className='text-lg font-semibold'>Details</h3>
-                <FieldDescription>Add a detailed product description.</FieldDescription>
-
-                <form.AppField
-                  name='description'
-                  children={(field) => (
-                    <field.TextareaField
-                      label='Description'
-                      required
-                      placeholder='Enter product description'
-                      maxLength={500}
-                      rows={5}
-                    />
-                  )}
-                />
-              </FieldGroup>
-            )}
-
-            {currentStep === 3 && (
               <div className='space-y-4'>
                 <h3 className='text-lg font-semibold'>Review & Submit</h3>
                 <FieldDescription>Review the details below before submitting.</FieldDescription>

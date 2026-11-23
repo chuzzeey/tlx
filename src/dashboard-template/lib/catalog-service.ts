@@ -59,15 +59,10 @@ type CatalogRow = {
   main_image_path?: string | null;
   gallery: string[] | null;
   gallery_alt: string[] | null;
-  description: string;
-  story: string;
-  materials: string;
-  dimensions: string;
-  care: string;
   stock: number;
   is_in_stock: boolean;
   badge: Product['badge'] | null;
-  colors: Product['colors'] | null;
+
   sizes: string[] | null;
   featured: boolean;
   is_published: boolean;
@@ -117,15 +112,9 @@ function mapCatalogRow(row: CatalogRow): CatalogProduct {
     image: productCatalogImageUrl(projectUrl, row.id, row.main_image_path, row.image),
     gallery: row.gallery ?? [],
     galleryAlt: row.gallery_alt ?? [],
-    description: row.description,
-    story: row.story,
-    materials: row.materials,
-    dimensions: row.dimensions,
-    care: row.care,
     stock: row.stock,
     inStock: row.is_in_stock,
     ...(row.badge ? { badge: row.badge } : {}),
-    colors: row.colors?.length ? row.colors : defaults?.colors ?? [],
     sizes: row.sizes?.length ? row.sizes : defaults?.sizes ?? [],
     featured: row.featured,
     isPublished: row.is_published,

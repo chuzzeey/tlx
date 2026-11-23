@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Eye, EyeOff, Pencil, Plus, Tags, Trash2, Upload } from 'lucide-react';
+import { Eye, EyeOff, Pencil, Plus, Trash2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import type { AdminCategory } from '@/data/catalog';
@@ -23,6 +23,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogMedia,
   AlertDialogTitle
 } from '@dashboard/components/ui/alert-dialog';
 
@@ -382,7 +383,7 @@ export default function CategoryManager({
       <header className='flex flex-wrap items-end justify-between gap-4'>
         <div>
           <p className='font-mono text-xs uppercase tracking-widest text-muted-foreground'>TLX Originals · Store admin</p>
-          <h1 className='mt-2 text-3xl font-semibold tracking-tight'>Categories</h1>
+          <h1 className='mt-2 text-3xl font-semibold tracking-tight'>Category</h1>
           <p className='mt-1 max-w-2xl text-sm text-muted-foreground'>Add categories, edit details, and control which collections are visible in the storefront.</p>
         </div>
         <button
@@ -412,7 +413,9 @@ export default function CategoryManager({
             <article key={category.slug} className='flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-sm'>
               <div className='flex items-start justify-between gap-3'>
                 <div className='flex min-w-0 items-start gap-3'>
-                  <span className='grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary'><Tags aria-hidden className='size-5' /></span>
+                  <span className='inline-flex min-h-10 shrink-0 items-center rounded-lg bg-primary/10 px-3 text-[10px] font-semibold uppercase tracking-wide text-primary'>
+                    Category
+                  </span>
                   <div className='min-w-0'>
                     <h2 className='truncate font-semibold'>{category.name}</h2>
                     <p className='mt-0.5 text-xs text-muted-foreground'>/{category.slug}</p>
@@ -432,14 +435,13 @@ export default function CategoryManager({
                   <button
                     type='button'
                     aria-label={`${category.isPublished ? 'Hide' : 'Show'} ${category.name}`}
+                    title={`${category.isPublished ? 'Hide' : 'Show'} ${category.name}`}
                     disabled={visibilitySavingSlug !== null}
+                    aria-busy={visibilitySavingSlug === category.slug}
                     onClick={() => void toggleVisibility(category)}
-                    className='inline-flex min-h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'
+                    className='inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-border text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
                   >
                     {category.isPublished ? <EyeOff aria-hidden className='size-4' /> : <Eye aria-hidden className='size-4' />}
-                    {visibilitySavingSlug === category.slug
-                      ? category.isPublished ? 'Hiding…' : 'Showing…'
-                      : category.isPublished ? 'Hide' : 'Show'}
                   </button>
                   <button
                     type='button'
@@ -453,12 +455,12 @@ export default function CategoryManager({
                   <button
                     type='button'
                     aria-label={`Delete ${category.name}`}
+                    title={`Delete ${category.name}`}
                     disabled={deletePending || visibilitySavingSlug !== null}
                     onClick={() => setDeletingCategory(category)}
-                    className='inline-flex min-h-9 items-center gap-2 rounded-md border border-destructive/30 px-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5 disabled:cursor-not-allowed disabled:opacity-50'
+                    className='inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-destructive/30 text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive disabled:cursor-not-allowed disabled:opacity-50'
                   >
-                    <Trash2 aria-hidden className='size-3.5' />
-                    Delete
+                    <Trash2 aria-hidden className='size-4' />
                   </button>
                 </div>
               </div>
@@ -485,22 +487,32 @@ export default function CategoryManager({
         }}
       >
         {deletingCategory && (
-          <AlertDialogContent>
+          <AlertDialogContent className='data-[size=default]:max-w-md data-[size=default]:sm:max-w-md rounded-2xl border border-destructive/20 bg-card shadow-2xl'>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete {deletingCategory.name} permanently?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This irreversible action permanently deletes the category, every product assigned to it, and those products’ reviews and URL redirects. Uploaded images will be removed from storage only if no remaining record uses them.
+              <AlertDialogMedia className='size-12 rounded-full bg-destructive/10 text-destructive'>
+                <Trash2 aria-hidden className='size-5' />
+              </AlertDialogMedia>
+              <AlertDialogTitle className='text-lg font-semibold'>
+                Delete {deletingCategory.name}?
+              </AlertDialogTitle>
+              <AlertDialogDescription className='leading-6'>
+                This permanently deletes the category, its {deletingCategory.productCount} {deletingCategory.productCount === 1 ? 'product' : 'products'}, and their reviews and URL redirects. Images still used elsewhere are kept. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={deletePending}>Cancel</AlertDialogCancel>
+              <AlertDialogCancel
+                disabled={deletePending}
+                className='min-h-10 rounded-md border-border bg-background'
+              >
+                Cancel
+              </AlertDialogCancel>
               <AlertDialogAction
                 disabled={deletePending}
                 onClick={(event) => {
                   event.preventDefault();
                   void deleteCategory(deletingCategory);
                 }}
-                className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                className='min-h-10 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90'
               >
                 {deletePending ? 'Deleting…' : 'Delete category and products'}
               </AlertDialogAction>

@@ -22,7 +22,7 @@ export const navGroups: NavGroup[] = [
         items: []
       },
       {
-        title: 'Categories',
+        title: 'Category',
         url: '/dashboard/categories',
         icon: 'categories',
         isActive: false,

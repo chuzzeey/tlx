@@ -183,7 +183,7 @@ export default function Products() {
         p.price <= priceCap &&
         (selected.length === 0 || selected.includes(p.category)) &&
         (query.trim() === "" ||
-          (p.name + " " + p.description).toLowerCase().includes(query.toLowerCase()))
+          p.name.toLowerCase().includes(query.toLowerCase()))
     );
     switch (sort) {
       case "mixed": break;

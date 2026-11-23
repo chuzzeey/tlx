@@ -216,13 +216,13 @@ export default function Checkout() {
                   const p = products.find((product) => product.id === line.productId);
                   if (!p) return null;
                   return (
-                    <li key={line.productId + (line.color ?? "") + (line.size ?? "")} className="flex items-center gap-4 py-4">
+                    <li key={line.productId + (line.size ?? "")} className="flex items-center gap-4 py-4">
                       <Image src={p.image} alt="" width={72} height={72} sizes="72px" className="h-[72px] w-[72px] shrink-0 rounded-xl bg-gray-100 object-contain p-1.5" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium">{p.name}</span>
-                        {(line.size || line.color) && (
+                        {line.size && (
                           <span className="mt-1 block text-xs text-muted-foreground">
-                            {[line.size && `Size ${line.size}`, line.color].filter(Boolean).join(" · ")}
+                            Size {line.size}
                           </span>
                         )}
                         <span className="mt-1 block font-mono2 text-[11px] text-muted-foreground">Quantity: {line.qty}</span>

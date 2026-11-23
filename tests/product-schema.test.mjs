@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import {
   makeUniqueProductSlug,
   productInputSchema
@@ -14,14 +15,8 @@ const validProduct = {
   image: '/images/products/jacket.webp',
   gallery: ['/images/products/jacket-back.webp'],
   galleryAlt: ['Back of the jacket'],
-  description: 'A considered everyday jacket.',
-  story: '',
-  materials: '',
-  dimensions: '',
-  care: '',
   inStock: true,
   badge: null,
-  colors: [],
   sizes: ['M'],
   featured: false,
   isPublished: true
@@ -61,6 +56,31 @@ test('rejects invalid prices, availability, legacy fields, and unmatched gallery
   assert.equal(productInputSchema.safeParse({ ...validProduct, sku: 'TLX-001' }).success, false);
   assert.equal(productInputSchema.safeParse({ ...validProduct, stock: 8 }).success, false);
   assert.equal(productInputSchema.safeParse({ ...validProduct, galleryAlt: [] }).success, false);
+});
+
+test('rejects removed product detail fields', () => {
+  for (const field of ['story', 'materials', 'dimensions', 'care', 'description', 'colors']) {
+    assert.equal(productInputSchema.safeParse({ ...validProduct, [field]: 'Legacy product detail' }).success, false);
+  }
+});
+
+test('migration removes product detail columns and rebuilds the storefront view', async () => {
+  const migration = await readFile(
+    'supabase/migrations/20261130000001_tlx_remove_product_detail_fields.sql',
+    'utf8'
+  );
+
+  assert.match(migration, /drop view if exists public\.store_products/i);
+  assert.match(migration, /drop column if exists story/i);
+  assert.match(migration, /drop column if exists materials/i);
+  assert.match(migration, /drop column if exists dimensions/i);
+  assert.match(migration, /drop column if exists care/i);
+  assert.match(migration, /drop column if exists description/i);
+  assert.match(migration, /drop column if exists colors/i);
+  assert.doesNotMatch(migration, /p\.(story|materials|dimensions|care|description|colors)\b/i);
+  assert.match(migration, /p\.manual_rating/);
+  assert.match(migration, /p\.manual_review_count/);
+  assert.match(migration, /grant select on public\.store_products to anon, authenticated/i);
 });
 
 test('rejects reusing the same image in multiple product image slots', () => {

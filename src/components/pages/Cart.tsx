@@ -145,7 +145,7 @@ export default function Cart() {
 
   const removeLine = (line: CartLine) => {
     setOpenLineId(null);
-    animateRemoval(() => removeFromCart(line.productId, line.color, line.size));
+    animateRemoval(() => removeFromCart(line.productId, line.size));
   };
 
   const decreaseLine = (line: CartLine) => {
@@ -153,11 +153,11 @@ export default function Cart() {
       removeLine(line);
       return;
     }
-    setQty(line.productId, line.qty - 1, line.color, line.size);
+    setQty(line.productId, line.qty - 1, line.size);
   };
 
   const increaseLine = (line: CartLine, stock: number) => {
-    setQty(line.productId, Math.min(stock, line.qty + 1), line.color, line.size);
+    setQty(line.productId, Math.min(stock, line.qty + 1), line.size);
   };
 
   const removeAll = () => {
@@ -191,7 +191,7 @@ export default function Cart() {
           <div className="space-y-3">
             <AnimatePresence initial={false}>
               {cart.map((line) => {
-            const lineId = `${line.productId}:${line.color ?? ""}:${line.size ?? ""}`;
+            const lineId = `${line.productId}:${line.size ?? ""}`;
             const p = products.find((product) => product.id === line.productId);
             if (!p) {
               return (
@@ -273,11 +273,6 @@ export default function Cart() {
                         </Link>
                         {line.size && (
                           <p className="mt-1.5 truncate text-xs text-muted-foreground">Size: {line.size}</p>
-                        )}
-                        {line.color && (
-                          <p className={`${line.size ? "mt-0.5" : "mt-1.5"} truncate text-xs text-muted-foreground`}>
-                            Color: {line.color}
-                          </p>
                         )}
                         {!isProductInStock(p) && (
                           <p className="mt-1 text-xs font-medium text-destructive">Out of stock — remove to continue</p>

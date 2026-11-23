@@ -15,11 +15,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!product) return { title: "Piece Not Found" };
   return {
     title: product.name,
-    description: product.description,
     alternates: { canonical: `/products/${product.id}` },
     openGraph: {
       title: `${product.name} — ${SITE_NAME}`,
-      description: product.description,
       images: [{ url: product.image, alt: product.name }],
     },
   };

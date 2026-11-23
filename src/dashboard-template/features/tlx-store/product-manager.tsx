@@ -7,9 +7,12 @@ import { toast } from 'sonner';
 import { formatPrice } from '@/lib/currency';
 import { PRODUCT_IMAGE_BUCKET } from '@/lib/product-image-storage';
 import { formatManualReviewCount, parseManualReviewCountInput } from '@/lib/product-review-summary';
+import { normalizeCustomProductSize, productSizeOptions, standardProductSizes } from '@/lib/product-variants';
 import type { AdminCategory } from '@/data/catalog';
 import type { CatalogProduct } from '@dashboard/lib/catalog-service';
 import { createSupabaseAuthBrowserClient } from '@dashboard/lib/supabase-auth-browser';
+import { Checkbox } from '@dashboard/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@dashboard/components/ui/popover';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,14 +51,8 @@ const blankProduct: CatalogProduct = {
   image: '',
   gallery: [],
   galleryAlt: [],
-  description: '',
-  story: '',
-  materials: '',
-  dimensions: '',
-  care: '',
   stock: 0,
   inStock: true,
-  colors: [],
   sizes: [],
   featured: false,
   isPublished: false
@@ -121,7 +118,23 @@ function ProductEditor({
   onClose: () => void;
   onSaved: (product: CatalogProduct, oldImageUrls: string[], previousId?: string) => void;
 }) {
-  const [values, setValues] = useState<CatalogProduct>(product);
+  const [values, setValues] = useState<CatalogProduct>(() => ({
+    ...product,
+    sizes: productSizeOptions(product)
+  }));
+  const [sizePickerOpen, setSizePickerOpen] = useState(false);
+  const [customSizeInput, setCustomSizeInput] = useState('');
+  const [customSizeOptions, setCustomSizeOptions] = useState(() =>
+    (product.sizes ?? []).filter(
+      (size) => !standardProductSizes.some((standardSize) => standardSize.toUpperCase() === size.toUpperCase())
+    )
+  );
+  const sizeOptions = useMemo(
+    () => [...standardProductSizes, ...customSizeOptions],
+    [customSizeOptions]
+  );
+  const hasSizeOption = (size: string) =>
+    sizeOptions.some((option) => option.toUpperCase() === size.toUpperCase());
   const [priceInput, setPriceInput] = useState(() => formatPriceInput(product.price));
   const priceInputRef = useRef<HTMLInputElement>(null);
   const reviewCountInputRef = useRef<HTMLInputElement>(null);
@@ -138,6 +151,22 @@ function ProductEditor({
 
   const update = <K extends keyof CatalogProduct>(key: K, value: CatalogProduct[K]) => {
     setValues((current) => ({ ...current, [key]: value }));
+  };
+
+  const toggleSize = (size: string, checked: boolean) => {
+    const sizes = values.sizes ?? [];
+    update('sizes', checked ? [...sizes, size] : sizes.filter((current) => current !== size));
+  };
+
+  const addCustomSize = () => {
+    if (!customSizeInput || hasSizeOption(customSizeInput)) return;
+    setCustomSizeOptions((current) =>
+      current.some((size) => size.toUpperCase() === customSizeInput)
+        ? current
+        : [...current, customSizeInput]
+    );
+    update('sizes', [...(values.sizes ?? []), customSizeInput]);
+    setCustomSizeInput('');
   };
 
   function chooseImage(target: ImageUploadTarget) {
@@ -268,14 +297,8 @@ function ProductEditor({
       galleryAlt: (values.gallery ?? []).map(
         (image, index) => values.galleryAlt?.[index] || `${values.name}, image ${index + 2}`
       ),
-      description: values.description,
-      story: values.story,
-      materials: values.materials,
-      dimensions: values.dimensions,
-      care: values.care,
       inStock: values.inStock,
       badge: values.badge ?? null,
-      colors: values.colors ?? [],
       sizes: values.sizes ?? [],
       featured: values.featured ?? false,
       isPublished: values.isPublished
@@ -328,8 +351,6 @@ function ProductEditor({
       setSaving(false);
     }
   }
-
-  const lines = (value: string) => value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
 
   return (
     <Dialog
@@ -564,23 +585,18 @@ function ProductEditor({
                     <button
                       key={rating}
                       type='button'
-                      aria-label={`Set rating to ${rating} ${rating === 1 ? 'star' : 'stars'}`}
+                      aria-label={
+                        values.manualRating === rating
+                          ? `Clear manual rating of ${rating} stars`
+                          : `Set rating to ${rating} ${rating === 1 ? 'star' : 'stars'}`
+                      }
                       aria-pressed={values.manualRating === rating}
-                      onClick={() => update('manualRating', rating)}
+                      onClick={() => update('manualRating', values.manualRating === rating ? null : rating)}
                       className='grid size-9 place-items-center rounded-md text-amber-500 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                     >
                       <Star aria-hidden className={`size-5 ${values.manualRating != null && rating <= values.manualRating ? 'fill-current' : ''}`} />
                     </button>
                   ))}
-                  {values.manualRating != null && (
-                    <button
-                      type='button'
-                      onClick={() => update('manualRating', null)}
-                      className='ml-2 min-h-9 rounded-md px-2 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground'
-                    >
-                      Use live rating
-                    </button>
-                  )}
                 </div>
               </div>
               <div className='grid content-start gap-1.5 text-sm'>
@@ -639,39 +655,81 @@ function ProductEditor({
           <section className='dashboard-product-section'>
             <header className='dashboard-product-section-heading'>
               <span>04</span>
-              <div><h3>Story and specifications</h3><p>Product copy, materials and sizing</p></div>
+              <div><h3>Product sizes</h3><p>Select available sizes for this product</p></div>
             </header>
-            <div className='grid gap-4 sm:grid-cols-2'>
-            <Field label='Description'>
-              <textarea rows={4} maxLength={4000} className={inputClass} value={values.description} onChange={(event) => update('description', event.target.value)} />
-            </Field>
-            <Field label='Product story'>
-              <textarea rows={4} maxLength={4000} className={inputClass} value={values.story} onChange={(event) => update('story', event.target.value)} />
-            </Field>
-            <Field label='Materials'>
-              <textarea rows={2} className={inputClass} value={values.materials} onChange={(event) => update('materials', event.target.value)} />
-            </Field>
-            <Field label='Dimensions'>
-              <textarea rows={2} className={inputClass} value={values.dimensions} onChange={(event) => update('dimensions', event.target.value)} />
-            </Field>
-            <Field label='Care instructions'>
-              <textarea rows={2} className={inputClass} value={values.care} onChange={(event) => update('care', event.target.value)} />
-            </Field>
-            <Field label='Sizes (one per line)'>
-              <textarea rows={2} className={inputClass} value={(values.sizes ?? []).join('\n')} onChange={(event) => update('sizes', lines(event.target.value))} placeholder='S&#10;M&#10;L&#10;XL' />
-            </Field>
-            <Field label='Colors (one per line: Name | #RRGGBB)'>
-              <textarea
-                rows={3}
-                className={inputClass}
-                value={(values.colors ?? []).map((color) => `${color.name} | ${color.hex}`).join('\n')}
-                onChange={(event) => update('colors', lines(event.target.value).map((line) => {
-                  const [name = '', hex = ''] = line.split('|').map((part) => part.trim());
-                  return { name, hex };
-                }))}
-                placeholder='Washed blue | #71879A'
-              />
-            </Field>
+            <div className='grid gap-4'>
+              <div className='grid gap-1.5 text-sm'>
+                <p id='product-sizes-label' className='font-medium'>Sizes</p>
+                <Popover open={sizePickerOpen} onOpenChange={setSizePickerOpen}>
+                  <PopoverTrigger
+                    render={
+                      <button
+                        type='button'
+                        aria-labelledby='product-sizes-label'
+                        className={`${inputClass} flex items-center justify-between gap-3 text-left`}
+                      />
+                    }
+                  >
+                    <span className='truncate'>
+                      {(values.sizes ?? []).length ? (values.sizes ?? []).join(', ') : 'Select sizes'}
+                    </span>
+                    <ChevronDown aria-hidden className='size-4 shrink-0 text-muted-foreground' />
+                  </PopoverTrigger>
+                  <PopoverContent align='start' aria-label='Choose product sizes' className='w-[var(--anchor-width)] p-3'>
+                    <div className='grid grid-cols-4 gap-2'>
+                      {sizeOptions.map((size) => {
+                        const id = `product-size-${product.id || 'new'}-${size.replace(/[^a-z0-9]/gi, '-')}`;
+                        return (
+                          <div key={size} className='flex min-h-9 items-center gap-2 rounded-md border border-border px-2'>
+                            <Checkbox
+                              id={id}
+                              checked={(values.sizes ?? []).includes(size)}
+                              onCheckedChange={(checked) => toggleSize(size, checked === true)}
+                              className='data-[checked]:border-blue-600 data-[checked]:bg-blue-600 data-[checked]:text-white focus-visible:ring-blue-500'
+                            />
+                            <label htmlFor={id} className='cursor-pointer text-xs font-medium'>{size}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className='mt-3 border-t border-border pt-3'>
+                      <label htmlFor={`custom-product-size-${product.id || 'new'}`} className='text-xs font-medium'>
+                        Add a size not listed
+                      </label>
+                      <div className='mt-1.5 flex gap-2'>
+                        <input
+                          id={`custom-product-size-${product.id || 'new'}`}
+                          type='text'
+                          autoComplete='off'
+                          maxLength={4}
+                          pattern='[A-Za-z]{1,4}'
+                          className={`${inputClass} min-w-0`}
+                          value={customSizeInput}
+                          onChange={(event) => {
+                            const size = normalizeCustomProductSize(event.target.value);
+                            if (size !== null) setCustomSizeInput(size);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') {
+                              event.preventDefault();
+                              addCustomSize();
+                            }
+                          }}
+                          placeholder='1–4 letters'
+                        />
+                        <button
+                          type='button'
+                          onClick={addCustomSize}
+                          disabled={!customSizeInput || hasSizeOption(customSizeInput)}
+                          className='min-h-10 shrink-0 rounded-md border border-border px-3 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50'
+                        >
+                          Add size
+                        </button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </section>
 

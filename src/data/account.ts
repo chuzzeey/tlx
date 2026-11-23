@@ -3,7 +3,6 @@ export interface OrderItem {
   qty: number;
   price: number;
   size?: string;
-  color?: string;
 }
 
 export interface Order {

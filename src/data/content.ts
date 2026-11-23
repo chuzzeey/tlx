@@ -203,7 +203,7 @@ export const faqs: Faq[] = [
   { group: "Orders", q: "Can I change an order after checkout?", a: "Contact us as soon as possible with your order number. We’ll confirm what changes are still possible." },
   { group: "Products & Fit", q: "Where can I find sizing and fit information?", a: "Open the product page and check its size and fit details before choosing your option." },
   { group: "Products & Fit", q: "Can you help me choose a size?", a: "Send us the product name and your sizing question on WhatsApp. We’ll help you review the information available for that item." },
-  { group: "Products & Fit", q: "Where can I find product materials and details?", a: "Each product page includes the available description and details for that item." },
+  { group: "Products & Fit", q: "Where can I find product options?", a: "Available sizes are shown on each product page." },
   { group: "Delivery & Returns", q: "Where can I see delivery options and costs?", a: "Enter your delivery details during checkout to review the available delivery information before placing your order." },
   { group: "Delivery & Returns", q: "How do I start a return?", a: "Message us on WhatsApp with your order number and checkout email to discuss a return." },
   { group: "Delivery & Returns", q: "What if an item arrives damaged or incorrect?", a: "Contact us on WhatsApp with your order number and a clear photo of the item so we can help." },

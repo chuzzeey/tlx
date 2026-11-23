@@ -12,7 +12,6 @@ export interface CartAddedFeedbackItem {
   product: Product;
   quantity: number;
   size?: string;
-  color?: string;
 }
 
 interface CartTarget {
@@ -152,7 +151,6 @@ function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
         <p className="relative label-mono mt-2">Added to cart</p>
         <p className="relative mt-2 font-display text-xl font-light">{item.product.name}</p>
         {item.size && <p className="relative mt-1 text-sm text-muted-foreground">Size: {item.size}</p>}
-        {item.color && <p className="relative mt-1 text-sm text-muted-foreground">Color: {item.color}</p>}
         <p className="relative mt-3 text-sm font-medium">
           {item.quantity > 1 && <span className="mr-1.5 text-muted-foreground">{item.quantity} ×</span>}
           {formatPrice(item.product.price * item.quantity)}

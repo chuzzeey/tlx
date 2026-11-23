@@ -4,28 +4,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Check, Handbag, Minus, Plus, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
+import { ArrowLeft, Check, Handbag, Minus, Plus, Star } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  FREE_SHIPPING_THRESHOLD_NGN,
-  type Product,
-} from "@/data/catalog";
+import type { Product } from "@/data/catalog";
 import type { CustomerReview } from "@/data/customerReviews";
 import ProductCard, { Stars } from "@/components/ProductCard";
 import { EASE, Reveal, Stagger, StaggerItem } from "@/components/motion/motion";
-import { Footnote } from "@/components/Ornaments";
 import { isProductInStock } from "@/lib/product-availability";
 import { defaultProductSize, productSizeOptions } from "@/lib/product-variants";
 import { useShop } from "@/store/ShopContext";
 import { useCatalog } from "@/store/CatalogContext";
 import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import { toast } from "sonner";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 const MotionImage = motion.create(Image);
 
@@ -80,11 +70,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     : products.find((candidate) => candidate.id === productId);
   const { addToCart, cartCount, recordView, recent } = useShop();
   const [qty, setQty] = useState(1);
-  const [colorSelection, setColorSelection] = useState<{ productId: string; color?: string }>(() => ({
-    productId,
-  }));
-  const color = colorSelection.productId === productId ? colorSelection.color : undefined;
-  const setColor = (value: string | undefined) => setColorSelection({ productId, color: value });
   const [imageSelection, setImageSelection] = useState({ productId, index: 0 });
   const imgIdx = imageSelection.productId === productId ? imageSelection.index : 0;
   const setImgIdx = (index: number) => setImageSelection({ productId, index });
@@ -96,7 +81,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     ? sizeSelection.size
     : defaultProductSize(initialProduct);
   const setSelectedSize = (size: string) => setSizeSelection({ productId, size });
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const scrollToRelatedAfterCollapse = useRef(false);
   const [customerReviews, setCustomerReviews] = useState<CustomerReview[]>([]);
@@ -216,8 +200,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
   ].slice(0, 4);
   const inStock = isProductInStock(product);
   const low = inStock && product.stock <= 8;
-  const colors = product.colors ?? [];
-  const defaultColor = colors[0];
   const sizeOptions = productSizeOptions(product);
   const hasSizes = sizeOptions.length > 0;
   const collapseReviews = () => {
@@ -235,9 +217,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     }
     router.push("/products");
   };
-  const descriptionPreview = product.description.match(/.*?[.!?](?:\s|$)/)?.[0].trim() ?? product.description;
-  const hasMoreDescription = descriptionPreview.length < product.description.length;
-
   return (
     <div>
       <div className="mobile-product-page">
@@ -364,77 +343,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
               </div>
             )}
 
-            {product.colors && product.colors.length > 1 && (
-              <div className="mt-5">
-                <p className="mb-3 text-sm font-medium">Color — {color ?? product.colors[0].name}</p>
-                <div className="flex gap-2.5">
-                  {product.colors.map((option) => (
-                    <button
-                      key={option.name}
-                      type="button"
-                      onClick={() => setColor(option.name)}
-                      aria-label={option.name}
-                      aria-pressed={(color ?? product.colors![0].name) === option.name}
-                      className={`h-8 w-8 rounded-full border-2 ${
-                        (color ?? product.colors![0].name) === option.name ? "border-foreground" : "border-transparent"
-                      }`}
-                      style={{ backgroundColor: option.hex }}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <section className="mt-5">
-              <h2 className="text-base font-semibold">Description</h2>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {descriptionExpanded ? product.description : descriptionPreview}
-                {hasMoreDescription && (
-                <button
-                  type="button"
-                  onClick={() => setDescriptionExpanded((expanded) => !expanded)}
-                  className="ml-1 inline text-sm font-medium text-sky-700"
-                >
-                  {descriptionExpanded ? "Read less" : "Read more..."}
-                </button>
-                )}
-              </p>
-            </section>
-
-            <div className="mt-6 grid grid-cols-3 divide-x divide-border overflow-hidden rounded-2xl bg-neutral-100 dark:bg-muted">
-              {[
-                { icon: Truck, label: `Free over ${formatPrice(FREE_SHIPPING_THRESHOLD_NGN)}` },
-                { icon: RotateCcw, label: "30-day returns" },
-                { icon: ShieldCheck, label: "5-year guarantee" },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex flex-col items-center gap-2 px-2 py-4 text-center">
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                  <span className="text-[10px] leading-tight text-muted-foreground">{label}</span>
-                </div>
-              ))}
-            </div>
-            <Footnote className="mt-3">
-              Repaired free for five years — after that, spare parts forever.
-            </Footnote>
-
-            <Accordion type="single" collapsible className="mt-6 border-t border-border">
-              <AccordionItem value="story" className="border-border">
-                <AccordionTrigger className="text-sm font-medium hover:no-underline">The story</AccordionTrigger>
-                <AccordionContent className="text-sm leading-6 text-muted-foreground">{product.story}</AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="materials" className="border-border">
-                <AccordionTrigger className="text-sm font-medium hover:no-underline">Materials & dimensions</AccordionTrigger>
-                <AccordionContent className="space-y-2 text-sm leading-6 text-muted-foreground">
-                  <p><span className="text-foreground">Materials — </span>{product.materials}</p>
-                  <p><span className="text-foreground">Dimensions — </span>{product.dimensions}</p>
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="care" className="border-border">
-                <AccordionTrigger className="text-sm font-medium hover:no-underline">Care</AccordionTrigger>
-                <AccordionContent className="text-sm leading-6 text-muted-foreground">{product.care}</AccordionContent>
-              </AccordionItem>
-            </Accordion>
-
             <div className="mt-7 flex items-stretch gap-3">
               <div className="flex items-center rounded-full border border-border">
                 <button
@@ -458,7 +366,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
               <button
                 type="button"
                 disabled={!inStock}
-                onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
+                onClick={() => addToCart(product.id, qty, hasSizes ? selectedSize : undefined)}
                 className="flex-1 rounded-full bg-foreground px-4 text-sm font-semibold text-background disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {!inStock ? "Out of stock" : `Add to cart — ${formatPrice(product.price * qty)}`}
@@ -769,8 +677,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             )}
           </p>
 
-          <p className="mt-6 max-w-lg text-[15px] leading-relaxed text-foreground/85">{product.description}</p>
-
           </StaggerItem>
 
           {hasSizes && (
@@ -798,31 +704,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
               </div>
             </StaggerItem>
           )}
-
-          {defaultColor ? (
-            <StaggerItem>
-            <div className="mt-7">
-              <p className="label-mono mb-3">Color — {color ?? defaultColor.name}</p>
-              <div className="flex gap-2.5">
-                {colors.map((c) => (
-                  <motion.button
-                    key={c.name}
-                    onClick={() => setColor(c.name)}
-                    aria-label={c.name}
-                    title={c.name}
-                    whileTap={{ scale: 0.85 }}
-                    className={`h-8 w-8 border-2 transition-all ${
-                      (color ?? defaultColor.name) === c.name
-                        ? "border-foreground"
-                        : "border-transparent hover:border-border"
-                    }`}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
-              </div>
-            </div>
-            </StaggerItem>
-          ) : null}
 
           {/* Qty + actions */}
           <StaggerItem>
@@ -852,7 +733,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             <motion.button
               disabled={!inStock}
               whileTap={{ scale: 0.97 }}
-              onClick={() => addToCart(product.id, qty, color ?? product.colors?.[0]?.name, hasSizes ? selectedSize : undefined)}
+              onClick={() => addToCart(product.id, qty, hasSizes ? selectedSize : undefined)}
               className="btn-solid-invert flex-1 py-3.5 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {!inStock ? "Out of stock" : `Add to cart — ${formatPrice(product.price * qty)}`}
@@ -865,42 +746,6 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           </p>
           </StaggerItem>
 
-          <StaggerItem>
-          <div className="mt-8 grid grid-cols-3 divide-x divide-border border border-border">
-            {[
-              { icon: Truck, t: `Free over ${formatPrice(FREE_SHIPPING_THRESHOLD_NGN)}` },
-              { icon: RotateCcw, t: "30-day returns" },
-              { icon: ShieldCheck, t: "5-year guarantee" },
-            ].map((s) => (
-              <div key={s.t} className="flex flex-col items-center gap-2 p-4 text-center">
-                <s.icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
-                <span className="font-mono2 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{s.t}</span>
-              </div>
-            ))}
-          </div>
-          <Footnote className="mt-3">
-            Repaired free for five years — after that, spare parts forever.
-          </Footnote>
-
-          {/* Accordions */}
-          <Accordion type="single" collapsible className="mt-8 border-t border-border">
-            <AccordionItem value="story" className="border-border">
-              <AccordionTrigger className="font-mono2 text-xs uppercase tracking-[0.18em] hover:no-underline">The story</AccordionTrigger>
-              <AccordionContent className="text-sm leading-relaxed text-muted-foreground">{product.story}</AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="specs" className="border-border">
-              <AccordionTrigger className="font-mono2 text-xs uppercase tracking-[0.18em] hover:no-underline">Materials & dimensions</AccordionTrigger>
-              <AccordionContent className="space-y-2 text-sm text-muted-foreground">
-                <p><span className="text-foreground">Materials — </span>{product.materials}</p>
-                <p><span className="text-foreground">Dimensions — </span>{product.dimensions}</p>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="care" className="border-border">
-              <AccordionTrigger className="font-mono2 text-xs uppercase tracking-[0.18em] hover:no-underline">Care</AccordionTrigger>
-              <AccordionContent className="text-sm leading-relaxed text-muted-foreground">{product.care}</AccordionContent>
-            </AccordionItem>
-          </Accordion>
-          </StaggerItem>
         </Stagger>
       </div>
 
