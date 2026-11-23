@@ -23,6 +23,14 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  icons: {
+    icon: [
+      {
+        url: "https://res.cloudinary.com/nygp3wws/image/upload/v1795157566/PHOTO-2026-11-20-07-52-07.jpg",
+        type: "image/jpeg",
+      },
+    ],
+  },
   keywords: [
     "TLX Originals",
     "streetwear",
