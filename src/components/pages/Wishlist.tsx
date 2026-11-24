@@ -46,7 +46,7 @@ export default function Wishlist() {
             return (
               <div key={id} className="flex items-center gap-5 py-5">
                 <Link href={`/products/${p.id}`} className="shrink-0 border border-border">
-                  <Image src={p.image} alt={p.name} width={96} height={96} sizes="96px" className="h-24 w-24 bg-[#EEE8D5] object-cover" />
+                  <Image src={p.image} alt={p.name} width={96} height={96} sizes="96px" className="h-24 w-24 bg-gray-100 object-cover" />
                 </Link>
                 <div className="min-w-0 flex-1">
                   <Link href={`/products/${p.id}`} className="link-underline font-medium">{p.name}</Link>

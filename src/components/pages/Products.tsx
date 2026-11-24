@@ -128,7 +128,7 @@ function StoreProductCard({ product, index, categoryName }: { product: Product; 
       transition={{ duration: 0.35, delay: Math.min(index * 0.025, 0.2), ease: EASE }}
       className="group min-w-0"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EEE8D5]">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -247,8 +247,8 @@ export default function Products() {
             aria-pressed={selected.length === 0}
             className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
               selected.length === 0
-                ? "bg-black font-medium text-[#F7F1E3]"
-                : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
+                ? "bg-black font-medium text-white"
+                : "bg-white text-neutral-600 hover:text-foreground"
             }`}
           >
             All
@@ -263,8 +263,8 @@ export default function Products() {
                 aria-pressed={active}
                 className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                   active
-                    ? "bg-black font-medium text-[#F7F1E3]"
-                    : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
+                    ? "bg-black font-medium text-white"
+                    : "bg-white text-neutral-600 hover:text-foreground"
                 }`}
               >
                 {category.name}
@@ -282,7 +282,7 @@ export default function Products() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search the store…"
-              className="input-plain h-12 rounded-3xl bg-[#FFFAF0] pl-10 text-base"
+              className="input-plain h-12 rounded-3xl bg-white pl-10 text-base"
             />
           </div>
           <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -298,7 +298,7 @@ export default function Products() {
             </SheetContent>
           </Sheet>
           <Select value={sort} onValueChange={(value) => setSort(value as Sort)}>
-            <SelectTrigger className="w-full rounded-3xl border-border bg-[#FFFAF0] font-mono2 text-xs uppercase tracking-wider md:w-[190px]">
+            <SelectTrigger className="w-full rounded-3xl border-border bg-white font-mono2 text-xs uppercase tracking-wider md:w-[190px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">

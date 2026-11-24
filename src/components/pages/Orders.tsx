@@ -166,7 +166,7 @@ export default function OrdersPage() {
 
         <div className="mt-4 space-y-4">
           {visibleOrders.length ? visibleOrders.map((order) => (
-            <article key={order.id} className="rounded-2xl bg-neutral-50 p-4 dark:bg-muted/40">
+            <article key={order.id} className="rounded-2xl bg-gray-100 p-4 dark:bg-muted/40">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Order {order.id}</p>
@@ -189,7 +189,7 @@ export default function OrdersPage() {
                     <div key={`${item.productId}-${index}`} className="flex items-center gap-3 rounded-2xl bg-white p-2 dark:bg-background">
                       <Link
                         href={`/products/${product.id}`}
-                        className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[18px] bg-[#EEE8D5]"
+                        className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[18px] bg-gray-100"
                       >
                         <Image src={product.image} alt={product.name} fill sizes="88px" className="object-contain p-2" />
                       </Link>
@@ -246,7 +246,7 @@ export default function OrdersPage() {
               </div>
             </article>
           )) : (
-            <div className="rounded-2xl bg-neutral-50 px-5 py-12 text-center dark:bg-muted/40">
+            <div className="rounded-2xl bg-gray-100 px-5 py-12 text-center dark:bg-muted/40">
               <p className="font-medium">No {activeGroup.toLowerCase()} orders</p>
               <p className="mt-2 text-sm text-muted-foreground">Your orders will appear here when their status changes.</p>
             </div>
@@ -275,7 +275,7 @@ export default function OrdersPage() {
           {reviewTarget && (
             <>
               <div className="flex items-center gap-3 rounded-2xl bg-neutral-100 p-2.5 dark:bg-muted">
-                <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-2xl bg-[#EEE8D5]">
+                <div className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-2xl bg-gray-100">
                   <Image
                     src={reviewTarget.product.image}
                     alt={reviewTarget.product.name}
@@ -360,7 +360,7 @@ export default function OrdersPage() {
                     onChange={(event) => setReviewText(event.target.value)}
                     placeholder="Type review..."
                     rows={3}
-                    className="w-full resize-none rounded-2xl border border-neutral-100 bg-neutral-50 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring dark:bg-muted"
+                    className="w-full resize-none rounded-2xl border border-gray-100 bg-gray-100 px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring dark:bg-muted"
                   />
                   <div className="mt-5 flex gap-3">
                     <button

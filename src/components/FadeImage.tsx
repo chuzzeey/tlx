@@ -17,7 +17,7 @@ export default function FadeImage({
   alt,
   className = "",
   imgClassName = "",
-  placeholderClassName = "bg-[#F2F0E6]",
+  placeholderClassName = "bg-gray-100",
   eager = false,
   sizes = "(max-width: 768px) 50vw, 33vw",
 }: {
@@ -32,7 +32,7 @@ export default function FadeImage({
   const { loaded, ref, onLoad } = useImageLoaded();
 
   return (
-    <div className={`relative overflow-hidden bg-[#F2F0E6] ${className}`}>
+    <div className={`relative overflow-hidden bg-gray-100 ${className}`}>
       <MotionImage
         ref={ref}
         src={src}

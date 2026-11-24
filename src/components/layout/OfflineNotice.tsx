@@ -26,7 +26,7 @@ export default function OfflineNotice() {
       <p
         role="status"
         aria-live="polite"
-        className="rounded-full border border-[#EEE8D5] bg-[#FFFAF0] px-4 py-2 text-center text-sm text-foreground shadow-lg"
+        className="rounded-full border border-gray-100 bg-white px-4 py-2 text-center text-sm text-foreground shadow-lg"
       >
         {isOffline
           ? "You're offline. This page is still open; some updates may not sync."

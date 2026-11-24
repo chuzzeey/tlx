@@ -58,7 +58,7 @@ export default function SignInViewPage() {
   }
 
   return (
-    <div className='relative isolate flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-[#f3f1e9] via-[#e8ede7] to-[#dfe8df] text-foreground dark:from-[#14231f] dark:via-[#192d26] dark:to-[#23392f] lg:grid lg:grid-cols-2 lg:px-0'>
+    <div className='relative isolate flex min-h-screen flex-col overflow-hidden bg-white text-foreground dark:bg-gradient-to-br dark:from-[#14231f] dark:via-[#192d26] dark:to-[#23392f] lg:grid lg:grid-cols-2 lg:px-0'>
       <div className='pointer-events-none absolute left-1/2 top-[12%] z-0 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full border border-emerald-950/10 dark:border-white/10' />
       <div className='pointer-events-none absolute left-1/2 top-[20%] z-0 h-[27rem] w-[27rem] -translate-x-1/2 rounded-full border border-emerald-950/10 dark:border-white/10' />
       <aside className='relative z-10 flex min-h-[280px] flex-col overflow-hidden bg-transparent px-6 py-6 text-[#17372e] dark:text-white sm:min-h-[310px] sm:px-8 lg:min-h-screen lg:px-12 lg:py-10'>
@@ -99,7 +99,7 @@ export default function SignInViewPage() {
         </p>
       </aside>
       <main className='relative z-10 flex w-full flex-1 items-center justify-center bg-transparent px-5 py-8 sm:px-8 sm:py-10 lg:min-h-screen lg:px-12 lg:py-12'>
-        <div className='w-full max-w-[430px] rounded-[28px] border border-[#dce8dd] bg-[#f4f8f3] p-6 shadow-[0_28px_90px_-48px_rgba(23,55,46,0.28)] sm:p-9 dark:border-border dark:bg-background/95'>
+        <div className='w-full max-w-[430px] rounded-[28px] border border-gray-200 bg-white p-6 shadow-[0_28px_90px_-48px_rgba(23,55,46,0.28)] sm:p-9 dark:border-border dark:bg-background/95'>
           <div className='mb-8 space-y-3'>
             <p className='font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>
               Secure admin access

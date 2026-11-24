@@ -59,12 +59,12 @@ export default function PostDetail({ postId }: { postId: string }) {
       {/* Hero image */}
       <div className="container-x max-w-5xl py-10">
         <motion.div
-          className="relative aspect-[16/9] overflow-hidden border border-border bg-[#F2F0E6]"
+          className="relative aspect-[16/9] overflow-hidden border border-border bg-gray-100"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
         >
-          {!heroLoaded && <div aria-hidden className="absolute inset-0 z-10 animate-pulse bg-[#F2F0E6]" />}
+          {!heroLoaded && <div aria-hidden className="absolute inset-0 z-10 animate-pulse bg-gray-100" />}
           <MotionImage
             ref={heroRef}
             src={post.image}

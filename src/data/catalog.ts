@@ -465,8 +465,3 @@ export function productsByCategory(slug: string): Product[] {
 export function categoryName(slug: string): string {
   return categoryBySlug(slug)?.name ?? slug;
 }
-
-export const FREE_SHIPPING_THRESHOLD_NGN = 203_106;
-export const STANDARD_SHIPPING_FEE_NGN = 12_186;
-export const EXPRESS_SHIPPING_FEE_NGN = 18_957;
-export const WHITE_GLOVE_SHIPPING_FEE_NGN = 66_348;

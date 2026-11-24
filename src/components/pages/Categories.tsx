@@ -55,14 +55,14 @@ export default function Categories() {
                 <CellIn key={category.slug} index={index} className="h-full">
                   <Link
                     href={`/categories/${category.slug}`}
-                    className="group relative flex h-40 items-stretch overflow-hidden rounded-3xl bg-[#EEE8D5]"
+                    className="group relative flex h-40 items-stretch overflow-hidden rounded-3xl bg-gray-100"
                   >
                     <div className="relative z-10 flex w-[54%] flex-col justify-center px-5 py-4">
                       <h2 className="text-xl font-semibold leading-tight">{category.name}</h2>
                       <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
                         {category.tagline}
                       </p>
-                      <span className="mt-3 inline-flex w-fit rounded-full bg-[#FFFAF0] px-2.5 py-1 text-[11px] font-medium">
+                      <span className="mt-3 inline-flex w-fit rounded-full bg-white px-2.5 py-1 text-[11px] font-medium">
                         {count} {count === 1 ? "Product" : "Products"}
                       </span>
                     </div>

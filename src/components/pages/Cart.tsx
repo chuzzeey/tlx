@@ -5,10 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Handbag, Minus, Plus } from "lucide-react";
-import {
-  FREE_SHIPPING_THRESHOLD_NGN,
-  STANDARD_SHIPPING_FEE_NGN,
-} from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
 import { PageSkeleton } from "@/components/ProductCard";
 import { isProductInStock } from "@/lib/product-availability";
@@ -171,10 +167,7 @@ export default function Cart() {
     return <EmptyCart count={cartCount} />;
   }
 
-  const shipping = cart.length === 0 || subtotal >= FREE_SHIPPING_THRESHOLD_NGN
-    ? 0
-    : STANDARD_SHIPPING_FEE_NGN;
-  const total = subtotal + shipping;
+  const total = subtotal;
   const itemCount = cart.reduce((count, line) => count + line.qty, 0);
   const checkoutBlocked = cart.some((line) => {
     const product = products.find((candidate) => candidate.id === line.productId);
@@ -256,7 +249,7 @@ export default function Cart() {
                 >
                   <Link
                     href={`/products/${p.id}`}
-                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-[#EEE8D5] md:h-32 md:w-32"
+                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-gray-100 md:h-32 md:w-32"
                   >
                     <Image
                       src={p.image}
@@ -344,7 +337,7 @@ export default function Cart() {
         <aside>
           <div
             className="rounded-2xl border p-5 md:p-7 lg:sticky lg:top-32"
-            style={{ backgroundColor: "#F5F2EA", borderColor: "#A58F70" }}
+            style={{ backgroundColor: "#F3F4F6", borderColor: "#D1D5DB" }}
           >
             <p className="font-display text-xl font-light">Your order</p>
             <dl className="mt-5 space-y-3 text-sm">

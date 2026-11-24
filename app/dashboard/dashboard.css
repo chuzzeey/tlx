@@ -1,30 +1,30 @@
 .dashboard-shell {
   --radius: 0.75rem;
   --radius-md: calc(var(--radius) - 2px);
-  --background: 210 28% 97%;
+  --background: 0 0% 100%;
   --foreground: 210 24% 17%;
-  --card: 0 0% 100%;
+  --card: 0 0% 96%;
   --card-foreground: 210 24% 17%;
   --popover: 0 0% 100%;
   --popover-foreground: 210 24% 17%;
   --primary: 199 31% 36%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 205 20% 91%;
+  --secondary: 0 0% 96%;
   --secondary-foreground: 210 24% 21%;
-  --muted: 210 20% 93%;
+  --muted: 0 0% 96%;
   --muted-foreground: 211 11% 46%;
-  --accent: 199 28% 91%;
+  --accent: 0 0% 96%;
   --accent-foreground: 207 30% 23%;
   --destructive: 5 57% 47%;
   --destructive-foreground: 0 0% 100%;
   --border: 207 18% 84%;
   --input: 207 18% 84%;
   --ring: 199 31% 36%;
-  --sidebar-background: 211 27% 95%;
+  --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 210 24% 17%;
   --sidebar-primary: 199 31% 36%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 204 23% 89%;
+  --sidebar-accent: 0 0% 96%;
   --sidebar-accent-foreground: 207 30% 23%;
   --sidebar-border: 207 18% 84%;
   --sidebar-ring: 199 31% 36%;
@@ -37,9 +37,7 @@
   --overview-danger: 5 57% 47%;
   color-scheme: light;
   color: hsl(var(--foreground));
-  background:
-    radial-gradient(ellipse at 82% 0%, rgba(196, 216, 226, .56), transparent 34rem),
-    linear-gradient(138deg, #eef3f4 0%, #f6f7f5 54%, #e9eff1 100%);
+  background: hsl(var(--background));
 }
 
 .dark .dashboard-shell {
@@ -1241,12 +1239,7 @@
 .dashboard-shell {
   position: relative;
   isolation: isolate;
-  background:
-    radial-gradient(ellipse at 76% 2%, rgba(166, 202, 217, .46), transparent 34rem),
-    radial-gradient(ellipse at 5% 88%, rgba(221, 231, 228, .62), transparent 36rem),
-    radial-gradient(ellipse at 97% 72%, rgba(193, 214, 221, .4), transparent 38rem),
-    linear-gradient(138deg, #eaf1f3 0%, #f6f7f5 46%, #e1eaec 100%);
-  background-attachment: fixed;
+  background: hsl(var(--background));
 }
 
 .dark .dashboard-shell {
@@ -1259,28 +1252,28 @@
 }
 
 .dashboard-shell:has(.dashboard-profile-page) {
-  --background: 220 14% 97%;
+  --background: 0 0% 100%;
   --foreground: 220 18% 15%;
-  --card: 0 0% 100%;
+  --card: 0 0% 96%;
   --card-foreground: 220 18% 15%;
   --popover: 0 0% 100%;
   --popover-foreground: 220 18% 15%;
   --primary: 220 16% 26%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 12% 93%;
+  --secondary: 0 0% 96%;
   --secondary-foreground: 220 16% 20%;
-  --muted: 220 12% 94%;
+  --muted: 0 0% 96%;
   --muted-foreground: 220 8% 45%;
-  --accent: 220 12% 93%;
+  --accent: 0 0% 96%;
   --accent-foreground: 220 16% 20%;
   --border: 220 11% 86%;
   --input: 220 11% 82%;
   --ring: 220 12% 38%;
-  --sidebar-background: 220 14% 96%;
+  --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 220 18% 15%;
   --sidebar-primary: 220 16% 26%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 12% 92%;
+  --sidebar-accent: 0 0% 96%;
   --sidebar-accent-foreground: 220 16% 20%;
   --sidebar-border: 220 11% 86%;
   --sidebar-ring: 220 12% 38%;

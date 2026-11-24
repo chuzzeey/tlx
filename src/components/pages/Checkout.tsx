@@ -19,12 +19,6 @@ import {
 } from "lucide-react";
 import { Barcode, Stamp } from "@/components/Ornaments";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  EXPRESS_SHIPPING_FEE_NGN,
-  FREE_SHIPPING_THRESHOLD_NGN,
-  STANDARD_SHIPPING_FEE_NGN,
-  WHITE_GLOVE_SHIPPING_FEE_NGN,
-} from "@/data/catalog";
 import { useCatalog } from "@/store/CatalogContext";
 import { PageSkeleton } from "@/components/ProductCard";
 import { isProductInStock } from "@/lib/product-availability";
@@ -62,9 +56,9 @@ const transferAccount = {
 };
 
 const deliveryOptions = [
-  { id: "standard", name: "Standard courier", eta: "3–5 business days", price: 0 },
-  { id: "express", name: "Express courier", eta: "1–2 business days", price: EXPRESS_SHIPPING_FEE_NGN },
-  { id: "whiteglove", name: "White-glove (furniture)", eta: "Scheduled with you", price: WHITE_GLOVE_SHIPPING_FEE_NGN },
+  { id: "standard", name: "Standard courier", eta: "3–5 business days" },
+  { id: "express", name: "Express courier", eta: "1–2 business days" },
+  { id: "whiteglove", name: "White-glove (furniture)", eta: "Scheduled with you" },
 ];
 
 function CheckoutHeader({ count }: { count: number }) {
@@ -144,14 +138,7 @@ export default function Checkout() {
     }
   };
 
-  const delivery = deliveryOptions.find((d) => d.id === form.delivery)!;
-  const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD_NGN;
-  const shipping = cart.length === 0
-    ? 0
-    : qualifiesForFreeShipping && delivery.id !== "whiteglove"
-      ? delivery.price
-      : delivery.price + (qualifiesForFreeShipping ? 0 : STANDARD_SHIPPING_FEE_NGN);
-  const total = subtotal + shipping;
+  const total = subtotal;
   const whatsappReceiptHref = `${whatsappHref}?text=${encodeURIComponent(
     `Hi TLX Originals, I have made a bank transfer of ${formatPrice(total)}. I am sending my payment receipt for confirmation.`,
   )}`;
@@ -274,7 +261,7 @@ export default function Checkout() {
           {step === 0 && (
             <section
               className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-border"
-              style={{ backgroundColor: "#FFFDF0" }}
+              style={{ backgroundColor: "#F3F4F6" }}
             >
               <div className="border-b border-neutral-200 px-5 py-5 dark:border-border sm:px-7">
                 <p className="label-mono text-center">Order summary</p>
@@ -360,7 +347,7 @@ export default function Checkout() {
                       <span className="block font-mono2 text-[11px] text-muted-foreground">{d.eta}</span>
                     </span>
                   </span>
-                  <span className="font-mono2 text-sm">{d.price === 0 ? (qualifiesForFreeShipping ? "Free" : formatPrice(STANDARD_SHIPPING_FEE_NGN)) : formatPrice(d.price)}</span>
+                  <span className="font-mono2 text-sm">Free</span>
                 </label>
               ))}
               <textarea
@@ -460,25 +447,25 @@ export default function Checkout() {
       <Dialog open={paymentNoticeOpen} onOpenChange={handlePaymentDialogChange}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-md rounded-[28px] border border-[#A58F70]/35 bg-[#FFFDF0] p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
+          className="max-w-md rounded-[28px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
         >
           <DialogClose
             aria-label="Close payment details"
-            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[#A58F70]/10 hover:text-foreground"
+            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-gray-100 hover:text-foreground"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </DialogClose>
           {paymentStatus === "processing" ? (
             <div className="flex flex-col items-center py-5 text-center" role="status" aria-live="polite">
-              <div className="relative grid size-24 place-items-center rounded-full bg-[#EAE1D1]">
-                <span className="absolute inset-1 rounded-full border border-[#A58F70]/35" aria-hidden="true" />
+              <div className="relative grid size-24 place-items-center rounded-full bg-gray-100">
+                <span className="absolute inset-1 rounded-full border border-gray-300" aria-hidden="true" />
                 <LoaderCircle
-                  className="h-16 w-16 animate-spin text-[#765D3D]"
+                  className="h-16 w-16 animate-spin text-neutral-700"
                   strokeWidth={1.35}
                   aria-hidden="true"
                 />
               </div>
-              <p className="mt-6 font-mono2 text-[10px] uppercase tracking-[0.2em] text-[#8B7355]">
+              <p className="mt-6 font-mono2 text-[10px] uppercase tracking-[0.2em] text-neutral-600">
                 TLX secure checkout
               </p>
               <DialogTitle className="mt-2 font-display text-2xl font-light">
@@ -487,9 +474,9 @@ export default function Checkout() {
               <DialogDescription className="mt-2 max-w-xs leading-relaxed">
                 We&apos;re getting your Moniepoint payment details ready. This will only take a moment.
               </DialogDescription>
-              <div className="mt-7 h-1 w-full overflow-hidden rounded-full bg-[#EAE1D1]">
+              <div className="mt-7 h-1 w-full overflow-hidden rounded-full bg-gray-100">
                 <motion.div
-                  className="h-full rounded-full bg-[#8B7355]"
+                  className="h-full rounded-full bg-neutral-700"
                   initial={{ width: "0%" }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 3, ease: "linear" }}
@@ -499,10 +486,10 @@ export default function Checkout() {
           ) : (
             <>
               <DialogHeader className="pr-8">
-                <span className="mb-1 inline-flex size-10 items-center justify-center rounded-full bg-[#EAE1D1] text-[#765D3D]">
+                <span className="mb-1 inline-flex size-10 items-center justify-center rounded-full bg-gray-100 text-neutral-700">
                   <Landmark className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-[#8B7355]">
+                <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-neutral-600">
                   TLX secure checkout
                 </p>
                 <DialogTitle className="font-display text-2xl font-light">Pay by bank transfer</DialogTitle>
@@ -510,7 +497,7 @@ export default function Checkout() {
                   Transfer <span className="font-semibold text-foreground">{formatPrice(total)}</span> to complete your order.
                 </DialogDescription>
               </DialogHeader>
-              <dl className="space-y-4 rounded-2xl border border-[#A58F70]/35 bg-[#F8F3E8] p-4 text-sm sm:p-5">
+              <dl className="space-y-4 rounded-2xl border border-gray-200 bg-gray-100 p-4 text-sm sm:p-5">
                 <div className="flex items-center justify-between gap-4">
                   <dt className="text-muted-foreground">Bank</dt>
                   <dd className="font-medium">{transferAccount.bank}</dd>
@@ -519,7 +506,7 @@ export default function Checkout() {
                   <dt className="text-muted-foreground">Account name</dt>
                   <dd className="max-w-[65%] text-right font-medium">{transferAccount.name}</dd>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#A58F70]/25 pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-4">
                   <dt className="text-muted-foreground">Account number</dt>
                   <dd className="flex items-center gap-2 font-mono2 font-semibold">
                     {transferAccount.number}
@@ -561,19 +548,19 @@ export default function Checkout() {
           showCloseButton={false}
           onEscapeKeyDown={(event) => event.preventDefault()}
           onInteractOutside={(event) => event.preventDefault()}
-          className="max-w-md rounded-[28px] border border-[#A58F70]/35 bg-[#FFFDF0] p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
+          className="max-w-md rounded-[28px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
         >
           <DialogClose
             aria-label="Close payment follow-up"
-            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[#A58F70]/10 hover:text-foreground"
+            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-gray-100 hover:text-foreground"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </DialogClose>
           <DialogHeader className="pt-3">
-            <span className="mb-1 inline-flex size-12 items-center justify-center rounded-full bg-[#EAE1D1] text-[#765D3D]">
+            <span className="mb-1 inline-flex size-12 items-center justify-center rounded-full bg-gray-100 text-neutral-700">
               <WhatsAppIcon className="h-6 w-6" />
             </span>
-            <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-[#8B7355]">
+            <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-neutral-600">
               Payment follow-up
             </p>
             <DialogTitle className="font-display text-2xl font-light">

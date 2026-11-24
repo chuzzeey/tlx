@@ -8,6 +8,7 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "api.slingacademy.com" },
+      { protocol: "https", hostname: "kwwhzyzuzvewxbvoaatc.supabase.co" },
       ...(supabaseHostname ? [{ protocol: "https", hostname: supabaseHostname }] : []),
     ],
   },

@@ -262,7 +262,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EEE8D5] md:aspect-square">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -288,7 +288,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     onClick={() => setImgIdx(index)}
                     aria-label={`View product image ${index + 1}`}
                     aria-pressed={activeImageIndex === index}
-                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-[#EEE8D5] ${
+                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-gray-100 ${
                       activeImageIndex === index ? "border-foreground" : "border-transparent"
                     }`}
                   >
@@ -617,7 +617,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
         >
-          <div className="relative aspect-square overflow-hidden border border-border bg-[#EEE8D5]">
+          <div className="relative aspect-square overflow-hidden border border-border bg-gray-100">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -648,7 +648,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     width={400}
                     height={400}
                     sizes="(max-width: 767px) 48px, 16vw"
-                    className="aspect-square w-full bg-[#EEE8D5] object-cover"
+                    className="aspect-square w-full bg-gray-100 object-cover"
                   />
                 </button>
               ))}

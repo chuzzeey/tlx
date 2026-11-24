@@ -68,7 +68,7 @@ function Orders({ products }: { products: Product[] }) {
                   if (!p) return null;
                   return (
                     <li key={i.productId} className="flex items-center gap-4">
-                      <Image src={p.image} alt="" width={48} height={48} sizes="48px" className="h-12 w-12 border border-border bg-[#EEE8D5] object-cover" />
+                      <Image src={p.image} alt="" width={48} height={48} sizes="48px" className="h-12 w-12 border border-border bg-gray-100 object-cover" />
                       <Link href={`/products/${p.id}`} className="link-underline flex-1 text-sm">{p.name}</Link>
                       <span className="font-mono2 text-xs text-muted-foreground">× {i.qty}</span>
                       <span className="font-mono2 text-sm">{formatPrice(i.price * i.qty)}</span>
@@ -163,7 +163,7 @@ function MobileAccountProfile({
             {initials}
           </div>
           <p className="mt-2 text-base font-semibold">{name}</p>
-          <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#f7edd9] px-4 py-2 text-sm font-medium text-[#896b36]">
+          <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-neutral-700">
             <Crown className="h-4 w-4" aria-hidden="true" />
             {tier}
           </span>
@@ -272,7 +272,7 @@ export default function Account() {
                   href={`/products/${p.id}`}
                   className="group flex w-40 shrink-0 flex-col border border-border bg-background transition-colors hover:bg-card"
                 >
-                  <Image src={p.image} alt={p.name} width={400} height={400} sizes="160px" className="aspect-square w-full bg-[#EEE8D5] object-cover" />
+                  <Image src={p.image} alt={p.name} width={400} height={400} sizes="160px" className="aspect-square w-full bg-gray-100 object-cover" />
                   <span className="flex flex-1 flex-col justify-between gap-1.5 p-3">
                     <span className="link-underline text-[13px] font-medium leading-snug">{p.name}</span>
                     <span className="font-mono2 text-[11px] text-muted-foreground">{formatPrice(p.price)}</span>

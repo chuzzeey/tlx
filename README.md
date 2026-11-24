@@ -164,7 +164,7 @@ catalog on request when Supabase is configured. Other editorial and account cont
 | `/content` | Journal | Editorial index — 12 essays with tags, read times, and imagery |
 | `/content/[postId]` | Essay | Long-form article with drop cap, pull quotes, author line, and a **Shop the story** rail of the products featured in the piece |
 | `/support/faq` | FAQ | Grouped accordion of common questions (orders, shipping, returns, care) |
-| `/cart` | Bag | Line items with quantity steppers and remove, order summary (subtotal, shipping, tax), free-shipping progress hint (complimentary over ₦203,106), empty state |
+| `/cart` | Bag | Line items with quantity steppers and remove, order summary with complimentary shipping, empty state |
 | `/checkout` | Checkout | Four-step flow — Information → Delivery → Payment → Review — with progress indicator, validation, and an order-confirmation screen with barcode |
 | `/account` | Account | Tabbed profile: orders with expandable line detail, saved addresses, profile details |
 | `/wishlist` | Wishlist | Saved pieces with move-to-bag actions and empty state |
@@ -173,7 +173,7 @@ catalog on request when Supabase is configured. Other editorial and account cont
 
 ### Commerce
 
-- **Shopping bag** — add from any product card or detail page, adjust quantities, remove lines; totals computed live with a ₦203,106 free-shipping threshold and tax
+- **Shopping bag** — add from any product card or detail page, adjust quantities, remove lines; totals computed live with complimentary shipping
 - **Wishlist** — one-tap save/unsave everywhere a product appears
 - **Recently viewed trail** — product visits are recorded and resurfaced
 - **Mock checkout** — full multi-step flow ending in a confirmed order id; orders and account data remain fixtures in `src/data/account.ts`

@@ -112,7 +112,7 @@ export default function Header() {
               aria-label="Search products"
               title="Search — press / or ⌘K"
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground md:h-11 md:w-40 md:justify-start md:gap-3 md:px-4 lg:w-56 xl:w-72 ${
-                isHome ? "bg-[#FFFAF0]" : "bg-neutral-100 dark:bg-muted"
+                isHome ? "bg-white" : "bg-neutral-100 dark:bg-muted"
               }`}
             >
               <Search className="h-[18px] w-[18px]" />
@@ -126,7 +126,7 @@ export default function Header() {
               data-cart-target
               data-cart-target-priority="1"
               className={`relative flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-foreground hover:text-background md:h-11 md:w-11 ${
-                isHome ? "bg-[#FFFAF0]" : "bg-neutral-100 dark:bg-muted"
+                isHome ? "bg-white" : "bg-neutral-100 dark:bg-muted"
               }`}
             >
               <Handbag className="h-[16px] w-[16px]" />

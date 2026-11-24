@@ -3,7 +3,7 @@
 export default function GlobalError({ reset }: { reset: () => void }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, background: "#F7F1E3", color: "#171717", fontFamily: "Arial, sans-serif" }}>
+      <body style={{ margin: 0, background: "#FFFFFF", color: "#171717", fontFamily: "Arial, sans-serif" }}>
         <main
           style={{
             minHeight: "100vh",
@@ -29,7 +29,7 @@ export default function GlobalError({ reset }: { reset: () => void }) {
                 border: 0,
                 borderRadius: "999px",
                 background: "#171717",
-                color: "#F7F1E3",
+                color: "#FFFFFF",
                 cursor: "pointer",
                 padding: "12px 20px",
               }}

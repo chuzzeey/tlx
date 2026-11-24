@@ -12,7 +12,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.remove("dark");
     document.documentElement.style.colorScheme = "light";
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#F7F1E3");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#FFFFFF");
   }, []);
 
   return <Ctx.Provider value={{ theme: "light" }}>{children}</Ctx.Provider>;

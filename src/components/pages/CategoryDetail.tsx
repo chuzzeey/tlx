@@ -27,7 +27,7 @@ function MobileProductCard({ product }: { product: Product }) {
 
   return (
     <article className="min-w-0">
-      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-[#EEE8D5]">
+      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-gray-100">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -124,7 +124,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
         </div>
 
         <div className="container-x mx-auto max-w-6xl space-y-5 py-4 md:py-8">
-          <div className="relative flex h-32 items-center overflow-hidden rounded-3xl bg-[#F2F0E6] px-5 md:h-56 md:px-8">
+          <div className="relative flex h-32 items-center overflow-hidden rounded-3xl bg-gray-100 px-5 md:h-56 md:px-8">
             <div className="relative z-10 w-[54%]">
               <h1 className="text-xl font-semibold leading-tight">{category.name}</h1>
               <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
@@ -133,7 +133,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               <p className="mt-3 hidden max-w-sm text-sm leading-6 text-muted-foreground md:block">
                 {category.description}
               </p>
-              <span className="mt-3 inline-flex rounded-full bg-[#FFFAF0] px-2.5 py-1 text-[10px] font-medium">
+              <span className="mt-3 inline-flex rounded-full bg-white px-2.5 py-1 text-[10px] font-medium">
                 {items.length} {items.length === 1 ? "product" : "products"}
               </span>
             </div>
@@ -155,8 +155,8 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               aria-pressed={selectedFilter === "all"}
               className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                 selectedFilter === "all"
-                  ? "bg-black font-medium text-[#F7F1E3]"
-                  : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
+                  ? "bg-black font-medium text-white"
+                  : "bg-white text-neutral-600 hover:text-foreground"
               }`}
             >
               All
@@ -169,8 +169,8 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
                 aria-pressed={selectedFilter === item.id}
                 className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                   selectedFilter === item.id
-                    ? "bg-black font-medium text-[#F7F1E3]"
-                    : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
+                    ? "bg-black font-medium text-white"
+                    : "bg-white text-neutral-600 hover:text-foreground"
                 }`}
               >
                 {toTitleCase(item.name)}

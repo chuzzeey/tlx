@@ -87,7 +87,7 @@ function PopularProductCard({
     <Link
       href={`/products/${product.id}?from=home`}
       aria-label={`View ${product.name}`}
-      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-[#EEE8D5] pl-3 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
+      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-gray-100 pl-3 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
     >
       <span
         className="brand-type max-w-[78px] text-[11px] font-bold leading-tight text-foreground uppercase md:max-w-[110px] md:text-xs"
@@ -127,7 +127,7 @@ function JacketCard({
 
   return (
     <article className="group relative min-w-0">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EEE8D5]">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
         <Link href={`/products/${product.id}?from=home`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -278,8 +278,8 @@ export default function Home() {
               aria-pressed={activeFilter === filter.category}
               className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                 activeFilter === filter.category
-                  ? "bg-black font-medium text-[#F7F1E3]"
-                  : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
+                  ? "bg-black font-medium text-white"
+                  : "bg-white text-neutral-600 hover:text-foreground"
               }`}
             >
               {filter.label}

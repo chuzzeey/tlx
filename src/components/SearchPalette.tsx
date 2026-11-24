@@ -175,7 +175,7 @@ export default function SearchPalette({
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
-                <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-[#EEE8D5] px-4">
+                <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-gray-100 px-4">
                   <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
                   <input
                     ref={mobileInputRef}
@@ -268,7 +268,7 @@ export default function SearchPalette({
                                 setQuery("");
                                 onOpenChange(false);
                               }}
-                              className="relative block aspect-square overflow-hidden rounded-2xl bg-[#EEE8D5]"
+                              className="relative block aspect-square overflow-hidden rounded-2xl bg-gray-100"
                             >
                               <Image
                                 src={item.image}
@@ -336,7 +336,7 @@ export default function SearchPalette({
                   </button>
                 </div>
 
-                <div className="mx-5 my-4 flex items-center gap-3 rounded-3xl border border-border bg-[#EEE8D5] px-4">
+                <div className="mx-5 my-4 flex items-center gap-3 rounded-3xl border border-border bg-gray-100 px-4">
                   <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
                   <Command.Input
                     ref={inputRef}
@@ -374,7 +374,7 @@ export default function SearchPalette({
                           alt=""
                           width={48}
                           height={60}
-                          className="h-[60px] w-12 shrink-0 rounded-lg bg-[#EEE8D5] object-cover"
+                          className="h-[60px] w-12 shrink-0 rounded-lg bg-gray-100 object-cover"
                         />
                         <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
                         {item.rating !== undefined && (
