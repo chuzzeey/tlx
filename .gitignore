@@ -3,6 +3,7 @@ node_modules
 next-env.d.ts
 dist
 *.log
+*.tsbuildinfo
 .env*
 !.env.example
 /dashboard/
