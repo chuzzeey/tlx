@@ -88,7 +88,11 @@ export function StorefrontContactProvider({ children }: { children: ReactNode })
         const message =
           error instanceof Error ? error.message : "WhatsApp contact settings could not be loaded.";
         console.error("Could not load storefront WhatsApp contact settings.", message);
-        toast.error("Showing the default WhatsApp number", { description: message });
+        if (navigator.onLine) {
+          toast.error("Contact settings could not be updated.", {
+            description: "Showing the last available contact details. Please try again later.",
+          });
+        }
       }
     }
 

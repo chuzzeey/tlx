@@ -1,7 +1,6 @@
 import { Separator } from '../ui/separator';
 import { Breadcrumbs } from '../breadcrumbs';
 import SearchInput from '../search-input';
-import { ThemeModeToggle } from '../themes/theme-mode-toggle';
 import { SidebarToggle } from './sidebar-toggle';
 import { Icons } from '@dashboard/components/icons';
 import Link from 'next/link';
@@ -29,7 +28,6 @@ export default function Header() {
           <Icons.laptop className='size-4 shrink-0' />
           <span className='hidden whitespace-nowrap text-sm lg:inline'>Preview storefront</span>
         </Link>
-        <ThemeModeToggle />
       </div>
     </header>
   );

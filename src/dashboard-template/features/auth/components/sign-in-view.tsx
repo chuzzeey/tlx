@@ -28,7 +28,7 @@ export default function SignInViewPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState(
     searchParams.get('error') === 'configuration'
-      ? 'Supabase Auth is not configured for this app. Check the Supabase URL and publishable key.'
+      ? 'Sign-in is temporarily unavailable. Please try again shortly.'
       : ''
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,13 +41,17 @@ export default function SignInViewPage() {
       const supabase = createSupabaseAuthBrowserClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(
+          error.status === 400
+            ? 'We could not verify those details. Check your email and password and try again.'
+            : 'Sign-in is temporarily unavailable. Please try again shortly.'
+        );
         return;
       }
       router.replace(nextPath);
       router.refresh();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Sign-in could not be completed.');
+    } catch {
+      setErrorMessage('Sign-in is temporarily unavailable. Please try again shortly.');
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +107,7 @@ export default function SignInViewPage() {
             <div className='space-y-2'>
               <h1 className='text-3xl font-semibold tracking-tight'>Sign in to your store</h1>
               <p className='text-sm leading-6 text-muted-foreground'>
-                Use the email and password linked to your Supabase Auth account.
+                Use the email and password associated with your administrator account.
               </p>
             </div>
           </div>

@@ -128,7 +128,7 @@ function StoreProductCard({ product, index, categoryName }: { product: Product; 
       transition={{ duration: 0.35, delay: Math.min(index * 0.025, 0.2), ease: EASE }}
       className="group min-w-0"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EEE8D5]">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -152,7 +152,7 @@ function StoreProductCard({ product, index, categoryName }: { product: Product; 
       <div className="pt-3">
         <p className="label-mono">{categoryName}</p>
         <Link href={`/products/${product.id}`} className="mt-1 block">
-          <h2 className="min-h-6 truncate text-sm font-medium leading-6 sm:text-base">{product.name}</h2>
+          <h2 className="h-6 truncate text-xs font-semibold leading-6 sm:text-sm">{product.name}</h2>
         </Link>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-[#FFC107] text-[#D99700]" aria-hidden="true" />
@@ -237,7 +237,7 @@ export default function Products() {
       <main className="container-x mx-auto max-w-[1600px] py-7 md:py-10">
         {status === "error" && (
           <p role="alert" className="mb-5 text-sm text-destructive">
-            The product catalog is unavailable: {error}
+              {error ?? "The store catalog could not be loaded. Please try again."}
           </p>
         )}
         <div className="mb-5 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
@@ -245,10 +245,10 @@ export default function Products() {
             type="button"
             onClick={() => setSelected([])}
             aria-pressed={selected.length === 0}
-            className={`shrink-0 rounded-full px-4 py-2 text-xs transition-colors ${
+            className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
               selected.length === 0
-                ? "bg-foreground text-background"
-                : "bg-neutral-50 text-neutral-600 hover:bg-neutral-100 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted/80"
+                ? "bg-black font-medium text-[#F7F1E3]"
+                : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
             }`}
           >
             All
@@ -261,10 +261,10 @@ export default function Products() {
                 type="button"
                 onClick={() => toggleCategory(category.slug)}
                 aria-pressed={active}
-                className={`shrink-0 rounded-full px-4 py-2 text-xs transition-colors ${
+                className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                   active
-                    ? "bg-foreground text-background"
-                    : "bg-neutral-50 text-neutral-600 hover:bg-neutral-100 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted/80"
+                    ? "bg-black font-medium text-[#F7F1E3]"
+                    : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
                 }`}
               >
                 {category.name}
@@ -282,7 +282,7 @@ export default function Products() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search the store…"
-              className="input-plain rounded-full bg-card pl-10"
+              className="input-plain h-12 rounded-3xl bg-[#FFFAF0] pl-10 text-base"
             />
           </div>
           <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -298,7 +298,7 @@ export default function Products() {
             </SheetContent>
           </Sheet>
           <Select value={sort} onValueChange={(value) => setSort(value as Sort)}>
-            <SelectTrigger className="w-full rounded-full border-border bg-card font-mono2 text-xs uppercase tracking-wider md:w-[190px]">
+            <SelectTrigger className="w-full rounded-3xl border-border bg-[#FFFAF0] font-mono2 text-xs uppercase tracking-wider md:w-[190px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
@@ -342,7 +342,7 @@ export default function Products() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-5 md:grid-cols-3 md:gap-y-10 xl:grid-cols-4 xl:gap-x-8"
+              className="mx-auto grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-4 md:grid-cols-3 md:gap-y-6 lg:max-w-5xl lg:gap-x-8"
             >
               {filtered.map((product, index) => (
                 <StoreProductCard

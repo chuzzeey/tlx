@@ -175,6 +175,7 @@ export default function Cart() {
     ? 0
     : STANDARD_SHIPPING_FEE_NGN;
   const total = subtotal + shipping;
+  const itemCount = cart.reduce((count, line) => count + line.qty, 0);
   const checkoutBlocked = cart.some((line) => {
     const product = products.find((candidate) => candidate.id === line.productId);
     return !product || !isProductInStock(product) || product.stock < line.qty;
@@ -255,7 +256,7 @@ export default function Cart() {
                 >
                   <Link
                     href={`/products/${p.id}`}
-                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-gray-100 md:h-32 md:w-32"
+                    className="relative h-[104px] w-[104px] shrink-0 overflow-hidden rounded-[20px] bg-[#EEE8D5] md:h-32 md:w-32"
                   >
                     <Image
                       src={p.image}
@@ -341,18 +342,25 @@ export default function Cart() {
 
         {/* Summary */}
         <aside>
-          <div className="rounded-2xl border border-neutral-200 bg-neutral-50/70 p-5 dark:border-border dark:bg-muted/40 md:p-7 lg:sticky lg:top-32">
+          <div
+            className="rounded-2xl border p-5 md:p-7 lg:sticky lg:top-32"
+            style={{ backgroundColor: "#F5F2EA", borderColor: "#A58F70" }}
+          >
             <p className="font-display text-xl font-light">Your order</p>
             <dl className="mt-5 space-y-3 text-sm">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">Item types</dt>
+                <dd className="font-semibold">{cart.length}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-muted-foreground">Pieces</dt>
+                <dd className="font-semibold">{itemCount}</dd>
+              </div>
+              <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">Subtotal</dt>
-                <dd className="font-mono2">{formatPrice(subtotal)}</dd>
+                <dd className="font-mono2 font-medium">{formatPrice(subtotal)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Shipping</dt>
-                <dd className="font-mono2">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
-              </div>
-              <div className="flex justify-between border-t border-border pt-3 text-base font-medium">
+              <div className="flex items-center justify-between border-t border-neutral-300/60 pt-3 text-base font-medium">
                 <dt>Total</dt>
                 <dd className="font-mono2">{formatPrice(total)}</dd>
               </div>
@@ -362,7 +370,10 @@ export default function Cart() {
                 Update unavailable or out-of-stock items before checkout.
               </p>
             ) : (
-              <Link href="/checkout" className="btn-solid-invert mt-7 w-full rounded-[12px]">
+              <Link
+                href="/checkout"
+                className="btn-solid-invert mt-7 w-full rounded-[12px]"
+              >
                 Proceed to checkout <ArrowRight className="h-4 w-4" />
               </Link>
             )}

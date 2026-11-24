@@ -175,7 +175,7 @@ export default function SearchPalette({
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
-                <div className="flex min-w-0 flex-1 items-center gap-3 rounded-xl bg-neutral-100 px-4">
+                <div className="flex min-w-0 flex-1 items-center gap-3 rounded-3xl bg-[#EEE8D5] px-4">
                   <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
                   <input
                     ref={mobileInputRef}
@@ -183,7 +183,7 @@ export default function SearchPalette({
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search products"
                     aria-label="Search products"
-                    className="h-12 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
+                    className="h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
                   />
                   <button
                     type="button"
@@ -268,7 +268,7 @@ export default function SearchPalette({
                                 setQuery("");
                                 onOpenChange(false);
                               }}
-                              className="relative block aspect-square overflow-hidden rounded-2xl bg-gray-100"
+                              className="relative block aspect-square overflow-hidden rounded-2xl bg-[#EEE8D5]"
                             >
                               <Image
                                 src={item.image}
@@ -336,14 +336,14 @@ export default function SearchPalette({
                   </button>
                 </div>
 
-                <div className="mx-5 my-4 flex items-center gap-3 rounded-2xl border border-border bg-neutral-50 px-4 dark:bg-muted">
+                <div className="mx-5 my-4 flex items-center gap-3 rounded-3xl border border-border bg-[#EEE8D5] px-4">
                   <Search className="h-5 w-5 shrink-0 text-muted-foreground" />
                   <Command.Input
                     ref={inputRef}
                     value={query}
                     onValueChange={setQuery}
                     placeholder="Search products…"
-                    className="h-12 w-full bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/70"
+                    className="h-12 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground/70"
                   />
                   <kbd className="hidden shrink-0 rounded-md bg-white px-2 py-1 text-[10px] font-medium text-muted-foreground sm:block dark:bg-background">
                     Esc
@@ -374,7 +374,7 @@ export default function SearchPalette({
                           alt=""
                           width={48}
                           height={60}
-                          className="h-[60px] w-12 shrink-0 rounded-lg bg-gray-100 object-cover"
+                          className="h-[60px] w-12 shrink-0 rounded-lg bg-[#EEE8D5] object-cover"
                         />
                         <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
                         {item.rating !== undefined && (

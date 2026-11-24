@@ -1,12 +1,24 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CreditCard, Handbag, Lock, PackageCheck, ShoppingCart } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Copy,
+  CreditCard,
+  Handbag,
+  Landmark,
+  LoaderCircle,
+  Lock,
+  PackageCheck,
+  ShoppingCart,
+  X,
+} from "lucide-react";
 import { Barcode, Stamp } from "@/components/Ornaments";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   EXPRESS_SHIPPING_FEE_NGN,
   FREE_SHIPPING_THRESHOLD_NGN,
@@ -19,17 +31,19 @@ import { isProductInStock } from "@/lib/product-availability";
 import { EASE } from "@/components/motion/motion";
 import { useShop } from "@/store/ShopContext";
 import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
+import { useStorefrontContact } from "@/store/useStorefrontContact";
+import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { toast } from "sonner";
 import CountryRegionPicker from "@/components/checkout/CountryRegionPicker";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Form {
   email: string; name: string; phone: string; street: string; city: string; country: string; region: string;
@@ -39,6 +53,12 @@ interface Form {
 const initial: Form = {
   email: "", name: "", phone: "", street: "", city: "", country: "Nigeria", region: "",
   delivery: "standard", card: "", expiry: "", cvc: "", nameOnCard: "", notes: "",
+};
+
+const transferAccount = {
+  bank: "Moniepoint",
+  name: "TLX Brand Aura Styles Businesses",
+  number: "6651628647",
 };
 
 const deliveryOptions = [
@@ -73,14 +93,56 @@ function CheckoutHeader({ count }: { count: number }) {
 }
 
 export default function Checkout() {
-  const router = useRouter();
+  const reduceMotion = useReducedMotion();
   const { products } = useCatalog();
   const { cart, cartCount, subtotal, clearCart, hydrated } = useShop();
   const { formatPrice } = useStorefrontCurrency();
+  const { whatsappHref } = useStorefrontContact();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(initial);
   const [placed, setPlaced] = useState<string | null>(null);
   const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
+  const [paymentConfirmationOpen, setPaymentConfirmationOpen] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "ready">("idle");
+  const [accountCopied, setAccountCopied] = useState(false);
+
+  useEffect(() => {
+    if (!paymentNoticeOpen || paymentStatus !== "processing") return;
+    const timer = window.setTimeout(() => setPaymentStatus("ready"), 3000);
+    return () => window.clearTimeout(timer);
+  }, [paymentNoticeOpen, paymentStatus]);
+
+  useEffect(() => {
+    if (!accountCopied) return;
+    const timer = window.setTimeout(() => setAccountCopied(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, [accountCopied]);
+
+  const openTransferDetails = () => {
+    setPaymentStatus("processing");
+    setPaymentNoticeOpen(true);
+  };
+
+  const handlePaymentDialogChange = (open: boolean) => {
+    setPaymentNoticeOpen(open);
+    if (!open) setPaymentStatus("idle");
+  };
+
+  const showPaymentConfirmation = () => {
+    handlePaymentDialogChange(false);
+    setPaymentConfirmationOpen(true);
+  };
+
+  const copyAccountNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(transferAccount.number);
+      setAccountCopied(true);
+    } catch {
+      toast.error("Could not copy the account number. Please copy it manually.", {
+        description: transferAccount.number,
+      });
+    }
+  };
 
   const delivery = deliveryOptions.find((d) => d.id === form.delivery)!;
   const qualifiesForFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD_NGN;
@@ -90,6 +152,9 @@ export default function Checkout() {
       ? delivery.price
       : delivery.price + (qualifiesForFreeShipping ? 0 : STANDARD_SHIPPING_FEE_NGN);
   const total = subtotal + shipping;
+  const whatsappReceiptHref = `${whatsappHref}?text=${encodeURIComponent(
+    `Hi TLX Originals, I have made a bank transfer of ${formatPrice(total)}. I am sending my payment receipt for confirmation.`,
+  )}`;
 
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -207,7 +272,10 @@ export default function Checkout() {
             transition={{ duration: 0.4, ease: EASE }}
           >
           {step === 0 && (
-            <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50/70 dark:border-border dark:bg-muted/40">
+            <section
+              className="overflow-hidden rounded-2xl border border-neutral-200 dark:border-border"
+              style={{ backgroundColor: "#FFFDF0" }}
+            >
               <div className="border-b border-neutral-200 px-5 py-5 dark:border-border sm:px-7">
                 <p className="label-mono text-center">Order summary</p>
               </div>
@@ -217,7 +285,7 @@ export default function Checkout() {
                   if (!p) return null;
                   return (
                     <li key={line.productId + (line.size ?? "")} className="flex items-center gap-4 py-4">
-                      <Image src={p.image} alt="" width={72} height={72} sizes="72px" className="h-[72px] w-[72px] shrink-0 rounded-xl bg-gray-100 object-contain p-1.5" />
+                      <Image src={p.image} alt="" width={72} height={72} sizes="72px" className="h-[72px] w-[72px] shrink-0 rounded-xl object-contain p-1.5" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium">{p.name}</span>
                         {line.size && (
@@ -233,14 +301,6 @@ export default function Checkout() {
                 })}
               </ul>
               <dl className="space-y-3 border-t border-neutral-200 px-5 py-5 text-sm dark:border-border sm:px-7">
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Subtotal</dt>
-                  <dd className="font-mono2">{formatPrice(subtotal)}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-muted-foreground">Shipping</dt>
-                  <dd className="font-mono2">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
-                </div>
                 <div className="flex justify-between border-t border-neutral-200 pt-3 text-base font-medium dark:border-border">
                   <dt>Total</dt>
                   <dd className="font-mono2">{formatPrice(total)}</dd>
@@ -366,7 +426,7 @@ export default function Checkout() {
             <div className="mt-8 flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={() => setPaymentNoticeOpen(true)}
+                onClick={openTransferDetails}
                 className="btn-solid-invert h-10 w-full max-w-xs rounded-[10px] px-4 py-2 text-[11px]"
               >
                 <ShoppingCart className="h-4 w-4" /> Proceed with payment
@@ -397,27 +457,149 @@ export default function Checkout() {
           )}
         </div>
       </div>
-      <AlertDialog open={paymentNoticeOpen} onOpenChange={setPaymentNoticeOpen}>
-        <AlertDialogContent className="rounded-2xl border-0 bg-neutral-100 dark:bg-neutral-900">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-display text-xl font-light">
-              Payment is under development
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Our technical team is still building the payment experience. Your order has not been submitted,
-              and you won&apos;t be asked for your address or country. Return to your cart to continue shopping.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction
-              onClick={() => router.push("/cart")}
-              className="rounded-[10px]"
-            >
-              Return to cart
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Dialog open={paymentNoticeOpen} onOpenChange={handlePaymentDialogChange}>
+        <DialogContent
+          showCloseButton={false}
+          className="max-w-md rounded-[28px] border border-[#A58F70]/35 bg-[#FFFDF0] p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
+        >
+          <DialogClose
+            aria-label="Close payment details"
+            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[#A58F70]/10 hover:text-foreground"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </DialogClose>
+          {paymentStatus === "processing" ? (
+            <div className="flex flex-col items-center py-5 text-center" role="status" aria-live="polite">
+              <div className="relative grid size-24 place-items-center rounded-full bg-[#EAE1D1]">
+                <span className="absolute inset-1 rounded-full border border-[#A58F70]/35" aria-hidden="true" />
+                <LoaderCircle
+                  className="h-16 w-16 animate-spin text-[#765D3D]"
+                  strokeWidth={1.35}
+                  aria-hidden="true"
+                />
+              </div>
+              <p className="mt-6 font-mono2 text-[10px] uppercase tracking-[0.2em] text-[#8B7355]">
+                TLX secure checkout
+              </p>
+              <DialogTitle className="mt-2 font-display text-2xl font-light">
+                Preparing your transfer
+              </DialogTitle>
+              <DialogDescription className="mt-2 max-w-xs leading-relaxed">
+                We&apos;re getting your Moniepoint payment details ready. This will only take a moment.
+              </DialogDescription>
+              <div className="mt-7 h-1 w-full overflow-hidden rounded-full bg-[#EAE1D1]">
+                <motion.div
+                  className="h-full rounded-full bg-[#8B7355]"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 3, ease: "linear" }}
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <DialogHeader className="pr-8">
+                <span className="mb-1 inline-flex size-10 items-center justify-center rounded-full bg-[#EAE1D1] text-[#765D3D]">
+                  <Landmark className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-[#8B7355]">
+                  TLX secure checkout
+                </p>
+                <DialogTitle className="font-display text-2xl font-light">Pay by bank transfer</DialogTitle>
+                <DialogDescription className="leading-relaxed">
+                  Transfer <span className="font-semibold text-foreground">{formatPrice(total)}</span> to complete your order.
+                </DialogDescription>
+              </DialogHeader>
+              <dl className="space-y-4 rounded-2xl border border-[#A58F70]/35 bg-[#F8F3E8] p-4 text-sm sm:p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-muted-foreground">Bank</dt>
+                  <dd className="font-medium">{transferAccount.bank}</dd>
+                </div>
+                <div className="flex items-start justify-between gap-4">
+                  <dt className="text-muted-foreground">Account name</dt>
+                  <dd className="max-w-[65%] text-right font-medium">{transferAccount.name}</dd>
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#A58F70]/25 pt-4">
+                  <dt className="text-muted-foreground">Account number</dt>
+                  <dd className="flex items-center gap-2 font-mono2 font-semibold">
+                    {transferAccount.number}
+                    <button
+                      type="button"
+                      onClick={copyAccountNumber}
+                      aria-label={accountCopied ? "Account number copied" : "Copy account number"}
+                      aria-live="polite"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2 text-xs transition-colors hover:bg-muted"
+                    >
+                      {accountCopied ? (
+                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                      )}
+                      {accountCopied ? "Copied" : "Copy"}
+                    </button>
+                  </dd>
+                </div>
+              </dl>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                After you transfer, keep your receipt and contact TLX to confirm payment. Payment is not automatically verified here.
+              </p>
+              <DialogFooter>
+                <button
+                  type="button"
+                  onClick={showPaymentConfirmation}
+                  className="btn-solid-invert w-full rounded-[10px]"
+                >
+                  Done
+                </button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog open={paymentConfirmationOpen} onOpenChange={setPaymentConfirmationOpen}>
+        <DialogContent
+          showCloseButton={false}
+          onEscapeKeyDown={(event) => event.preventDefault()}
+          onInteractOutside={(event) => event.preventDefault()}
+          className="max-w-md rounded-[28px] border border-[#A58F70]/35 bg-[#FFFDF0] p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
+        >
+          <DialogClose
+            aria-label="Close payment follow-up"
+            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[#A58F70]/10 hover:text-foreground"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </DialogClose>
+          <DialogHeader className="pt-3">
+            <span className="mb-1 inline-flex size-12 items-center justify-center rounded-full bg-[#EAE1D1] text-[#765D3D]">
+              <WhatsAppIcon className="h-6 w-6" />
+            </span>
+            <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-[#8B7355]">
+              Payment follow-up
+            </p>
+            <DialogTitle className="font-display text-2xl font-light">
+              Have you made the transfer?
+            </DialogTitle>
+            <DialogDescription className="leading-relaxed">
+              Once you&apos;ve paid, send your transfer receipt to TLX on WhatsApp so the team can confirm your payment.
+            </DialogDescription>
+          </DialogHeader>
+          <motion.a
+            href={whatsappReceiptHref}
+            target="_blank"
+            rel="noreferrer"
+            animate={reduceMotion ? undefined : { rotate: [0, -0.8, 0.8, -0.8, 0] }}
+            transition={reduceMotion ? undefined : { duration: 0.45, repeat: Infinity, repeatDelay: 3.5, ease: "easeInOut" }}
+            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+            className="btn-solid-invert w-full rounded-[10px]"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+            Send receipt on WhatsApp
+          </motion.a>
+          <DialogClose className="mx-auto w-fit text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground">
+            Close
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

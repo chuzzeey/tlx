@@ -168,7 +168,9 @@ export default function ProductDetail({ productId, initialProduct }: { productId
     return (
       <div className="container-x py-24 text-center">
         <p role={status === "error" ? "alert" : undefined} className="font-display text-3xl font-light">
-          {status === "error" ? `The catalog is unavailable: ${error}` : "This piece is no longer available."}
+          {status === "error"
+            ? error ?? "The store catalog could not be loaded. Please try again."
+            : "This piece is no longer available."}
         </p>
         <Link href="/products" className="btn-outline-invert mt-8">Back to the collection</Link>
       </div>
@@ -260,7 +262,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 md:aspect-square">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EEE8D5] md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -286,7 +288,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     onClick={() => setImgIdx(index)}
                     aria-label={`View product image ${index + 1}`}
                     aria-pressed={activeImageIndex === index}
-                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-gray-100 ${
+                    className={`relative h-12 w-12 overflow-hidden rounded-2xl border-2 bg-[#EEE8D5] ${
                       activeImageIndex === index ? "border-foreground" : "border-transparent"
                     }`}
                   >
@@ -459,6 +461,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                   product={item}
                   index={index}
                   showIndex={false}
+                  compact
                 />
               ))}
             </div>
@@ -475,6 +478,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                   product={item}
                   index={index}
                   showIndex={false}
+                  compact
                 />
               ))}
             </div>
@@ -613,7 +617,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
         >
-          <div className="relative aspect-square overflow-hidden border border-border bg-gray-100">
+          <div className="relative aspect-square overflow-hidden border border-border bg-[#EEE8D5]">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -644,7 +648,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     width={400}
                     height={400}
                     sizes="(max-width: 767px) 48px, 16vw"
-                    className="aspect-square w-full bg-gray-100 object-cover"
+                    className="aspect-square w-full bg-[#EEE8D5] object-cover"
                   />
                 </button>
               ))}

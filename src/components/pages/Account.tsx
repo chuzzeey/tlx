@@ -14,11 +14,9 @@ import {
   LayoutGrid,
   LogOut,
   MapPin,
-  Moon,
   Package,
   Settings,
   Store,
-  Sun,
   Ticket,
   Truck,
   User,
@@ -27,7 +25,6 @@ import { accountProfile, addresses, orders, orderTotal } from "@/data/account";
 import { type Product } from "@/data/catalog";
 import { PageHeader } from "@/components/ProductCard";
 import { Footnote } from "@/components/Ornaments";
-import { useTheme } from "@/store/ThemeContext";
 import { useShop } from "@/store/ShopContext";
 import { useCatalog } from "@/store/CatalogContext";
 import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
@@ -71,7 +68,7 @@ function Orders({ products }: { products: Product[] }) {
                   if (!p) return null;
                   return (
                     <li key={i.productId} className="flex items-center gap-4">
-                      <Image src={p.image} alt="" width={48} height={48} sizes="48px" className="h-12 w-12 border border-border bg-gray-100 object-cover" />
+                      <Image src={p.image} alt="" width={48} height={48} sizes="48px" className="h-12 w-12 border border-border bg-[#EEE8D5] object-cover" />
                       <Link href={`/products/${p.id}`} className="link-underline flex-1 text-sm">{p.name}</Link>
                       <span className="font-mono2 text-xs text-muted-foreground">× {i.qty}</span>
                       <span className="font-mono2 text-sm">{formatPrice(i.price * i.qty)}</span>
@@ -236,7 +233,6 @@ export default function Account() {
   const { formatPrice } = useStorefrontCurrency();
   const { products } = useCatalog();
   const router = useRouter();
-  const { theme, toggle } = useTheme();
   const { recent } = useShop();
   const [profile, setProfile] = useState({ name: accountProfile.name, email: accountProfile.email, phone: accountProfile.phone });
   const [prefs, setPrefs] = useState({ newsletter: true, orderUpdates: true, earlyAccess: false });
@@ -276,7 +272,7 @@ export default function Account() {
                   href={`/products/${p.id}`}
                   className="group flex w-40 shrink-0 flex-col border border-border bg-background transition-colors hover:bg-card"
                 >
-                  <Image src={p.image} alt={p.name} width={400} height={400} sizes="160px" className="aspect-square w-full bg-gray-100 object-cover" />
+                  <Image src={p.image} alt={p.name} width={400} height={400} sizes="160px" className="aspect-square w-full bg-[#EEE8D5] object-cover" />
                   <span className="flex flex-1 flex-col justify-between gap-1.5 p-3">
                     <span className="link-underline text-[13px] font-medium leading-snug">{p.name}</span>
                     <span className="font-mono2 text-[11px] text-muted-foreground">{formatPrice(p.price)}</span>
@@ -379,16 +375,6 @@ export default function Account() {
 
           <TabsContent value="preferences" className="mt-8">
             <div className="max-w-xl divide-y divide-border border-y border-border">
-              <div className="flex items-center justify-between py-5">
-                <div>
-                  <p className="text-sm font-medium">Appearance</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">Currently viewing in {theme} mode.</p>
-                </div>
-                <button onClick={toggle} className="btn-outline-invert !px-4 !py-2.5">
-                  {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                  {theme === "light" ? "Dark" : "Light"}
-                </button>
-              </div>
               {(
                 [
                   ["newsletter", "The Considered Post", "A monthly letter — new makers, care guides."],

@@ -1,18 +1,25 @@
 import type { Product } from "@/data/catalog";
 import { isProductInStock } from "@/lib/product-availability";
+import { cn } from "@/lib/utils";
 
-export default function ProductAvailabilityBadge({ product }: { product: Product }) {
+export default function ProductAvailabilityBadge({
+  product,
+  className,
+}: {
+  product: Product;
+  className?: string;
+}) {
   const inStock = isProductInStock(product);
 
   return (
     <span
-      className={`absolute bottom-[3.25rem] left-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono2 text-[9px] uppercase tracking-[0.12em] shadow-[0_2px_8px_rgba(15,23,42,0.12)] backdrop-blur-sm ${
+      className={cn(`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-medium shadow-[0_2px_8px_rgba(15,23,42,0.12)] backdrop-blur-sm ${
         inStock
-          ? "border-emerald-200/80 bg-white/90 text-emerald-800 dark:border-emerald-900/80 dark:bg-neutral-950/85 dark:text-emerald-300"
-          : "border-rose-200/80 bg-white/90 text-rose-800 dark:border-rose-900/80 dark:bg-neutral-950/85 dark:text-rose-300"
-      }`}
+          ? "border-0 bg-[#BDFCC9] text-[#228B22]"
+          : "border-0 bg-[#FFCCCB] text-rose-800 dark:bg-neutral-950/85 dark:text-rose-300"
+      }`, className)}
     >
-      <span className={`size-1.5 rounded-full ${inStock ? "bg-emerald-600" : "bg-rose-600"}`} aria-hidden="true" />
+      <span className={`size-1.5 rounded-full ${inStock ? "bg-[#006400]" : "bg-rose-600"}`} aria-hidden="true" />
       {inStock ? "In stock" : "Out of stock"}
     </span>
   );

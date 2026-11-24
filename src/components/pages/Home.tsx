@@ -10,12 +10,21 @@ import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
+import { toTitleCase } from "@/lib/utils";
 
 const popularImageBreaths = [
   { animationDuration: "5.2s", animationDelay: "-1.3s" },
   { animationDuration: "6.4s", animationDelay: "-4.8s" },
   { animationDuration: "4.7s", animationDelay: "-2.1s" },
   { animationDuration: "6.9s", animationDelay: "-5.6s" },
+];
+const scaledPopularProductNames = [
+  "tlx original black tee",
+  "tlx original armless",
+  "icon pink",
+  "varsity black long",
+  "varsity white long sleeve",
+  "icon white tee",
 ];
 
 function randomCardOrder(count: number) {
@@ -38,7 +47,12 @@ function PopularProductCard({
   isChanging: boolean;
   onTransitionComplete: () => void;
 }) {
-  const [typedProduct, setTypedProduct] = useState({ productId: product.id, text: product.name });
+  const titleCaseName = toTitleCase(product.name);
+  const normalizedProductIdentity = `${product.name} ${product.id}`.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+  const shouldScaleImage = scaledPopularProductNames.some((name) => normalizedProductIdentity.includes(name));
+  const containImage = product.id === "chaotic-club" || shouldScaleImage;
+  const imageScaleClass = product.id === "chaotic-club" ? "scale-[0.93]" : shouldScaleImage ? "scale-[0.9]" : "";
+  const [typedProduct, setTypedProduct] = useState({ productId: product.id, text: titleCaseName });
 
   useEffect(() => {
     if (!isChanging) return;
@@ -49,10 +63,10 @@ function PopularProductCard({
       characterIndex += 1;
       setTypedProduct({
         productId: product.id,
-        text: product.name.slice(0, characterIndex),
+        text: titleCaseName.slice(0, characterIndex),
       });
 
-      if (characterIndex >= product.name.length) {
+      if (characterIndex >= titleCaseName.length) {
         window.clearInterval(typingTimer);
         completionTimer = window.setTimeout(onTransitionComplete, 350);
       }
@@ -62,21 +76,21 @@ function PopularProductCard({
       window.clearInterval(typingTimer);
       if (completionTimer !== null) window.clearTimeout(completionTimer);
     };
-  }, [isChanging, onTransitionComplete, product.id, product.name]);
+  }, [isChanging, onTransitionComplete, product.id, titleCaseName]);
 
   const visibleName = isChanging
     ? typedProduct.productId === product.id ? typedProduct.text : ""
-    : product.name;
-  const showImage = !isChanging || visibleName.length === product.name.length;
+    : titleCaseName;
+  const showImage = !isChanging || visibleName.length === titleCaseName.length;
 
   return (
     <Link
       href={`/products/${product.id}?from=home`}
       aria-label={`View ${product.name}`}
-      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-gray-100 pl-3 transition-colors hover:bg-gray-100 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
+      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-[#EEE8D5] pl-3 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
     >
       <span
-        className="max-w-[78px] text-xs font-semibold leading-tight text-foreground md:max-w-[110px] md:text-sm"
+        className="brand-type max-w-[78px] text-[11px] font-bold leading-tight text-foreground uppercase md:max-w-[110px] md:text-xs"
         style={{ WebkitTextStroke: "0.25px currentColor" }}
       >
         {visibleName}
@@ -85,14 +99,14 @@ function PopularProductCard({
         )}
       </span>
       <div className="relative h-full w-[46%] shrink-0 md:w-[42%]">
-        <div className={`absolute inset-0 ${product.id === "chaotic-club" ? "scale-[0.93]" : ""}`}>
+        <div className={`absolute inset-0 ${imageScaleClass}`}>
           <div className={`absolute inset-0 transition-all duration-700 ease-in-out ${showImage ? "scale-100 opacity-100" : "scale-75 opacity-0"}`}>
             <Image
               src={product.image}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 25vw, 160px"
-              className={`popular-card-image-breathe ${product.id === "chaotic-club" ? "object-contain" : "object-cover"}`}
+              className={`popular-card-image-breathe ${containImage ? "object-contain" : "object-cover"}`}
               style={popularImageBreaths[index % popularImageBreaths.length]}
             />
           </div>
@@ -113,7 +127,7 @@ function JacketCard({
 
   return (
     <article className="group relative min-w-0">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#EEE8D5]">
         <Link href={`/products/${product.id}?from=home`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -130,7 +144,7 @@ function JacketCard({
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
       <Link href={`/products/${product.id}?from=home`} className="block pt-3">
-        <h2 className="h-6 truncate text-sm font-medium leading-6 sm:text-base">{product.name}</h2>
+        <h2 className="h-6 truncate text-xs font-semibold leading-6 sm:text-sm">{product.name}</h2>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden />
           <span className="text-foreground">{product.rating.toFixed(1)}</span>
@@ -229,7 +243,7 @@ export default function Home() {
       <section className="container-x py-5 sm:py-10 md:py-12 lg:py-14" aria-labelledby="popular-products-title">
         {status === "error" && (
           <p role="alert" className="mb-4 text-sm text-destructive">
-            The product catalog is unavailable: {error}
+            {error ?? "The store catalog could not be loaded. Please try again."}
           </p>
         )}
         <div className="mb-3 flex items-center justify-between gap-4">
@@ -262,10 +276,10 @@ export default function Home() {
               type="button"
               onClick={() => setActiveFilter(filter.category)}
               aria-pressed={activeFilter === filter.category}
-              className={`shrink-0 rounded-full px-4 py-2 text-xs transition-colors ${
+              className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                 activeFilter === filter.category
-                  ? "bg-foreground text-background"
-                  : "bg-neutral-50 text-neutral-600 hover:bg-neutral-100 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted/80"
+                  ? "bg-black font-medium text-[#F7F1E3]"
+                  : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
               }`}
             >
               {filter.label}

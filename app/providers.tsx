@@ -7,6 +7,7 @@ import { CatalogProvider } from "@/store/CatalogContext";
 import { StorefrontCurrencyProvider } from "@/store/StorefrontCurrencyContext";
 import { StorefrontContactProvider } from "@/store/StorefrontContactContext";
 import { Toaster } from "@/components/ui/sonner";
+import OfflineNotice from "@/components/layout/OfflineNotice";
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
@@ -16,7 +17,8 @@ export default function Providers({ children }: { children: ReactNode }) {
           <StorefrontContactProvider>
             <ShopProvider>
               {children}
-              <Toaster position="bottom-right" />
+              <Toaster position="top-center" />
+              <OfflineNotice />
             </ShopProvider>
           </StorefrontContactProvider>
         </StorefrontCurrencyProvider>

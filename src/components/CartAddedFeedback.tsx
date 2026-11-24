@@ -76,11 +76,11 @@ function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-white/40 backdrop-blur-md dark:bg-black/45"
+        className="absolute inset-0 bg-[#EEE8D5]/55 backdrop-blur-md"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.78)_0%,_rgba(229,231,235,0.36)_58%,_rgba(156,163,175,0.12)_100%)] dark:bg-[radial-gradient(ellipse_at_center,_rgba(39,39,42,0.72)_0%,_rgba(24,24,27,0.46)_58%,_rgba(9,9,11,0.32)_100%)]"
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(238,232,213,0.88)_0%,_rgba(238,232,213,0.48)_58%,_rgba(70,65,55,0.24)_100%)]"
       />
       {target && funnelPaths && (
         <svg
@@ -130,14 +130,14 @@ function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
             ? { type: "spring", stiffness: 150, damping: 20 }
             : { duration: 0.82, ease: [0.22, 1, 0.36, 1], times: [0, 0.58, 1] }
         }
-        className="fixed z-20 flex w-[min(88vw,24rem)] flex-col items-center overflow-hidden rounded-[28px] bg-white/45 px-7 py-7 text-center shadow-[0_24px_70px_rgba(15,23,42,0.14)] backdrop-blur-xl dark:bg-neutral-950/75"
+        className="fixed z-20 flex w-[min(88vw,24rem)] flex-col items-center overflow-hidden rounded-[28px] bg-[#EEE8D5]/85 px-7 py-7 text-center shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl"
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.88)_0%,_rgba(229,231,235,0.5)_58%,_rgba(156,163,175,0.2)_100%)] dark:bg-[radial-gradient(ellipse_at_center,_rgba(63,63,70,0.65)_0%,_rgba(39,39,42,0.42)_58%,_rgba(9,9,11,0.28)_100%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(238,232,213,0.96)_0%,_rgba(238,232,213,0.7)_58%,_rgba(70,65,55,0.18)_100%)]"
         />
-        <div aria-hidden="true" className="pointer-events-none absolute top-8 h-40 w-40 rounded-full bg-white/90 blur-3xl dark:bg-white/10" />
-        <div className="relative h-48 w-48 sm:h-56 sm:w-56">
+        <div aria-hidden="true" className="pointer-events-none absolute top-8 h-40 w-40 rounded-full bg-[#EEE8D5]/90 blur-3xl" />
+        <div className="relative h-48 w-48 overflow-hidden rounded-2xl bg-[#EEE8D5] sm:h-56 sm:w-56">
           <Image
             src={item.product.image}
             alt=""

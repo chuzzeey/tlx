@@ -5,7 +5,6 @@ import { ArrowLeft } from "lucide-react";
 import { useCatalog } from "@/store/CatalogContext";
 import { CellIn } from "@/components/motion/motion";
 import FadeImage from "@/components/FadeImage";
-import { Footnote } from "@/components/Ornaments";
 
 export default function Categories() {
   const { products, categories, status, error } = useCatalog();
@@ -33,45 +32,54 @@ export default function Categories() {
       </div>
 
       <div className="container-x mx-auto max-w-6xl pb-12 pt-6 md:pt-0">
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {categories.map((category, index) => {
-            const count = products.filter((product) => product.category === category.slug).length;
-            return (
-              <CellIn key={category.slug} index={index} className="h-full">
-                <Link
-                  href={`/categories/${category.slug}`}
-                  className="group relative flex h-40 items-stretch overflow-hidden rounded-3xl bg-neutral-100 transition-colors hover:bg-neutral-200 dark:bg-muted dark:hover:bg-muted/80"
-                >
-                  <div className="relative z-10 flex w-[54%] flex-col justify-center px-5 py-4">
-                    <h2 className="text-xl font-semibold leading-tight">{category.name}</h2>
-                    <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
-                      {category.tagline}
-                    </p>
-                    <span className="mt-3 inline-flex w-fit rounded-full bg-white px-2.5 py-1 text-[11px] font-medium dark:bg-neutral-900">
-                      {count} {count === 1 ? "Product" : "Products"}
-                    </span>
-                  </div>
-                  {status === "error" && (
-                    <p role="alert" className="mt-4 text-sm text-destructive">
-                      The product catalog is unavailable: {error}
-                    </p>
-                  )}
-                  <FadeImage
-                    src={category.image}
-                    alt={category.name}
-                    eager={index === 0}
-                    sizes="(max-width: 767px) 54vw, (max-width: 1023px) 27vw, 18vw"
-                    className="absolute inset-y-0 right-0 w-[54%] bg-transparent"
-                    imgClassName="object-contain object-right p-2 transition-transform duration-500 group-hover:scale-105"
-                  />
-                </Link>
-              </CellIn>
-            );
-          })}
-        </div>
-        <Footnote className="mt-8">
-          New departments open when the right maker appears — never before.
-        </Footnote>
+        {status === "loading" ? (
+          <p role="status" className="py-12 text-center text-sm text-muted-foreground">
+            Loading categories…
+          </p>
+        ) : status === "error" ? (
+          <p role="alert" className="py-12 text-center text-sm text-destructive">
+            {error ?? "The store catalog could not be loaded. Please try again."}
+          </p>
+        ) : categories.length === 0 ? (
+          <div
+            role="status"
+            className="rounded-2xl border border-dashed border-border py-20 text-center"
+          >
+            <p className="font-display text-2xl font-light">No categories are available.</p>
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category, index) => {
+              const count = products.filter((product) => product.category === category.slug).length;
+              return (
+                <CellIn key={category.slug} index={index} className="h-full">
+                  <Link
+                    href={`/categories/${category.slug}`}
+                    className="group relative flex h-40 items-stretch overflow-hidden rounded-3xl bg-[#EEE8D5]"
+                  >
+                    <div className="relative z-10 flex w-[54%] flex-col justify-center px-5 py-4">
+                      <h2 className="text-xl font-semibold leading-tight">{category.name}</h2>
+                      <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
+                        {category.tagline}
+                      </p>
+                      <span className="mt-3 inline-flex w-fit rounded-full bg-[#FFFAF0] px-2.5 py-1 text-[11px] font-medium">
+                        {count} {count === 1 ? "Product" : "Products"}
+                      </span>
+                    </div>
+                    <FadeImage
+                      src={category.image}
+                      alt={category.name}
+                      eager={index === 0}
+                      sizes="(max-width: 767px) 54vw, (max-width: 1023px) 27vw, 18vw"
+                      className="absolute inset-y-0 right-0 w-[54%] bg-transparent"
+                      imgClassName="object-contain object-right p-2 transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </Link>
+                </CellIn>
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );

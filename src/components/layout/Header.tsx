@@ -3,10 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Handbag, Home, LayoutGrid, Moon, Search, Store as StoreIcon, Sun, User, X } from "lucide-react";
+import { Handbag, Home, LayoutGrid, Search, Store as StoreIcon, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useShop } from "@/store/ShopContext";
-import { useTheme } from "@/store/ThemeContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SearchPalette from "@/components/SearchPalette";
 
@@ -36,7 +35,6 @@ const profileMenuItems = [
 
 export default function Header() {
   const { cartCount } = useShop();
-  const { theme, toggle } = useTheme();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname().replace(/\/+$/, "") || "/";
@@ -110,24 +108,12 @@ export default function Header() {
 
           <div className="flex items-center gap-2">
             <button
-              type="button"
-              onClick={toggle}
-              aria-label="Toggle color theme"
-              aria-pressed={theme === "dark"}
-              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
-              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-neutral-100 text-foreground transition-colors hover:bg-foreground hover:text-background dark:bg-muted md:flex md:h-11 md:w-11"
-            >
-              {theme === "light" ? (
-                <Moon className="h-[18px] w-[18px]" aria-hidden="true" />
-              ) : (
-                <Sun className="h-[18px] w-[18px]" aria-hidden="true" />
-              )}
-            </button>
-            <button
               onClick={() => setSearchOpen(true)}
               aria-label="Search products"
               title="Search — press / or ⌘K"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-neutral-100 text-muted-foreground transition-colors hover:text-foreground dark:bg-muted md:h-11 md:w-40 md:justify-start md:gap-3 md:px-4 lg:w-56 xl:w-72"
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground md:h-11 md:w-40 md:justify-start md:gap-3 md:px-4 lg:w-56 xl:w-72 ${
+                isHome ? "bg-[#FFFAF0]" : "bg-neutral-100 dark:bg-muted"
+              }`}
             >
               <Search className="h-[18px] w-[18px]" />
               <span className="hidden flex-1 text-left text-sm normal-case tracking-normal md:inline">Search products</span>
@@ -139,7 +125,9 @@ export default function Header() {
               title={`Cart${cartCount > 0 ? ` (${cartCount})` : ""}`}
               data-cart-target
               data-cart-target-priority="1"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-border bg-neutral-100 text-foreground transition-colors hover:bg-foreground hover:text-background dark:bg-muted md:h-11 md:w-11"
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-foreground hover:text-background md:h-11 md:w-11 ${
+                isHome ? "bg-[#FFFAF0]" : "bg-neutral-100 dark:bg-muted"
+              }`}
             >
               <Handbag className="h-[16px] w-[16px]" />
               {cartCount > 0 && (
@@ -254,45 +242,6 @@ export default function Header() {
           </button>
         </div>
         <nav aria-label="Profile menu" className="px-5 pt-6">
-          <div className="mb-7">
-            <p className="label-mono mb-3">Theme</p>
-            <div
-              role="group"
-              aria-label="Color theme"
-              className="grid grid-cols-2 gap-1 rounded-full border border-border bg-muted/50 p-1"
-            >
-              <button
-                type="button"
-                aria-pressed={theme === "light"}
-                onClick={() => {
-                  if (theme !== "light") toggle();
-                }}
-                className={`flex h-10 items-center justify-center gap-2 rounded-full border px-3 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  theme === "light"
-                    ? "border-border bg-background text-foreground shadow-sm"
-                    : "border-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground"
-                }`}
-              >
-                <Sun className="h-4 w-4" aria-hidden="true" />
-                Light
-              </button>
-              <button
-                type="button"
-                aria-pressed={theme === "dark"}
-                onClick={() => {
-                  if (theme !== "dark") toggle();
-                }}
-                className={`flex h-10 items-center justify-center gap-2 rounded-full border px-3 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  theme === "dark"
-                    ? "border-border bg-background text-foreground shadow-sm"
-                    : "border-transparent text-muted-foreground hover:bg-background/60 hover:text-foreground"
-                }`}
-              >
-                <Moon className="h-4 w-4" aria-hidden="true" />
-                Dark
-              </button>
-            </div>
-          </div>
           <div className="divide-y divide-border border-y border-border">
             {profileMenuItems.map(({ to, label, icon: Icon }) => {
               const isActive =

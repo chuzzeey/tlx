@@ -89,12 +89,12 @@ export function StorefrontCurrencyProvider({ children }: { children: ReactNode }
         refreshOnStorefront.current = false;
         const message =
           error instanceof Error ? error.message : "The storefront currency could not be loaded.";
-        setCurrency("NGN");
-        setRate(null);
         console.error("Could not load storefront currency settings.", message);
-        toast.error("Showing prices in NGN", {
-          description: `Storefront currency settings could not be loaded. ${message}`,
-        });
+        if (navigator.onLine) {
+          toast.error("Currency settings could not be updated.", {
+            description: "Showing the last available prices. Please try again later.",
+          });
+        }
       }
     }
 

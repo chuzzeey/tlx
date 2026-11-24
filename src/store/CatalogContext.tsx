@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import type { Category, Product } from '@/data/catalog';
@@ -27,12 +27,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState<CatalogContextValue['source']>(null);
   const [aliases, setAliases] = useState<Record<string, string>>({});
+  const hasLoadedCatalog = useRef(false);
 
   useEffect(() => {
     if (pathname.startsWith('/auth') || pathname.startsWith('/dashboard')) return;
     let active = true;
     let requestId = 0;
-    let loaded = false;
 
     async function loadCatalog() {
       const currentRequestId = ++requestId;
@@ -69,23 +69,38 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         setCategories(result.categories);
         setSource(result.source);
         setAliases(result.aliases);
+        hasLoadedCatalog.current = true;
+        setError(null);
         setStatus('ready');
-        loaded = true;
       } catch (cause) {
         if (!active || currentRequestId !== requestId) return;
-        const message = cause instanceof Error ? cause.message : 'The store catalog could not be loaded.';
-        if (loaded) {
-          toast.error('The storefront could not refresh product updates.', { description: message });
+        const offline = !navigator.onLine;
+        if (hasLoadedCatalog.current) {
+          setError(
+            offline
+              ? "You're offline. Showing the last loaded catalog."
+              : 'The catalog could not be refreshed. Showing the last loaded catalog.'
+          );
+          setStatus('ready');
+          if (!offline) {
+            toast.error('The store could not be refreshed.', {
+              description: 'Showing the last loaded catalog. Try again shortly.',
+            });
+          }
           return;
         }
-        setProducts([]);
-        setError(message);
+        setError(
+          offline
+            ? "You're offline. Reconnect to load the store catalog."
+            : 'The store catalog could not be loaded. Check your connection and try again.'
+        );
         setStatus('error');
-        toast.error('The store catalog could not be loaded.', { description: message });
       }
     }
 
     void loadCatalog();
+    const handleOnline = () => void loadCatalog();
+    window.addEventListener('online', handleOnline);
 
     let realtimeErrorShown = false;
     let channel: ReturnType<ReturnType<typeof createSupabaseAuthBrowserClient>['channel']> | undefined;
@@ -116,17 +131,22 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
               (subscriptionStatus === 'CHANNEL_ERROR' || subscriptionStatus === 'TIMED_OUT')
             ) {
               realtimeErrorShown = true;
-              toast.error('Live product updates are unavailable. Apply the latest Supabase migrations and reconnect.');
+              if (!navigator.onLine) return;
+              toast.error('Live product updates are temporarily unavailable.', {
+                description: 'The current catalog remains available; updates may be delayed.',
+              });
             }
           });
-      } catch (cause) {
-        const message = cause instanceof Error ? cause.message : 'Supabase Realtime could not be initialized.';
-        toast.error('Live product updates are unavailable.', { description: message });
+      } catch {
+        toast.error('Live product updates are temporarily unavailable.', {
+          description: 'The current catalog remains available; updates may be delayed.',
+        });
       }
     }
 
     return () => {
       active = false;
+      window.removeEventListener('online', handleOnline);
       if (channel) void channel.unsubscribe();
     };
   }, [pathname]);

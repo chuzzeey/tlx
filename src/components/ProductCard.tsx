@@ -29,10 +29,12 @@ export default function ProductCard({
   product,
   index,
   showIndex = true,
+  compact = false,
 }: {
   product: Product;
   index?: number;
   showIndex?: boolean;
+  compact?: boolean;
 }) {
   const { categories } = useCatalog();
   const { formatPrice } = useStorefrontCurrency();
@@ -41,7 +43,7 @@ export default function ProductCard({
       layout
       exit={{ opacity: 0 }}
       transition={{ duration: 0.45, ease: EASE }}
-      className="hairline-cell group relative transition-colors duration-300 hover:bg-card"
+      className="hairline-cell group relative transition-colors duration-300"
     >
       <Link
         href={`/products/${encodeURIComponent(product.id)}`}
@@ -54,12 +56,12 @@ export default function ProductCard({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "0px 0px 80px 0px" }}
         transition={{ duration: 0.7, delay: Math.min((index ?? 0) * 0.045, 0.35), ease: EASE }}
-        className="pointer-events-none relative z-20 flex h-full flex-col p-5"
+        className={`pointer-events-none relative z-20 flex h-full flex-col ${compact ? "p-3 sm:p-4" : "p-5"}`}
       >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="label-mono">{categories.find((category) => category.slug === product.category)?.name ?? product.category}</p>
-          <span className="link-underline mt-1.5 block text-sm font-medium leading-snug">{product.name}</span>
+          <p className={`label-mono ${compact ? "text-[9px] normal-case leading-4 tracking-normal" : ""}`}>{categories.find((category) => category.slug === product.category)?.name ?? product.category}</p>
+          <span className={`link-underline mt-1.5 block font-medium leading-snug ${compact ? "min-h-10 text-[13px] sm:text-sm" : "text-sm"}`}>{product.name}</span>
         </div>
         {showIndex && typeof index === "number" && (
           <span className="font-mono2 text-[10px] text-muted-foreground">{String(index + 1).padStart(3, "0")}</span>
@@ -67,20 +69,25 @@ export default function ProductCard({
       </div>
 
       <div className="mt-2 flex items-center gap-2">
-        <span className="font-mono2 text-sm">
+        <span className={`font-mono2 ${compact ? "text-[13px]" : "text-sm"}`}>
           {formatPrice(product.price)}
           {product.compareAt && (
             <span className="ml-2 text-xs text-muted-foreground line-through">{formatPrice(product.compareAt)}</span>
           )}
         </span>
+        <ProductAvailabilityBadge
+          product={product}
+          className={compact ? "ml-auto scale-90 origin-right" : "ml-auto"}
+        />
       </div>
 
-      <div className="relative mt-4 aspect-square overflow-hidden rounded-xl bg-gray-100">
+      <div className={`relative aspect-square overflow-hidden rounded-xl bg-[#EEE8D5] ${compact ? "mt-3" : "mt-4"}`}>
         <FadeImage
           src={product.image}
           alt={product.name}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
           className="h-full w-full bg-transparent"
+          placeholderClassName="bg-[#EEE8D5]"
           imgClassName="h-full w-full object-contain p-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
         />
         {product.badge && (
@@ -94,11 +101,10 @@ export default function ProductCard({
             {product.badge}
           </span>
         )}
-        <ProductAvailabilityBadge product={product} />
         <ProductFavoriteButton product={product} />
         <AddToCartButton
           product={product}
-          label="Add to bag"
+          label="Add to cart"
           className="pointer-events-auto absolute bottom-2.5 left-3 right-3 z-10 rounded-full"
         />
       </div>

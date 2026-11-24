@@ -17,6 +17,7 @@ export default function FadeImage({
   alt,
   className = "",
   imgClassName = "",
+  placeholderClassName = "bg-[#F2F0E6]",
   eager = false,
   sizes = "(max-width: 768px) 50vw, 33vw",
 }: {
@@ -24,13 +25,14 @@ export default function FadeImage({
   alt: string;
   className?: string;
   imgClassName?: string;
+  placeholderClassName?: string;
   eager?: boolean;
   sizes?: string;
 }) {
   const { loaded, ref, onLoad } = useImageLoaded();
 
   return (
-    <div className={`relative overflow-hidden bg-muted ${className}`}>
+    <div className={`relative overflow-hidden bg-[#F2F0E6] ${className}`}>
       <MotionImage
         ref={ref}
         src={src}
@@ -45,7 +47,7 @@ export default function FadeImage({
         transition={{ duration: 0.2, ease: EASE }}
         className={imgClassName}
       />
-      {!loaded && <div aria-hidden className="pointer-events-none absolute inset-0 animate-pulse bg-muted" />}
+      {!loaded && <div aria-hidden className={`pointer-events-none absolute inset-0 animate-pulse ${placeholderClassName}`} />}
     </div>
   );
 }

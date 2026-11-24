@@ -11,6 +11,7 @@ import AddToCartButton from "@/components/AddToCartButton";
 import ProductAvailabilityBadge from "@/components/ProductAvailabilityBadge";
 import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 import { useShop } from "@/store/ShopContext";
+import { toTitleCase } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -26,7 +27,7 @@ function MobileProductCard({ product }: { product: Product }) {
 
   return (
     <article className="min-w-0">
-      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-gray-100">
+      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-[#EEE8D5]">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
@@ -40,7 +41,7 @@ function MobileProductCard({ product }: { product: Product }) {
         <ProductFavoriteButton product={product} />
         <AddToCartButton product={product} className="absolute bottom-2.5 left-3 right-3 z-10" />
       </div>
-      <Link href={`/products/${product.id}`} className="mt-2 block truncate text-sm font-medium">
+      <Link href={`/products/${product.id}`} className="mt-2 block h-6 truncate text-xs font-semibold leading-6 sm:text-sm">
         {product.name}
       </Link>
       <div className="mt-1 flex min-w-0 items-center gap-1 text-xs">
@@ -73,7 +74,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
   if (!category && status === "error") {
     return (
       <p role="alert" className="container-x py-24 text-center text-sm text-destructive">
-        The product catalog is unavailable: {error}
+        {error ?? "The store catalog could not be loaded. Please try again."}
       </p>
     );
   }
@@ -123,7 +124,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
         </div>
 
         <div className="container-x mx-auto max-w-6xl space-y-5 py-4 md:py-8">
-          <div className="relative flex h-32 items-center overflow-hidden rounded-3xl bg-muted px-5 md:h-56 md:px-8">
+          <div className="relative flex h-32 items-center overflow-hidden rounded-3xl bg-[#F2F0E6] px-5 md:h-56 md:px-8">
             <div className="relative z-10 w-[54%]">
               <h1 className="text-xl font-semibold leading-tight">{category.name}</h1>
               <p className="mt-1.5 line-clamp-2 max-w-[150px] text-sm leading-tight text-muted-foreground">
@@ -132,8 +133,8 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               <p className="mt-3 hidden max-w-sm text-sm leading-6 text-muted-foreground md:block">
                 {category.description}
               </p>
-              <span className="mt-3 inline-flex rounded-full bg-background px-2.5 py-1 text-[11px] font-medium">
-                {items.length} {items.length === 1 ? "Product" : "Products"}
+              <span className="mt-3 inline-flex rounded-full bg-[#FFFAF0] px-2.5 py-1 text-[10px] font-medium">
+                {items.length} {items.length === 1 ? "product" : "products"}
               </span>
             </div>
             <Image
@@ -152,8 +153,10 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               type="button"
               onClick={() => setSelectedProductId("all")}
               aria-pressed={selectedFilter === "all"}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm ${
-                selectedFilter === "all" ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+              className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
+                selectedFilter === "all"
+                  ? "bg-black font-medium text-[#F7F1E3]"
+                  : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
               }`}
             >
               All
@@ -164,13 +167,13 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
                 type="button"
                 onClick={() => setSelectedProductId(item.id)}
                 aria-pressed={selectedFilter === item.id}
-                className={`shrink-0 rounded-full px-4 py-2 text-sm ${
+                className={`shrink-0 rounded-3xl px-4 py-2 text-xs transition-colors ${
                   selectedFilter === item.id
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-black font-medium text-[#F7F1E3]"
+                    : "bg-[#FFFAF0] text-neutral-600 hover:text-foreground"
                 }`}
               >
-                {item.name}
+                {toTitleCase(item.name)}
               </button>
             ))}
           </div>
@@ -191,7 +194,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
 
           {status === "error" ? (
             <p role="alert" className="py-12 text-center text-sm text-destructive">
-              The product catalog is unavailable: {error}
+              {error ?? "The store catalog could not be loaded. Please try again."}
             </p>
           ) : visibleItems.length ? (
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 pb-6 md:grid-cols-3 lg:grid-cols-4">
