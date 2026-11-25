@@ -42,7 +42,9 @@ export default function AdminSignOut({
   return (
     <>
       {renderTrigger
-        ? renderTrigger(() => setConfirming(true))
+        ? renderTrigger(() => {
+            void signOut();
+          })
         : (
           <Button
             type='button'
