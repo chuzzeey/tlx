@@ -243,7 +243,7 @@ export default function Account() {
   const signOut = () => {
     window.localStorage.removeItem("aurelle-demo-session");
     toast("Signed out", { description: "This is a demo — see you soon." });
-    router.push("/login");
+    router.push("/");
   };
 
   return (

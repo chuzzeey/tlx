@@ -3,10 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Handbag, Home, LayoutGrid, Search, Store as StoreIcon, User, X } from "lucide-react";
+import { Handbag, Home, LayoutGrid, Search, Store as StoreIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useShop } from "@/store/ShopContext";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SearchPalette from "@/components/SearchPalette";
 
 /** Number that rolls/pops whenever its value changes. */
@@ -27,15 +26,8 @@ function RollingCount({ value }: { value: number }) {
   );
 }
 
-const profileMenuItems = [
-  { to: "/products", label: "Store", icon: StoreIcon },
-  { to: "/categories", label: "Category", icon: LayoutGrid },
-  { to: "/cart", label: "Cart", icon: Handbag },
-];
-
 export default function Header() {
   const { cartCount } = useShop();
-  const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname().replace(/\/+$/, "") || "/";
   const isHome = pathname === "/";
@@ -44,16 +36,14 @@ export default function Header() {
   const isCategoryPage = pathname.startsWith("/categories");
   const isCartPage = pathname === "/cart";
   const isCheckoutPage = pathname === "/checkout";
-  const isAccountPage = pathname === "/account";
   const isSupportPage = pathname.startsWith("/support");
   const isOrdersPage = pathname === "/orders";
-  const isLoginPage = pathname === "/login";
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <>
       <header
         className={`sticky top-0 z-50 border-b border-border backdrop-blur-md ${
-          isProductDetail || isProductsIndex || isCategoryPage || isCartPage || isCheckoutPage || isAccountPage || isSupportPage || isOrdersPage || isLoginPage ? "hidden md:block" : ""
+          isProductDetail || isProductsIndex || isCategoryPage || isCartPage || isCheckoutPage || isSupportPage || isOrdersPage ? "hidden md:block" : ""
         } ${
           isHome ? "bg-background" : "bg-background/90"
         }`}
@@ -95,15 +85,6 @@ export default function Header() {
                 </Link>
               );
             })}
-            <Link
-              href="/account"
-              aria-current={isAccountPage || isLoginPage ? "page" : undefined}
-              className={`font-mono2 text-xs transition-colors ${
-                isAccountPage || isLoginPage ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Profile
-            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -146,8 +127,8 @@ export default function Header() {
 
       <nav
         aria-label="Mobile navigation"
-        className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border pb-[env(safe-area-inset-bottom)] backdrop-blur-md ${
-          isProductDetail || isCartPage || isCheckoutPage || isAccountPage || isOrdersPage || isLoginPage ? "hidden" : "md:hidden"
+        className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-border pb-[env(safe-area-inset-bottom)] backdrop-blur-md ${
+          isProductDetail || isCartPage || isCheckoutPage || isOrdersPage ? "hidden" : "md:hidden"
         } ${
           isHome ? "bg-background" : "bg-background/95"
         }`}
@@ -212,87 +193,7 @@ export default function Header() {
           </span>
           Cart
         </Link>
-        <SheetTrigger asChild>
-          <button
-            type="button"
-            aria-label="My Profile"
-            aria-current={pathname === "/account" ? "page" : undefined}
-            className={`flex min-h-16 flex-col items-center justify-center gap-1 font-mono2 text-[10px] transition-colors ${
-              pathname === "/account" ? "text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            <User className={`h-[18px] w-[18px] ${pathname === "/account" ? "fill-current" : ""}`} />
-            My Profile
-          </button>
-        </SheetTrigger>
       </nav>
-
-      <SheetContent side="right" className="flex h-full w-[320px] flex-col border-l border-border bg-background p-0">
-        <div className="flex items-center justify-between border-b border-border p-5">
-          <Link
-            href="/"
-            onClick={() => setOpen(false)}
-            aria-label="TLX Originals home"
-            className="brand-type font-display text-xl font-bold"
-          >
-            TLX Originals
-          </Link>
-          <button onClick={() => setOpen(false)} aria-label="Close menu">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <nav aria-label="Profile menu" className="px-5 pt-6">
-          <div className="divide-y divide-border border-y border-border">
-            {profileMenuItems.map(({ to, label, icon: Icon }) => {
-              const isActive =
-                to === "/products" ? isProductsIndex :
-                to === "/categories" ? isCategoryPage :
-                isCartPage;
-
-              return (
-                <Link
-                  key={to}
-                  href={to}
-                  onClick={() => setOpen(false)}
-                  aria-current={isActive ? "page" : undefined}
-                  aria-label={to === "/cart" ? `Cart, ${cartCount} ${cartCount === 1 ? "item" : "items"}` : undefined}
-                  className="flex items-center justify-between py-4 transition-colors hover:text-muted-foreground"
-                >
-                  <span className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    <span className="font-display text-xl font-light tracking-tight">{label}</span>
-                  </span>
-                  {to === "/cart" && cartCount > 0 && (
-                    <span
-                      aria-hidden="true"
-                      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 font-mono2 text-[10px] text-white"
-                    >
-                      <RollingCount value={cartCount} />
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-        <div className="mt-auto border-t border-border px-5 py-4">
-          <Link
-            href="/account"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 py-3 text-sm transition-colors hover:text-muted-foreground"
-          >
-            <User className="h-4 w-4" />
-            My account
-          </Link>
-          <Link
-            href="/login"
-            onClick={() => setOpen(false)}
-            className="mt-2 flex items-center border-t border-border pt-4 font-mono2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Sign in
-          </Link>
-        </div>
-      </SheetContent>
-    </Sheet>
+    </>
   );
 }
