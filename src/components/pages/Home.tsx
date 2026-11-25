@@ -105,6 +105,7 @@ function PopularProductCard({
               src={product.image}
               alt={product.name}
               fill
+              quality={100}
               sizes="(max-width: 640px) 25vw, 160px"
               className={`popular-card-image-breathe ${containImage ? "object-contain" : "object-cover"}`}
               style={popularImageBreaths[index % popularImageBreaths.length]}
@@ -135,6 +136,7 @@ function JacketCard({
             fill
             loading={eager ? "eager" : "lazy"}
             fetchPriority={eager ? "high" : undefined}
+            quality={100}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 40vw, 320px"
             className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
           />

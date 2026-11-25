@@ -38,6 +38,7 @@ export default function FadeImage({
         src={src}
         alt={alt}
         fill
+        quality={100}
         sizes={sizes}
         loading={eager ? "eager" : "lazy"}
         fetchPriority={eager ? "high" : undefined}

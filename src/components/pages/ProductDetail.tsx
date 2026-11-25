@@ -269,6 +269,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                 src={gallery[activeImageIndex]}
                 alt={product.name}
                 fill
+                quality={100}
                 sizes="(max-width: 767px) 100vw, (max-width: 1400px) 50vw, 700px"
                 loading="eager"
                 fetchPriority="high"
@@ -296,6 +297,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                       src={image}
                       alt=""
                       fill
+                      quality={100}
                       sizes="48px"
                       className="rounded-xl object-contain"
                     />
@@ -624,6 +626,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                 src={gallery[activeImageIndex]}
                 alt={product.name}
                 fill
+                quality={100}
                 sizes="(max-width: 767px) 100vw, 50vw"
                 loading="lazy"
                 className="object-cover"
@@ -647,6 +650,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
                     alt=""
                     width={400}
                     height={400}
+                    quality={100}
                     sizes="(max-width: 767px) 48px, 16vw"
                     className="aspect-square w-full bg-gray-100 object-cover"
                   />

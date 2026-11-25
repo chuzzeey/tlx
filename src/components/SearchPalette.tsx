@@ -274,6 +274,7 @@ export default function SearchPalette({
                                 src={item.image}
                                 alt={item.name}
                                 fill
+                                quality={100}
                                 sizes="(max-width: 767px) 50vw, 360px"
                                 className="object-contain p-2"
                               />
@@ -374,6 +375,7 @@ export default function SearchPalette({
                           alt=""
                           width={48}
                           height={60}
+                          quality={100}
                           className="h-[60px] w-12 shrink-0 rounded-lg bg-gray-100 object-cover"
                         />
                         <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>

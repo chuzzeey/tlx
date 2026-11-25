@@ -272,7 +272,7 @@ export default function Checkout() {
                   if (!p) return null;
                   return (
                     <li key={line.productId + (line.size ?? "")} className="flex items-center gap-4 py-4">
-                      <Image src={p.image} alt="" width={72} height={72} sizes="72px" className="h-[72px] w-[72px] shrink-0 rounded-xl object-contain p-1.5" />
+                      <Image src={p.image} alt="" width={72} height={72} quality={100} sizes="72px" className="h-[72px] w-[72px] shrink-0 rounded-xl object-contain p-1.5" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-sm font-medium">{p.name}</span>
                         {line.size && (

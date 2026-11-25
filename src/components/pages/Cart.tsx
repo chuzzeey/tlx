@@ -255,6 +255,7 @@ export default function Cart() {
                       src={p.image}
                       alt={p.name}
                       fill
+                      quality={100}
                       sizes="(max-width: 767px) 104px, 128px"
                       className="object-contain p-2"
                     />

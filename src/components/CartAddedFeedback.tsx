@@ -142,6 +142,7 @@ function CartAddedPopup({ item }: { item: CartAddedFeedbackItem }) {
             src={item.product.image}
             alt=""
             fill
+            quality={100}
             sizes="(max-width: 640px) 192px, 224px"
             loading="eager"
             fetchPriority="high"

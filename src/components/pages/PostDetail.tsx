@@ -70,6 +70,7 @@ export default function PostDetail({ postId }: { postId: string }) {
             src={post.image}
             alt={post.title}
             fill
+            quality={100}
             loading="eager"
             fetchPriority="high"
             sizes="(max-width: 1024px) 100vw, 1024px"

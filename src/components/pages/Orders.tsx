@@ -191,7 +191,7 @@ export default function OrdersPage() {
                         href={`/products/${product.id}`}
                         className="relative h-[88px] w-[88px] shrink-0 overflow-hidden rounded-[18px] bg-gray-100"
                       >
-                        <Image src={product.image} alt={product.name} fill sizes="88px" className="object-contain p-2" />
+                        <Image src={product.image} alt={product.name} fill quality={100} sizes="88px" className="object-contain p-2" />
                       </Link>
                       <div className="min-w-0 flex-1">
                         <Link href={`/products/${product.id}`} className="line-clamp-2 text-sm font-semibold leading-tight">
@@ -280,6 +280,7 @@ export default function OrdersPage() {
                     src={reviewTarget.product.image}
                     alt={reviewTarget.product.name}
                     fill
+                    quality={100}
                     sizes="88px"
                     className="object-contain p-2"
                   />

@@ -66,6 +66,7 @@ export default function SignInViewPage() {
           src='/images/products/stussy-jacket.png'
           alt='Black and white Stussy jacket'
           fill
+          quality={100}
           preload
           sizes='(max-width: 1023px) 100vw, 50vw'
           className='z-10 object-contain px-4 pb-10 pt-14 sm:px-10 lg:px-12 lg:pb-44 lg:pt-20'

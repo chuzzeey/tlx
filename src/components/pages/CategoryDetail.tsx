@@ -33,6 +33,7 @@ function MobileProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.name}
             fill
+            quality={100}
             sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
             className="object-contain p-2"
           />
@@ -143,6 +144,7 @@ export default function CategoryDetail({ categoryId }: { categoryId: string }) {
               fill
               loading="eager"
               fetchPriority="high"
+              quality={100}
               sizes="(max-width: 767px) 54vw, 620px"
               className="object-contain object-right p-2"
             />

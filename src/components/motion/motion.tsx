@@ -166,6 +166,7 @@ export function ImageReveal({
         src={src}
         alt={alt}
         fill
+        quality={100}
         sizes={sizes}
         loading="lazy"
         onLoad={onLoad}
