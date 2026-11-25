@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import ProductDetail from "@/components/pages/ProductDetail";
 import JsonLd from "@/components/JsonLd";
 import { getPublishedCategories, getPublishedProduct } from "@dashboard/lib/catalog-service";
-import { breadcrumbJsonLd, productJsonLd, SITE_NAME } from "@/lib/seo";
+import { breadcrumbJsonLd, productJsonLd, SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 
 type Params = Promise<{ productId: string }>;
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     alternates: { canonical: `/products/${product.id}` },
     openGraph: {
       title: `${product.name} — ${SITE_NAME}`,
-      images: [{ url: product.image, alt: product.name }],
+      images: [{ url: SOCIAL_IMAGE, alt: "TLX Originals" }],
     },
   };
 }

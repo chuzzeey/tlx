@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Products from "@/components/pages/Products";
 import JsonLd from "@/components/JsonLd";
 import { getPublishedCatalog } from "@dashboard/lib/catalog-service";
-import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
+import { collectionJsonLd, SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 
 const title = "Store";
 const description =
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/products" },
-  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/stussy-jacket.png"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: [SOCIAL_IMAGE] },
 };
 
 export const dynamic = "force-dynamic";

@@ -4,7 +4,7 @@ import CategoryDetail from "@/components/pages/CategoryDetail";
 import JsonLd from "@/components/JsonLd";
 import { categories as builtInCategories } from "@/data/catalog";
 import { getPublishedCatalog, getPublishedCategories } from "@dashboard/lib/catalog-service";
-import { breadcrumbJsonLd, collectionJsonLd, SITE_NAME } from "@/lib/seo";
+import { breadcrumbJsonLd, collectionJsonLd, SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 
 type Params = Promise<{ categoryId: string }>;
 
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     openGraph: {
       title: `${category.name} — ${SITE_NAME}`,
       description: category.description,
-      images: [{ url: category.image, alt: category.name }],
+      images: [{ url: SOCIAL_IMAGE, alt: "TLX Originals" }],
     },
   };
 }

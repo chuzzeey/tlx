@@ -4,7 +4,7 @@ import "./globals.css";
 import Providers from "./providers";
 import StorefrontChrome from "@/components/layout/StorefrontChrome";
 import JsonLd from "@/components/JsonLd";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, organizationJsonLd } from "@/lib/seo";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_IMAGE, organizationJsonLd } from "@/lib/seo";
 
 const satoshi = localFont({
   src: [
@@ -24,12 +24,8 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   icons: {
-    icon: [
-      {
-        url: "https://res.cloudinary.com/nygp3wws/image/upload/v1795157566/PHOTO-2026-11-20-07-52-07.jpg",
-        type: "image/jpeg",
-      },
-    ],
+    icon: [{ url: SOCIAL_IMAGE, type: "image/png" }],
+    apple: SOCIAL_IMAGE,
   },
   keywords: [
     "TLX Originals",
@@ -46,13 +42,13 @@ export const metadata: Metadata = {
     title: "TLX Originals — No Hype. Just Motion!",
     description: SITE_DESCRIPTION,
     url: SITE_URL,
-    images: [{ url: "/images/hero/hero-main.webp", width: 1200, height: 800, alt: "TLX Originals" }],
+    images: [{ url: SOCIAL_IMAGE, width: 1268, height: 1241, alt: "TLX Originals" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "TLX Originals — No Hype. Just Motion!",
     description: SITE_DESCRIPTION,
-    images: ["/images/hero/hero-main.webp"],
+    images: [SOCIAL_IMAGE],
   },
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },

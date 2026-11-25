@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ContentHub from "@/components/pages/ContentHub";
 import JsonLd from "@/components/JsonLd";
 import { posts } from "@/data/content";
-import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
+import { collectionJsonLd, SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 
 const title = "The Journal";
 const description =
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/content" },
-  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/posts/slow-home.webp"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: [SOCIAL_IMAGE] },
 };
 
 export default function Page() {

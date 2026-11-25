@@ -3,14 +3,29 @@ import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatPrice } from "@/lib/currency";
+import { SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 import { getStoreOrderReceipt } from "@/lib/store-order-service";
 
 export const dynamic = "force-dynamic";
 // Next.js route metadata is required here but is not a React component export.
 // eslint-disable-next-line react-refresh/only-export-components -- App Router metadata export.
 export const metadata: Metadata = {
-  title: "Order details",
+  title: `Order receipt — ${SITE_NAME}`,
+  description: "View your TLX Originals order receipt and delivery details.",
   robots: { index: false, follow: false },
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: `Order receipt — ${SITE_NAME}`,
+    description: "View your TLX Originals order receipt and delivery details.",
+    images: [{ url: SOCIAL_IMAGE, width: 1268, height: 1241, alt: "TLX Originals" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Order receipt — ${SITE_NAME}`,
+    description: "View your TLX Originals order receipt and delivery details.",
+    images: [SOCIAL_IMAGE],
+  },
 };
 
 function paymentStatusLabel(status: "awaiting_verification" | "paid" | "cancelled") {

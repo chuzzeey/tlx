@@ -6,6 +6,7 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:30
 export const SITE_NAME = "TLX Originals";
 export const SITE_DESCRIPTION =
   "No Hype. Just Motion! Shop jackets, T-shirts, shoes, bags, and accessories from TLX Originals.";
+export const SOCIAL_IMAGE = "/images/tlx-brand-share.png";
 
 export const abs = (path: string) => `${SITE_URL}${path}`;
 

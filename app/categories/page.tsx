@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Categories from "@/components/pages/Categories";
 import JsonLd from "@/components/JsonLd";
 import { getPublishedCategories } from "@dashboard/lib/catalog-service";
-import { collectionJsonLd, SITE_NAME } from "@/lib/seo";
+import { collectionJsonLd, SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 
 const title = "Categories";
 const description =
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/categories" },
-  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: ["/images/products/stussy-jacket.png"] },
+  openGraph: { title: `${title} — ${SITE_NAME}`, description, images: [SOCIAL_IMAGE] },
 };
 
 export default async function Page() {

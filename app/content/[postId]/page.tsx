@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import PostDetail from "@/components/pages/PostDetail";
 import JsonLd from "@/components/JsonLd";
 import { postBySlug, posts } from "@/data/content";
-import { articleJsonLd, breadcrumbJsonLd, SITE_NAME } from "@/lib/seo";
+import { articleJsonLd, breadcrumbJsonLd, SITE_NAME, SOCIAL_IMAGE } from "@/lib/seo";
 
 type Params = Promise<{ postId: string }>;
 
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       description: post.excerpt,
       publishedTime: post.date,
       authors: [post.author.name],
-      images: [{ url: post.image, alt: post.title }],
+      images: [{ url: SOCIAL_IMAGE, alt: "TLX Originals" }],
     },
   };
 }
