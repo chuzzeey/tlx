@@ -30,6 +30,12 @@ import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { toast } from "sonner";
 import CountryRegionPicker from "@/components/checkout/CountryRegionPicker";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -41,12 +47,12 @@ import {
 
 interface Form {
   email: string; name: string; phone: string; street: string; city: string; country: string; region: string;
-  delivery: string; card: string; expiry: string; cvc: string; nameOnCard: string; notes: string;
+  card: string; expiry: string; cvc: string; nameOnCard: string;
 }
 
 const initial: Form = {
   email: "", name: "", phone: "", street: "", city: "", country: "Nigeria", region: "",
-  delivery: "standard", card: "", expiry: "", cvc: "", nameOnCard: "", notes: "",
+  card: "", expiry: "", cvc: "", nameOnCard: "",
 };
 
 const transferAccount = {
@@ -54,12 +60,6 @@ const transferAccount = {
   name: "TLX Brand Aura Styles Businesses",
   number: "6651628647",
 };
-
-const deliveryOptions = [
-  { id: "standard", name: "Standard courier", eta: "3–5 business days" },
-  { id: "express", name: "Express courier", eta: "1–2 business days" },
-  { id: "whiteglove", name: "White-glove (furniture)", eta: "Scheduled with you" },
-];
 
 function CheckoutHeader({ count }: { count: number }) {
   return (
@@ -288,11 +288,29 @@ export default function Checkout() {
                 })}
               </ul>
               <dl className="space-y-3 border-t border-neutral-200 px-5 py-5 text-sm dark:border-border sm:px-7">
+                <div className="flex justify-between text-muted-foreground">
+                  <dt>Deliveries</dt>
+                  <dd>1-3 days</dd>
+                </div>
                 <div className="flex justify-between border-t border-neutral-200 pt-3 text-base font-medium dark:border-border">
                   <dt>Total</dt>
                   <dd className="font-mono2">{formatPrice(total)}</dd>
                 </div>
               </dl>
+              <Accordion
+                type="single"
+                collapsible
+                className="border-t border-neutral-200 px-5 dark:border-border sm:px-7"
+              >
+                <AccordionItem value="delivery">
+                  <AccordionTrigger className="py-4 hover:no-underline">
+                    Read more about delivery
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed">
+                    Estimated delivery is 1-3 days. Timing may vary by location.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </section>
           )}
 
@@ -325,38 +343,8 @@ export default function Checkout() {
 
           {/* Step 2: delivery */}
           {step === 2 && (
-            <div className="grid gap-4 md:grid-cols-2">
-              <p className="label-mono mb-2">Delivery method</p>
-              {deliveryOptions.map((d) => (
-                <label
-                  key={d.id}
-                  className={`flex cursor-pointer items-center justify-between gap-4 border p-5 transition-colors ${
-                    form.delivery === d.id ? "border-foreground bg-card" : "border-border hover:border-foreground/50"
-                  }`}
-                >
-                  <span className="flex items-center gap-4">
-                    <input
-                      type="radio"
-                      name="delivery"
-                      checked={form.delivery === d.id}
-                      onChange={() => setForm((f) => ({ ...f, delivery: d.id }))}
-                      className="h-4 w-4 accent-current"
-                    />
-                    <span>
-                      <span className="block text-sm font-medium">{d.name}</span>
-                      <span className="block font-mono2 text-[11px] text-muted-foreground">{d.eta}</span>
-                    </span>
-                  </span>
-                  <span className="font-mono2 text-sm">Free</span>
-                </label>
-              ))}
-              <textarea
-                value={form.notes}
-                onChange={set("notes")}
-                placeholder="Delivery notes (optional) — gate codes, floor, 'leave with neighbour'…"
-                rows={3}
-                className="input-plain mt-2"
-              />
+            <div className="py-8 text-center">
+              <p className="text-base font-medium">Deliveries 1-3 days</p>
             </div>
           )}
 
