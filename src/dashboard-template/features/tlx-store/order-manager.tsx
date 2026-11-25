@@ -250,7 +250,7 @@ export default function OrderManager({
                 <summary className="grid min-h-8 cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-sm font-medium marker:hidden">
                   <ClipboardList aria-hidden className="size-4 text-muted-foreground" />
                   <span className="leading-5">Order and delivery details</span>
-                  <ChevronDown aria-hidden className="size-4 justify-self-end text-muted-foreground transition-transform group-open:rotate-180" />
+                  <ChevronDown aria-hidden className="mr-2 size-4 justify-self-end text-muted-foreground transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(220px,0.7fr)]">
                   <div>
