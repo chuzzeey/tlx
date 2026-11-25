@@ -32,6 +32,7 @@ import {
   createStoreOrderResponseSchema,
   customerDetailsSchema,
   optionalCustomerEmailSchema,
+  receiptTokenSchema,
   type CreateStoreOrderResponse,
 } from "@/lib/store-order-schema";
 import {
@@ -256,7 +257,7 @@ export default function Checkout() {
           /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
             parsed.idempotencyKey,
           ) &&
-          /^[a-f0-9]{64}$/i.test(parsed.receiptToken)
+          receiptTokenSchema.safeParse(parsed.receiptToken).success
         ) {
           orderAttemptRef.current = {
             idempotencyKey: parsed.idempotencyKey,
@@ -266,10 +267,14 @@ export default function Checkout() {
         }
       }
 
-      const randomBytes = window.crypto.getRandomValues(new Uint8Array(32));
+      const randomBytes = window.crypto.getRandomValues(new Uint8Array(16));
       const attempt = {
         idempotencyKey: window.crypto.randomUUID(),
-        receiptToken: Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, "0")).join(""),
+        receiptToken: window
+          .btoa(String.fromCharCode(...randomBytes))
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/, ""),
       };
       window.sessionStorage.setItem(orderAttemptStorageKey, JSON.stringify(attempt));
       orderAttemptRef.current = attempt;
@@ -329,10 +334,13 @@ export default function Checkout() {
       }
 
       const message = [
-        `Hi TLX Originals, I placed order ${parsedResponse.data.orderId}.`,
-        `Please view the order details here: ${parsedResponse.data.receiptUrl}`,
-        "I will send my bank transfer receipt here for payment verification.",
-      ].join(" ");
+        "Hi TLX Originals,",
+        "",
+        `I placed order ${parsedResponse.data.orderId}.`,
+        `Order details: ${parsedResponse.data.receiptUrl}`,
+        "",
+        "I'll send my bank transfer receipt here for verification.",
+      ].join("\n");
       const confirmation: OrderConfirmation = {
         ...parsedResponse.data,
         whatsappUrl: `${whatsappHref}?text=${encodeURIComponent(message)}`,

@@ -43,9 +43,11 @@ export const checkoutItemSchema = z.object({
   size: z.string().trim().min(1).max(32).optional(),
 });
 
+export const receiptTokenSchema = z.string().regex(/^(?:[a-f0-9]{64}|[A-Za-z0-9_-]{22})$/);
+
 export const createStoreOrderSchema = z.object({
   idempotencyKey: z.string().uuid(),
-  receiptToken: z.string().regex(/^[a-f0-9]{64}$/i),
+  receiptToken: receiptTokenSchema,
   expectedTotalAmount: z.number().finite().nonnegative(),
   customer: customerDetailsSchema,
   items: z

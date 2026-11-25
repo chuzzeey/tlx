@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { createAdminSupabaseClient, isSupabaseAdminConfigured } from "@dashboard/lib/supabase-server";
+import { receiptTokenSchema } from "@/lib/store-order-schema";
 
 export type StoreOrderReceipt = {
   orderNumber: string;
@@ -26,7 +27,7 @@ export type StoreOrderReceipt = {
 };
 
 export async function getStoreOrderReceipt(token: string): Promise<StoreOrderReceipt | null> {
-  if (!/^[a-f0-9]{64}$/i.test(token)) return null;
+  if (!receiptTokenSchema.safeParse(token).success) return null;
   if (!isSupabaseAdminConfigured) {
     throw new Error("Order receipts are not configured.");
   }

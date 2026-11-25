@@ -4,6 +4,7 @@ import {
   createStoreOrderResponseSchema,
   createStoreOrderSchema,
   customerDetailsSchema,
+  receiptTokenSchema,
   updateStoreOrderStatusSchema,
   updateStoreOrderStatusResponseSchema,
 } from "../src/lib/store-order-schema.ts";
@@ -39,6 +40,12 @@ test("accepts a valid order request with an optional customer email", () => {
       .customer.email,
     "buyer@example.com",
   );
+});
+
+test("accepts compact receipt tokens and preserves existing receipt links", () => {
+  assert.equal(receiptTokenSchema.safeParse("A".repeat(22)).success, true);
+  assert.equal(receiptTokenSchema.safeParse("a".repeat(64)).success, true);
+  assert.equal(receiptTokenSchema.safeParse("A".repeat(21)).success, false);
 });
 
 test("accepts a saved order while its store email is still sending", () => {
