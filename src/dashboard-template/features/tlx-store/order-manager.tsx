@@ -26,6 +26,8 @@ type PendingAction = {
   status: "paid" | "cancelled";
 };
 
+const pageSize = 10;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -62,11 +64,12 @@ export default function OrderManager({
   const [orders, setOrders] = useState(initialOrders);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("awaiting_verification");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const [savingOrderId, setSavingOrderId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const visibleOrders = useMemo(() => {
+  const filteredOrders = useMemo(() => {
     const query = search.trim().toLowerCase();
     return orders.filter((order) => {
       const matchesStatus = statusFilter === "all" || order.paymentStatus === statusFilter;
@@ -77,6 +80,9 @@ export default function OrderManager({
       return matchesStatus && matchesSearch;
     });
   }, [orders, search, statusFilter]);
+  const pageCount = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const awaitingCount = orders.filter((order) => order.paymentStatus === "awaiting_verification").length;
   const paidOrders = orders.filter((order) => order.paymentStatus === "paid");
@@ -122,6 +128,10 @@ export default function OrderManager({
             : order,
         ),
       );
+      if (action.status === "paid") {
+        setStatusFilter("all");
+        setPage(1);
+      }
       setPendingAction(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "The order status could not be updated.");
@@ -154,7 +164,7 @@ export default function OrderManager({
         <div>
           <h2 className="font-semibold tracking-tight">Recent orders</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            {visibleOrders.length} shown · latest {orders.length} loaded
+            {filteredOrders.length} matching · latest {orders.length} loaded
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -164,7 +174,10 @@ export default function OrderManager({
             <input
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
               placeholder="Search order or customer"
               className="min-h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm sm:w-64"
             />
@@ -173,7 +186,10 @@ export default function OrderManager({
             <span className="sr-only">Filter by payment status</span>
             <select
               value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as StatusFilter);
+                setPage(1);
+              }}
               className="min-h-10 rounded-md border border-input bg-background px-3 text-sm"
             >
               <option value="awaiting_verification">Awaiting verification</option>
@@ -223,10 +239,10 @@ export default function OrderManager({
               </header>
 
               <details className="group mt-4 border-t border-border pt-3">
-                <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium marker:hidden">
+                <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 text-sm font-medium marker:hidden">
                   <ClipboardList aria-hidden className="size-4 text-muted-foreground" />
-                  Order and delivery details
-                  <ChevronDown aria-hidden className="ml-auto size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+                  <span className="flex-1 leading-5">Order and delivery details</span>
+                  <ChevronDown aria-hidden className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(220px,0.7fr)]">
                   <div>
@@ -315,6 +331,37 @@ export default function OrderManager({
               ? "Try another status or search term."
               : "Orders placed through bank-transfer checkout will appear here."}
           </p>
+        </div>
+      )}
+
+      {filteredOrders.length > pageSize && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+          <p className="text-xs text-muted-foreground">
+            Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredOrders.length)} of {filteredOrders.length}
+          </p>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              aria-label="Previous order page"
+              disabled={currentPage <= 1}
+              onClick={() => setPage(currentPage - 1)}
+              className="min-h-9 rounded-md border px-3 text-xs transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+              Page {currentPage} of {pageCount}
+            </span>
+            <button
+              type="button"
+              aria-label="Next order page"
+              disabled={currentPage >= pageCount}
+              onClick={() => setPage(currentPage + 1)}
+              className="min-h-9 rounded-md border px-3 text-xs transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
