@@ -62,7 +62,11 @@ export default function OrderManager({
   initialOrders: AdminStoreOrder[];
 }) {
   const [orders, setOrders] = useState(initialOrders);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("awaiting_verification");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    initialOrders.some((order) => order.paymentStatus === "awaiting_verification")
+      ? "awaiting_verification"
+      : "all",
+  );
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
@@ -128,8 +132,12 @@ export default function OrderManager({
             : order,
         ),
       );
-      if (action.status === "paid") {
-        setStatusFilter("all");
+      const hasOtherAwaitingOrders = orders.some(
+        (order) =>
+          order.id !== action.order.id && order.paymentStatus === "awaiting_verification",
+      );
+      if (action.status === "paid" || action.status === "cancelled") {
+        setStatusFilter(hasOtherAwaitingOrders ? "awaiting_verification" : "all");
         setPage(1);
       }
       setPendingAction(null);
@@ -239,10 +247,10 @@ export default function OrderManager({
               </header>
 
               <details className="group mt-4 border-t border-border pt-3">
-                <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 text-sm font-medium marker:hidden">
+                <summary className="grid min-h-8 cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 text-sm font-medium marker:hidden">
                   <ClipboardList aria-hidden className="size-4 text-muted-foreground" />
-                  <span className="flex-1 leading-5">Order and delivery details</span>
-                  <ChevronDown aria-hidden className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                  <span className="leading-5">Order and delivery details</span>
+                  <ChevronDown aria-hidden className="size-4 justify-self-end text-muted-foreground transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(220px,0.7fr)]">
                   <div>
