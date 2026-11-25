@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { formatPrice } from "@/lib/currency";
 import { getStoreOrderReceipt } from "@/lib/store-order-service";
@@ -90,8 +91,12 @@ export default async function OrderReceiptPage({
         </dl>
 
         <details className="group border-t border-border px-5 sm:px-8">
-          <summary className="cursor-pointer list-none py-4 text-sm font-medium marker:hidden">
+          <summary className="flex cursor-pointer list-none items-center py-4 text-sm font-medium marker:hidden">
             Delivery details
+            <ChevronDown
+              aria-hidden="true"
+              className="ml-auto size-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+            />
           </summary>
           <address className="pb-4 text-sm not-italic leading-relaxed text-muted-foreground">
             {order.customerName}
