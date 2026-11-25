@@ -44,13 +44,13 @@ npm start        # serve the production build
 
 The dashboard is integrated at `/dashboard` and uses Supabase Auth. Configure
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `ADMIN_EMAILS` in `.env.local`,
-then restart the app. Only the allowlisted Supabase Auth email can access admin routes. Admin sign-up
-is disabled; create the permitted user in Supabase Dashboard → Authentication → Users, set an email
-and password, and confirm the email. Add that same email to `ADMIN_EMAILS`. The sign-in page accepts
-only those Supabase Auth email/password credentials; public sign-up is not exposed.
+then restart the app. `taylorgrammm@gmail.com` is always allowlisted as the store owner; use
+`ADMIN_EMAILS` for additional admin addresses. Admin sign-up is disabled; create the matching user in
+Supabase Dashboard → Authentication → Users, set an email and password, and confirm the email. The
+sign-in page accepts only those Supabase Auth email/password credentials; public sign-up is not exposed.
 
-The TLX product admin uses the shared Supabase catalog. Set `ADMIN_EMAILS` to the permitted Supabase
-Auth email address(es), configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
+The TLX product admin uses the shared Supabase catalog. Set `ADMIN_EMAILS` to any additional permitted
+Supabase Auth email address(es), configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and
 the server-only `SUPABASE_SERVICE_ROLE_KEY`, then run
 [`supabase/migrations/20261121000000_tlx_store_catalog.sql`](./supabase/migrations/20261121000000_tlx_store_catalog.sql)
 and then
