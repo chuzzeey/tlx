@@ -19,6 +19,7 @@ const popularImageBreaths = [
   { animationDuration: "6.9s", animationDelay: "-5.6s" },
 ];
 const scaledPopularProductNames = [
+  "tlx flames tee",
   "tlx starlight",
   "tlx original black tee",
   "tlx original armless",
