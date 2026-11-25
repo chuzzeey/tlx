@@ -5,7 +5,8 @@ import { createSupabaseAuthServerClient } from './supabase-auth-server';
 
 export type AdminAccess =
   | { authorized: true; userId: string; email: string }
-  | { authorized: false; status: 401 | 403 | 503 };
+  | { authorized: false; status: 401 | 503 }
+  | { authorized: false; status: 403; email: string };
 
 const storeOwnerEmail = 'taylorgrammm@gmail.com';
 
@@ -36,7 +37,7 @@ export async function verifyStoreAdmin(): Promise<AdminAccess> {
       typeof data.claims.email === 'string' ? data.claims.email.trim().toLowerCase() : '';
     if (!userId) return { authorized: false, status: 401 };
     if (!email || !configuredAdminEmails().has(email)) {
-      return { authorized: false, status: 403 };
+      return { authorized: false, status: 403, email };
     }
 
     return { authorized: true, userId, email };
