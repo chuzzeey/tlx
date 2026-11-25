@@ -15,6 +15,8 @@ import {
   type RatingPoint
 } from '@dashboard/features/tlx-store/dashboard-charts';
 
+// Next.js page metadata is required here but is not a React component export.
+// eslint-disable-next-line react-refresh/only-export-components -- App Router metadata export.
 export const metadata = { title: 'Dashboard · TLX Originals Admin' };
 
 function getActivitySeries(products: DashboardProduct[], now = new Date()): ProductActivityPoint[] {
@@ -354,13 +356,16 @@ export default async function DashboardOverview() {
             <section className='intel-panel intel-commerce-panel' aria-labelledby='commerce-data-title'>
               <p className='intel-kicker'>09 <span>/</span> Commerce data</p>
               <div className='intel-commerce-title'>
-                <h2 id='commerce-data-title'>Sales and valuation</h2>
-                <span>Unavailable</span>
+                <h2 id='commerce-data-title'>Order management</h2>
+                <span>Orders page</span>
               </div>
               <p>
-                Order and payment records are not persisted, and products have no cost basis.
-                Revenue, sales trends and inventory valuation are omitted rather than estimated.
+                Review orders, verify bank transfers and update order statuses after the TLX orders
+                migration is applied. Sales trends and inventory valuation are not shown.
               </p>
+              <Link href='/dashboard/orders' className='intel-inline-link'>
+                Open order manager <ArrowUpRight aria-hidden className='size-4' />
+              </Link>
               <span className='intel-commerce-rule' aria-hidden='true' />
             </section>
           </div>

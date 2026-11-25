@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -8,20 +8,19 @@ import {
   ArrowRight,
   Check,
   Copy,
-  CreditCard,
   Handbag,
   Landmark,
   LoaderCircle,
-  Lock,
   PackageCheck,
   ShoppingCart,
   X,
 } from "lucide-react";
 import { Barcode, Stamp } from "@/components/Ornaments";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useCatalog } from "@/store/CatalogContext";
 import { PageSkeleton } from "@/components/ProductCard";
 import { isProductInStock } from "@/lib/product-availability";
+import { formatPrice as formatNgnPrice } from "@/lib/currency";
 import { EASE } from "@/components/motion/motion";
 import { useShop } from "@/store/ShopContext";
 import { useStorefrontCurrency } from "@/store/useStorefrontCurrency";
@@ -29,6 +28,12 @@ import { useStorefrontContact } from "@/store/useStorefrontContact";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { toast } from "sonner";
 import CountryRegionPicker from "@/components/checkout/CountryRegionPicker";
+import {
+  createStoreOrderResponseSchema,
+  customerDetailsSchema,
+  optionalCustomerEmailSchema,
+  type CreateStoreOrderResponse,
+} from "@/lib/store-order-schema";
 import {
   Accordion,
   AccordionContent,
@@ -47,12 +52,22 @@ import {
 
 interface Form {
   email: string; name: string; phone: string; street: string; city: string; country: string; region: string;
-  card: string; expiry: string; cvc: string; nameOnCard: string;
 }
 
 const initial: Form = {
   email: "", name: "", phone: "", street: "", city: "", country: "Nigeria", region: "",
-  card: "", expiry: "", cvc: "", nameOnCard: "",
+};
+
+const savedDetailsStorageKey = "tlx-checkout-details-v1";
+const orderAttemptStorageKey = "tlx-checkout-order-attempt-v1";
+
+type OrderAttempt = {
+  idempotencyKey: string;
+  receiptToken: string;
+};
+
+type OrderConfirmation = CreateStoreOrderResponse & {
+  whatsappUrl: string;
 };
 
 const transferAccount = {
@@ -87,18 +102,43 @@ function CheckoutHeader({ count }: { count: number }) {
 }
 
 export default function Checkout() {
-  const reduceMotion = useReducedMotion();
   const { products } = useCatalog();
   const { cart, cartCount, subtotal, clearCart, hydrated } = useShop();
   const { formatPrice } = useStorefrontCurrency();
   const { whatsappHref } = useStorefrontContact();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>(initial);
-  const [placed, setPlaced] = useState<string | null>(null);
+  const [orderConfirmation, setOrderConfirmation] = useState<OrderConfirmation | null>(null);
   const [paymentNoticeOpen, setPaymentNoticeOpen] = useState(false);
-  const [paymentConfirmationOpen, setPaymentConfirmationOpen] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "ready">("idle");
   const [accountCopied, setAccountCopied] = useState(false);
+  const [rememberDetails, setRememberDetails] = useState(true);
+  const [hasSavedDetails, setHasSavedDetails] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [orderSubmissionError, setOrderSubmissionError] = useState<string | null>(null);
+  const orderAttemptRef = useRef<OrderAttempt | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedDetails = window.localStorage.getItem(savedDetailsStorageKey);
+      if (!savedDetails) return;
+
+      const parsed = customerDetailsSchema.safeParse(JSON.parse(savedDetails));
+      if (!parsed.success) {
+        console.error("Saved checkout details are invalid.", parsed.error);
+        toast.error("Saved delivery details could not be loaded. Please enter them again.");
+        return;
+      }
+
+      // Sync saved browser data into the controlled checkout fields.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydrate from browser storage on mount.
+      setForm((current) => ({ ...current, ...parsed.data }));
+      setHasSavedDetails(true);
+    } catch (error) {
+      console.error("Could not read saved checkout details.", error);
+      toast.error("Saved delivery details could not be accessed in this browser.");
+    }
+  }, []);
 
   useEffect(() => {
     if (!paymentNoticeOpen || paymentStatus !== "processing") return;
@@ -113,18 +153,15 @@ export default function Checkout() {
   }, [accountCopied]);
 
   const openTransferDetails = () => {
+    setOrderSubmissionError(null);
     setPaymentStatus("processing");
     setPaymentNoticeOpen(true);
   };
 
   const handlePaymentDialogChange = (open: boolean) => {
+    if (!open && isCreatingOrder) return;
     setPaymentNoticeOpen(open);
     if (!open) setPaymentStatus("idle");
-  };
-
-  const showPaymentConfirmation = () => {
-    handlePaymentDialogChange(false);
-    setPaymentConfirmationOpen(true);
   };
 
   const copyAccountNumber = async () => {
@@ -139,9 +176,6 @@ export default function Checkout() {
   };
 
   const total = subtotal;
-  const whatsappReceiptHref = `${whatsappHref}?text=${encodeURIComponent(
-    `Hi TLX Originals, I have made a bank transfer of ${formatPrice(total)}. I am sending my payment receipt for confirmation.`,
-  )}`;
 
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -149,7 +183,7 @@ export default function Checkout() {
   const canContinue = useMemo(() => {
     if (step === 1) {
       return Boolean(
-        form.email.includes("@") &&
+        optionalCustomerEmailSchema.safeParse(form.email).success &&
         form.name.trim() &&
         form.phone.trim() &&
         form.street.trim() &&
@@ -158,11 +192,182 @@ export default function Checkout() {
         form.region.trim()
       );
     }
-    if (step === 3) return form.card.replace(/\s/g, "").length >= 12 && form.expiry.length >= 4 && form.cvc.length >= 3 && form.nameOnCard;
     return true;
   }, [step, form]);
 
-  if (placed) {
+  const saveCustomerDetails = () => {
+    if (!rememberDetails) {
+      try {
+        window.localStorage.removeItem(savedDetailsStorageKey);
+        setHasSavedDetails(false);
+      } catch (error) {
+        console.error("Could not remove saved checkout details.", error);
+        toast.error("Saved delivery details could not be removed from this browser.");
+      }
+      return;
+    }
+
+    const parsed = customerDetailsSchema.safeParse({
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      street: form.street,
+      city: form.city,
+      country: form.country,
+      region: form.region,
+    });
+    if (!parsed.success) return;
+
+    try {
+      window.localStorage.setItem(savedDetailsStorageKey, JSON.stringify(parsed.data));
+      setHasSavedDetails(true);
+    } catch (error) {
+      console.error("Could not save checkout details.", error);
+      toast.error("Delivery details could not be saved in this browser. You can still continue checkout.");
+    }
+  };
+
+  const removeSavedDetails = () => {
+    try {
+      window.localStorage.removeItem(savedDetailsStorageKey);
+      setHasSavedDetails(false);
+      setRememberDetails(false);
+      toast.success("Saved delivery details removed from this browser.");
+    } catch (error) {
+      console.error("Could not remove saved checkout details.", error);
+      toast.error("Saved delivery details could not be removed from this browser.");
+    }
+  };
+
+  const getOrderAttempt = (): OrderAttempt => {
+    if (orderAttemptRef.current) return orderAttemptRef.current;
+
+    try {
+      const savedAttempt = window.sessionStorage.getItem(orderAttemptStorageKey);
+      if (savedAttempt) {
+        const parsed: unknown = JSON.parse(savedAttempt);
+        if (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          "idempotencyKey" in parsed &&
+          typeof parsed.idempotencyKey === "string" &&
+          "receiptToken" in parsed &&
+          typeof parsed.receiptToken === "string" &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            parsed.idempotencyKey,
+          ) &&
+          /^[a-f0-9]{64}$/i.test(parsed.receiptToken)
+        ) {
+          orderAttemptRef.current = {
+            idempotencyKey: parsed.idempotencyKey,
+            receiptToken: parsed.receiptToken,
+          };
+          return orderAttemptRef.current;
+        }
+      }
+
+      const randomBytes = window.crypto.getRandomValues(new Uint8Array(32));
+      const attempt = {
+        idempotencyKey: window.crypto.randomUUID(),
+        receiptToken: Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, "0")).join(""),
+      };
+      window.sessionStorage.setItem(orderAttemptStorageKey, JSON.stringify(attempt));
+      orderAttemptRef.current = attempt;
+      return attempt;
+    } catch (error) {
+      console.error("Could not prepare an idempotent order submission.", error);
+      throw new Error("Checkout could not prepare a secure order submission. Please try again.");
+    }
+  };
+
+  const completeBankTransferOrder = async () => {
+    if (isCreatingOrder) return;
+    setIsCreatingOrder(true);
+    setOrderSubmissionError(null);
+
+    try {
+      const attempt = getOrderAttempt();
+      const requestBody = {
+        ...attempt,
+        expectedTotalAmount: total,
+        customer: {
+          name: form.name,
+          email: form.email.trim() || undefined,
+          phone: form.phone,
+          street: form.street,
+          city: form.city,
+          region: form.region,
+          country: form.country,
+        },
+        items: cart.map((line) => ({
+          productId: line.productId,
+          quantity: line.qty,
+          ...(line.size ? { size: line.size } : {}),
+        })),
+      };
+      const response = await fetch("/api/store/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+      const responseBody: unknown = await response.json();
+
+      if (!response.ok) {
+        const errorMessage =
+          typeof responseBody === "object" &&
+          responseBody !== null &&
+          "error" in responseBody &&
+          typeof responseBody.error === "string"
+            ? responseBody.error
+            : "Your order could not be saved. Please try again.";
+        throw new Error(errorMessage);
+      }
+
+      const parsedResponse = createStoreOrderResponseSchema.safeParse(responseBody);
+      if (!parsedResponse.success) {
+        throw new Error("The order was saved, but the confirmation could not be read. Please contact TLX Originals.");
+      }
+
+      const message = [
+        `Hi TLX Originals, I placed order ${parsedResponse.data.orderId}.`,
+        `Please view the order details here: ${parsedResponse.data.receiptUrl}`,
+        "I will send my bank transfer receipt here for payment verification.",
+      ].join(" ");
+      const confirmation: OrderConfirmation = {
+        ...parsedResponse.data,
+        whatsappUrl: `${whatsappHref}?text=${encodeURIComponent(message)}`,
+      };
+      setOrderConfirmation(confirmation);
+      clearCart();
+      try {
+        window.sessionStorage.removeItem(orderAttemptStorageKey);
+      } catch (error) {
+        console.error("Could not clear the completed checkout attempt.", error);
+      }
+      handlePaymentDialogChange(false);
+      toast.success("Order saved", { description: `Order ${confirmation.orderId} is awaiting payment verification.` });
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Your order could not be saved. Please try again.";
+      console.error("Could not complete the bank-transfer order.", error);
+      setOrderSubmissionError(message);
+      toast.error("Order could not be saved", { description: message });
+    } finally {
+      setIsCreatingOrder(false);
+    }
+  };
+
+  const continueCheckout = () => {
+    if (!canContinue) {
+      toast.error("Please check the required details and email address.");
+      return;
+    }
+    if (step === 1) saveCustomerDetails();
+    setStep((current) => current + 1);
+  };
+
+  if (orderConfirmation) {
     return (
       <div className="container-x relative flex flex-col items-center py-24 text-center">
         <Stamp
@@ -183,21 +388,36 @@ export default function Checkout() {
           transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
           className="flex flex-col items-center"
         >
-        <p className="label-mono mt-8">Order confirmed</p>
+        <p className="label-mono mt-8">Order received</p>
         <h1 className="mt-4 font-display text-4xl font-light sm:text-5xl">Thank you, {form.name}.</h1>
         <p className="mt-5 max-w-md text-[15px] leading-relaxed text-muted-foreground">
-          Order <span className="font-mono2 text-foreground">{placed}</span> is being prepared by TLX Originals.
-          A confirmation is on its way to <span className="text-foreground">{form.email}</span>, and tracking
-          will follow within 48 hours.
+          Order <span className="font-mono2 text-foreground">{orderConfirmation.orderId}</span> is saved and awaiting
+          manual bank-transfer verification. Payment is not considered confirmed until TLX Originals verifies the transfer.
         </p>
+        {orderConfirmation.emailStatus === "sent" ? (
+          <p className="mt-3 text-sm text-muted-foreground">The store has been notified by email.</p>
+        ) : (
+          <p className="mt-3 max-w-md text-sm text-amber-700" role="status">
+            {orderConfirmation.message ?? "The store email is not confirmed. You can still share your order on WhatsApp."}
+          </p>
+        )}
         <div className="mt-8 flex flex-col items-center gap-2 text-foreground/70">
-          <Barcode code={placed} className="h-8 w-44" />
+          <Barcode code={orderConfirmation.orderId} className="h-8 w-44" />
           <span className="font-mono2 text-[9px] uppercase tracking-[0.25em] text-muted-foreground">
-            {placed} · TLX Originals
+            {orderConfirmation.orderId} · TLX Originals
           </span>
         </div>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
-          <Link href="/account" className="btn-solid-invert">Track in your account</Link>
+          <a
+            href={orderConfirmation.whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-solid-invert"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+            Send order details on WhatsApp
+          </a>
+          <Link href={orderConfirmation.receiptUrl} className="btn-outline-invert">View order receipt</Link>
           <Link href="/products" className="btn-outline-invert">Keep browsing</Link>
         </div>
         </motion.div>
@@ -220,9 +440,20 @@ export default function Checkout() {
     );
   }
 
+  const requestedQuantityByProduct = new Map<string, number>();
+  for (const line of cart) {
+    requestedQuantityByProduct.set(
+      line.productId,
+      (requestedQuantityByProduct.get(line.productId) ?? 0) + line.qty,
+    );
+  }
   const unavailableItems = cart.filter((line) => {
     const product = products.find((candidate) => candidate.id === line.productId);
-    return !product || !isProductInStock(product) || product.stock < line.qty;
+    return (
+      !product ||
+      !isProductInStock(product) ||
+      product.stock < (requestedQuantityByProduct.get(line.productId) ?? line.qty)
+    );
   });
   if (unavailableItems.length > 0) {
     return (
@@ -235,14 +466,6 @@ export default function Checkout() {
       </div>
     );
   }
-
-  const placeOrder = () => {
-    const id = `AUR-${Math.floor(1043 + Math.random() * 800)}`;
-    clearCart();
-    setPlaced(id);
-    toast.success("Order placed", { description: `Order ${id} confirmed.` });
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  };
 
   return (
     <div>
@@ -334,8 +557,45 @@ export default function Checkout() {
                 <p className="label-mono mb-4">Contact</p>
                 <div className="grid gap-4 md:grid-cols-2">
                   <input value={form.name} onChange={set("name")} placeholder="Name" autoComplete="name" className="input-plain rounded-2xl md:col-span-2" />
-                  <input type="email" value={form.email} onChange={set("email")} placeholder="Email address" autoComplete="email" className="input-plain rounded-2xl" />
+                  <div>
+                    <input type="email" value={form.email} onChange={set("email")} placeholder="Email address (optional)" autoComplete="email" className="input-plain w-full rounded-2xl" />
+                    <p className="mt-2 text-xs text-muted-foreground">Email is optional. We send the order notification to the store.</p>
+                  </div>
                   <input type="tel" value={form.phone} onChange={set("phone")} placeholder="Phone number" autoComplete="tel" className="input-plain rounded-2xl" />
+                </div>
+                <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={rememberDetails}
+                      onChange={(event) => {
+                        setRememberDetails(event.target.checked);
+                        if (!event.target.checked) {
+                          try {
+                            window.localStorage.removeItem(savedDetailsStorageKey);
+                            setHasSavedDetails(false);
+                          } catch (error) {
+                            console.error("Could not remove saved checkout details.", error);
+                            toast.error("Saved delivery details could not be removed from this browser.");
+                          }
+                        }
+                      }}
+                      className="size-4 accent-foreground"
+                    />
+                    Remember my details on this browser
+                  </label>
+                  {hasSavedDetails && (
+                    <button
+                      type="button"
+                      onClick={removeSavedDetails}
+                      className="w-fit text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                    >
+                      Remove saved details
+                    </button>
+                  )}
+                  <p className="text-xs text-muted-foreground sm:basis-full">
+                    Details stay on this device until you remove them.
+                  </p>
                 </div>
               </div>
             </div>
@@ -348,48 +608,16 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* Step 3: payment (mock) */}
+          {/* Step 3: bank transfer */}
           {step === 3 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 border border-border bg-card p-4">
-                <Lock className="h-4 w-4 text-primary" />
-                <p className="font-mono2 text-[11px] text-muted-foreground">
-                  Demo checkout — no real payment is processed. Use any test card number.
-                </p>
-              </div>
-              <div>
-                <p className="label-mono mb-4 flex items-center gap-2"><CreditCard className="h-3.5 w-3.5" /> Card details</p>
-                <div className="space-y-4">
-                  <input
-                    value={form.card}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
-                      setForm((f) => ({ ...f, card: digits.replace(/(.{4})/g, "$1 ").trim() }));
-                    }}
-                    placeholder="4242 4242 4242 4242"
-                    inputMode="numeric"
-                    className="input-plain font-mono2 md:col-span-2"
-                  />
-                  <input
-                    value={form.expiry}
-                    onChange={(e) => {
-                      const d = e.target.value.replace(/\D/g, "").slice(0, 4);
-                      setForm((f) => ({ ...f, expiry: d.length > 2 ? d.slice(0, 2) + "/" + d.slice(2) : d }));
-                    }}
-                    placeholder="MM/YY"
-                    inputMode="numeric"
-                    className="input-plain font-mono2"
-                  />
-                  <input
-                    value={form.cvc}
-                    onChange={(e) => setForm((f) => ({ ...f, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
-                    placeholder="CVC"
-                    inputMode="numeric"
-                    className="input-plain font-mono2"
-                  />
-                  <input value={form.nameOnCard} onChange={set("nameOnCard")} placeholder="Name on card" className="input-plain md:col-span-2" />
-                </div>
-              </div>
+            <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+              <p className="label-mono flex items-center gap-2"><Landmark className="h-4 w-4" /> Bank transfer</p>
+              <h2 className="mt-4 font-display text-3xl font-light">Pay securely by transfer</h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Review your delivery details, then view the Moniepoint account information. Your order total is{" "}
+                <span className="font-medium text-foreground">{formatNgnPrice(total)}</span>.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">Deliveries 1-3 days. Payment is verified manually.</p>
             </div>
           )}
 
@@ -401,10 +629,10 @@ export default function Checkout() {
             <div className="mt-8 flex flex-col items-center gap-3">
               <button
                 type="button"
-                onClick={openTransferDetails}
+                onClick={() => setStep(1)}
                 className="btn-solid-invert h-10 w-full max-w-xs rounded-[10px] px-4 py-2 text-[11px]"
               >
-                <ShoppingCart className="h-4 w-4" /> Proceed with payment
+                <ShoppingCart className="h-4 w-4" /> Continue to delivery details
               </button>
               <Link href="/categories" className="inline-flex items-center gap-1.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
                 <ArrowLeft className="h-3.5 w-3.5" /> Back to store
@@ -417,15 +645,15 @@ export default function Checkout() {
               </button>
               {step < 3 ? (
                 <button
-                  onClick={() => (canContinue ? setStep((s) => s + 1) : toast.error("Please complete the required fields"))}
+                  onClick={continueCheckout}
                   className="btn-solid-invert h-10 rounded-[10px] px-4 py-2 text-[11px]"
                 >
                   {step === 1 ? "Continue to delivery" : "Continue to payment"}
                   <ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <button onClick={placeOrder} className="btn-solid-invert h-10 rounded-[10px] px-4 py-2 text-[11px]">
-                  <Lock className="h-4 w-4" /> Place order — {formatPrice(total)}
+                <button onClick={openTransferDetails} className="btn-solid-invert h-10 rounded-[10px] px-4 py-2 text-[11px]">
+                  <Landmark className="h-4 w-4" /> View bank transfer details
                 </button>
               )}
             </div>
@@ -439,6 +667,7 @@ export default function Checkout() {
         >
           <DialogClose
             aria-label="Close payment details"
+            disabled={isCreatingOrder}
             className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-gray-100 hover:text-foreground"
           >
             <X className="h-4 w-4" aria-hidden="true" />
@@ -482,7 +711,7 @@ export default function Checkout() {
                 </p>
                 <DialogTitle className="font-display text-2xl font-light">Pay by bank transfer</DialogTitle>
                 <DialogDescription className="leading-relaxed">
-                  Transfer <span className="font-semibold text-foreground">{formatPrice(total)}</span> to complete your order.
+                  Transfer <span className="font-semibold text-foreground">{formatNgnPrice(total)}</span> to complete your order.
                 </DialogDescription>
               </DialogHeader>
               <dl className="space-y-4 rounded-2xl border border-gray-200 bg-gray-100 p-4 text-sm sm:p-5">
@@ -518,61 +747,24 @@ export default function Checkout() {
               <p className="text-xs leading-relaxed text-muted-foreground">
                 After you transfer, keep your receipt and contact TLX to confirm payment. Payment is not automatically verified here.
               </p>
+              {orderSubmissionError && (
+                <p className="text-sm text-destructive" role="alert">
+                  {orderSubmissionError}
+                </p>
+              )}
               <DialogFooter>
                 <button
                   type="button"
-                  onClick={showPaymentConfirmation}
-                  className="btn-solid-invert w-full rounded-[10px]"
+                  onClick={completeBankTransferOrder}
+                  disabled={isCreatingOrder}
+                  className="btn-solid-invert w-full rounded-[10px] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Done
+                  {isCreatingOrder && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                  {isCreatingOrder ? "Saving your order..." : "Done"}
                 </button>
               </DialogFooter>
             </>
           )}
-        </DialogContent>
-      </Dialog>
-      <Dialog open={paymentConfirmationOpen} onOpenChange={setPaymentConfirmationOpen}>
-        <DialogContent
-          showCloseButton={false}
-          onEscapeKeyDown={(event) => event.preventDefault()}
-          onInteractOutside={(event) => event.preventDefault()}
-          className="max-w-md rounded-[28px] border border-gray-200 bg-white p-6 shadow-[0_24px_70px_rgba(47,36,23,0.2)] sm:p-8"
-        >
-          <DialogClose
-            aria-label="Close payment follow-up"
-            className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-gray-100 hover:text-foreground"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </DialogClose>
-          <DialogHeader className="pt-3">
-            <span className="mb-1 inline-flex size-12 items-center justify-center rounded-full bg-gray-100 text-neutral-700">
-              <WhatsAppIcon className="h-6 w-6" />
-            </span>
-            <p className="font-mono2 text-[10px] uppercase tracking-[0.2em] text-neutral-600">
-              Payment follow-up
-            </p>
-            <DialogTitle className="font-display text-2xl font-light">
-              Have you made the transfer?
-            </DialogTitle>
-            <DialogDescription className="leading-relaxed">
-              Once you&apos;ve paid, send your transfer receipt to TLX on WhatsApp so the team can confirm your payment.
-            </DialogDescription>
-          </DialogHeader>
-          <motion.a
-            href={whatsappReceiptHref}
-            target="_blank"
-            rel="noreferrer"
-            animate={reduceMotion ? undefined : { rotate: [0, -0.8, 0.8, -0.8, 0] }}
-            transition={reduceMotion ? undefined : { duration: 0.45, repeat: Infinity, repeatDelay: 3.5, ease: "easeInOut" }}
-            whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-            className="btn-solid-invert w-full rounded-[10px]"
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-            Send receipt on WhatsApp
-          </motion.a>
-          <DialogClose className="mx-auto w-fit text-sm text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground">
-            Close
-          </DialogClose>
         </DialogContent>
       </Dialog>
     </div>

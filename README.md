@@ -136,9 +136,31 @@ seed uploads main images to deterministic storage paths and inserts only missing
 not overwrite existing catalog entries. Product ratings and counts default to approved database
 reviews, with optional per-product overrides managed in the dashboard. The dashboard also provides
 review moderation. Existing sample reviews and browser-local reviews are not imported. Product
-listing, detail, category, search, cart, and sitemap reads use the published catalog. Orders are not
-persisted by the storefront, so revenue and order analytics remain unavailable until an order system
-is connected. Admin sign-up is disabled; only the configured admin email allowlist can use `/dashboard`.
+listing, detail, category, search, cart, and sitemap reads use the published catalog. Admin sign-up
+is disabled; only the configured admin email allowlist can use `/dashboard`.
+
+#### Bank-transfer orders
+
+Review and manually run
+[`supabase/migrations/20261130000002_tlx_orders.sql`](./supabase/migrations/20261130000002_tlx_orders.sql)
+in the Supabase SQL Editor after the catalog migrations. It creates private order tables and an
+idempotent order-creation function; orders remain `awaiting_verification` until the store confirms
+the bank transfer. The app does not apply migrations automatically.
+The authenticated dashboard adds an Orders page showing the latest 100 orders, customer and
+delivery details, and item summaries. Admins can mark a transfer paid after verifying it or cancel
+an order that is still awaiting verification; these actions record the admin and update time.
+
+Set `NEXT_PUBLIC_SITE_URL` to the deployed storefront origin and configure `RESEND_API_KEY` and
+`RESEND_FROM_EMAIL` with a verified Resend sender to email new order details to
+`ORDER_NOTIFICATION_EMAIL` (defaults to `taylorgrammm@gmail.com`). Customer email is optional; the
+store notification is sent regardless. If Resend is not configured, orders are still saved and the
+checkout clearly reports that the store email was not sent.
+
+The checkout can remember delivery details in the current browser's local storage. Customers can
+edit those details or remove them; they are not uploaded until an order is placed. Each order receipt
+URL is protected by a long random token and displays delivery information, so share it only with
+the intended recipient. The WhatsApp action opens a prefilled message and the customer must tap
+Send; it does not attach or send a payment proof automatically.
 
 ### Docker
 
