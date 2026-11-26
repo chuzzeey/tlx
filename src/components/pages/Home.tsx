@@ -243,7 +243,7 @@ export default function Home() {
   const viewAllHref = activeFilter === "all" ? "/products" : `/categories/${activeFilter}`;
 
   return (
-    <main className="home-page min-h-screen bg-background">
+    <main className="home-page min-h-screen bg-white">
       <section className="container-x py-5 sm:py-10 md:py-12 lg:py-14" aria-labelledby="popular-products-title">
         {status === "error" && (
           <p role="alert" className="mb-4 text-sm text-destructive">
