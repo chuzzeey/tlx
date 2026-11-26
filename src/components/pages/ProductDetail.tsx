@@ -262,7 +262,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
             </button>
           </div>
           <div className="grid gap-8 md:grid-cols-2 md:items-start lg:gap-12">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100 md:aspect-square">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)] md:aspect-square">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}
@@ -619,7 +619,7 @@ export default function ProductDetail({ productId, initialProduct }: { productId
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: EASE }}
         >
-          <div className="relative aspect-square overflow-hidden border border-border bg-gray-100">
+          <div className="relative aspect-square overflow-hidden bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)]">
             <AnimatePresence mode="popLayout" initial={false}>
               <MotionImage
                 key={gallery[activeImageIndex]}

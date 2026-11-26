@@ -128,7 +128,7 @@ function StoreProductCard({ product, index, categoryName }: { product: Product; 
       transition={{ duration: 0.35, delay: Math.min(index * 0.025, 0.2), ease: EASE }}
       className="group min-w-0"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)]">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}

@@ -89,7 +89,7 @@ function PopularProductCard({
     <Link
       href={`/products/${product.id}?from=home`}
       aria-label={`View ${product.name}`}
-      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-gray-100 pl-3 sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
+      className="flex h-[96px] items-center justify-between overflow-hidden rounded-2xl bg-white pl-3 shadow-[0_2px_12px_rgba(128,128,128,0.15)] sm:h-[112px] md:h-36 md:pl-4 lg:h-40"
     >
       <span
         className="brand-type max-w-[78px] text-[11px] font-bold leading-tight text-foreground uppercase md:max-w-[110px] md:text-xs"
@@ -130,7 +130,7 @@ function JacketCard({
 
   return (
     <article className="group relative min-w-0">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-100">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)]">
         <Link href={`/products/${product.id}?from=home`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}

@@ -268,7 +268,7 @@ export default function SearchPalette({
                                 setQuery("");
                                 onOpenChange(false);
                               }}
-                              className="relative block aspect-square overflow-hidden rounded-2xl bg-gray-100"
+                              className="relative block aspect-square overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)]"
                             >
                               <Image
                                 src={item.image}

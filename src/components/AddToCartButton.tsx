@@ -46,7 +46,7 @@ export default function AddToCartButton({
       transition={reduceMotion ? undefined : { duration: 0.16, ease: "easeOut" }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "inline-flex h-9 items-center justify-center rounded-full border border-neutral-400/50 bg-white px-3 text-[11px] font-medium text-black shadow-sm backdrop-blur-sm transition-colors hover:border-neutral-500 hover:bg-white dark:border-neutral-500/50 dark:bg-white dark:text-black dark:hover:bg-white",
+        "inline-flex h-9 items-center justify-center rounded-full border border-neutral-400/50 bg-gray-50 px-3 text-[11px] font-medium text-black shadow-sm backdrop-blur-sm transition-colors hover:border-neutral-500 hover:bg-gray-100 dark:border-neutral-500/50 dark:bg-gray-50 dark:text-black dark:hover:bg-gray-100",
         !inStock && "cursor-not-allowed opacity-60",
         className
       )}

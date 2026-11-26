@@ -43,7 +43,7 @@ export default function ProductCard({
       layout
       exit={{ opacity: 0 }}
       transition={{ duration: 0.45, ease: EASE }}
-      className="hairline-cell group relative transition-colors duration-300"
+      className="hairline-cell group relative bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)] transition-colors duration-300 hover:bg-neutral-50"
     >
       <Link
         href={`/products/${encodeURIComponent(product.id)}`}
@@ -81,13 +81,13 @@ export default function ProductCard({
         />
       </div>
 
-      <div className={`relative aspect-square overflow-hidden rounded-xl bg-gray-100 ${compact ? "mt-3" : "mt-4"}`}>
+      <div className={`relative aspect-square overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)] ${compact ? "mt-3" : "mt-4"}`}>
         <FadeImage
           src={product.image}
           alt={product.name}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
           className="h-full w-full bg-transparent"
-          placeholderClassName="bg-gray-100"
+          placeholderClassName="bg-white"
           imgClassName="h-full w-full object-contain p-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
         />
         {product.badge && (

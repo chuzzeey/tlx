@@ -27,7 +27,7 @@ function MobileProductCard({ product }: { product: Product }) {
 
   return (
     <article className="min-w-0">
-      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-gray-100">
+      <div className="relative aspect-[0.9] overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(128,128,128,0.15)]">
         <Link href={`/products/${product.id}`} className="absolute inset-x-0 bottom-12 top-0">
           <Image
             src={product.image}
